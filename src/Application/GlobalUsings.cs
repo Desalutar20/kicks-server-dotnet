@@ -1,0 +1,10 @@
+global using Application.Abstractions.CQRS;
+global using Domain.Abstractions;
+global using Domain.Shared;
+global using Microsoft.Extensions.DependencyInjection;
+global using Domain.Abstractions.Events;
+global using System.Security.Cryptography;
+global using Application.Abstractions.Hashing;
+global using Domain.User;
+global using Application.Abstractions.Cache;
+global using Application.Services;

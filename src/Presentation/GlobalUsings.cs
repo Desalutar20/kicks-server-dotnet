@@ -1,0 +1,14 @@
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Routing;
+global using Microsoft.AspNetCore.Http;
+global using FluentValidation;
+global using Presentation.Common;
+global using Domain.Abstractions;
+global using Domain.User;
+global using Application.Abstractions.CQRS;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.Logging;
+global using Domain.Shared;
+global using Presentation.Shared.Constants;
+global using Presentation.Shared.Dto;
+global using Presentation.Shared.Filters;
