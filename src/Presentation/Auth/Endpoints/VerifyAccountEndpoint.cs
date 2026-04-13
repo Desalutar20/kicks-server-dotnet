@@ -11,8 +11,13 @@ public sealed class VerifyAccountRequestValidator : AbstractValidator<VerifyAcco
 {
     public VerifyAccountRequestValidator()
     {
-        RuleFor(x => x.Token).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
+        RuleFor(x => x.Token)
+            .NotEmpty()
+            .MaximumLength(100);
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(Email.MaxLength);
     }
 }
 
@@ -24,7 +29,7 @@ internal static partial class AuthEndpoint
                     async (
                         HttpContext ctx,
                         VerifyAccountRequest request,
-                        ICommandHandler<VerifyAccountCommand, Result<UserWithSessionId>> commandHandler,
+                        ICommandHandler<VerifyAccountCommand, UserWithSessionId> commandHandler,
                         Config config,
                         ILoggerFactory loggerFactory,
                         CancellationToken ct = default) =>
@@ -32,13 +37,22 @@ internal static partial class AuthEndpoint
                         var logger = loggerFactory.CreateLogger("Auth.VerifyAccount");
 
                         var command = request.ToCommand();
-                        if (command.IsFailure) return ErrorHandler.Handle(command.Error, logger);
+                        if (command.IsFailure)
+                        {
+                            return ErrorHandler.Handle(command.Error, logger);
+                        }
 
                         var result = await commandHandler.Handle(command.Value, ct);
-                        if (result.IsFailure) return ErrorHandler.Handle(result.Error, logger);
+                        if (result.IsFailure)
+                        {
+                            return ErrorHandler.Handle(result.Error, logger);
+                        }
 
                         var (user, sessionId) = result.Value;
-                        if (sessionId is not null) SetSessionCookie(ctx, sessionId.Value, config.Application);
+                        if (sessionId is not null)
+                        {
+                            SetSessionCookie(ctx, sessionId.Value, config.Application);
+                        }
 
 
                         return Results.Ok(new ApiResponse<UserDto>(user.ToDto()));
@@ -59,10 +73,16 @@ internal static partial class AuthEndpoint
     private static Result<VerifyAccountCommand> ToCommand(this VerifyAccountRequest request)
     {
         var token = NonEmptyString.Create(request.Token);
-        if (token.IsFailure) return Result<VerifyAccountCommand>.Failure(token.Error);
+        if (token.IsFailure)
+        {
+            return Result<VerifyAccountCommand>.Failure(token.Error);
+        }
 
         var email = Email.Create(request.Email);
-        if (email.IsFailure) return Result<VerifyAccountCommand>.Failure(email.Error);
+        if (email.IsFailure)
+        {
+            return Result<VerifyAccountCommand>.Failure(email.Error);
+        }
 
         return Result<VerifyAccountCommand>.Success(
             new VerifyAccountCommand(token.Value, email.Value));

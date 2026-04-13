@@ -21,3 +21,4 @@ global using Infrastructure.Extensions;
 global using MailKit.Net.Smtp;
 global using Microsoft.Extensions.Options;
 global using MimeKit;
+global using Domain.Shared;

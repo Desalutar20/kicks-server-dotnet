@@ -8,7 +8,10 @@ public sealed class ForgotPasswordRequestValidator : AbstractValidator<ForgotPas
 {
     public ForgotPasswordRequestValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(Email.MaxLength);
     }
 }
 
@@ -19,14 +22,17 @@ internal static partial class AuthEndpoint
         endpoint.MapPost("/forgot-password",
                     async (
                         ForgotPasswordRequest request,
-                        ICommandHandler<ForgotPasswordCommand, Result> commandHandler,
+                        ICommandHandler<ForgotPasswordCommand> commandHandler,
                         ILoggerFactory loggerFactory,
                         CancellationToken ct = default) =>
                     {
                         var logger = loggerFactory.CreateLogger("Auth.ForgotPassword");
 
                         var commandResult = request.ToCommand();
-                        if (commandResult.IsFailure) return ErrorHandler.Handle(commandResult.Error, logger);
+                        if (commandResult.IsFailure)
+                        {
+                            return ErrorHandler.Handle(commandResult.Error, logger);
+                        }
 
                         var result = await commandHandler.Handle(commandResult.Value, ct);
                         return result.IsFailure
@@ -49,7 +55,10 @@ internal static partial class AuthEndpoint
     private static Result<ForgotPasswordCommand> ToCommand(this ForgotPasswordRequest request)
     {
         var email = Email.Create(request.Email);
-        if (email.IsFailure) return Result<ForgotPasswordCommand>.Failure(email.Error);
+        if (email.IsFailure)
+        {
+            return Result<ForgotPasswordCommand>.Failure(email.Error);
+        }
 
         return Result<ForgotPasswordCommand>.Success(
             new ForgotPasswordCommand(email.Value));

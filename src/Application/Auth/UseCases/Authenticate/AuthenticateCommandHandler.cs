@@ -3,10 +3,10 @@ using Application.Auth.Types;
 
 namespace Application.Auth.UseCases.Authenticate;
 
-public record AuthenticateCommand(Guid SessionId) : ICommand<Result<SessionUser>>;
+public record AuthenticateCommand(Guid SessionId) : ICommand<SessionUser>;
 
 internal sealed class AuthenticateCommandHandler(IAuthCache cache)
-    : ICommandHandler<AuthenticateCommand, Result<SessionUser>>
+    : ICommandHandler<AuthenticateCommand, SessionUser>
 {
     public async Task<Result<SessionUser>> Handle(AuthenticateCommand command, CancellationToken ct = default)
     {

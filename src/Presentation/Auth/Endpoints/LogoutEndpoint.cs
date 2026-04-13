@@ -10,16 +10,25 @@ internal static partial class AuthEndpoint
     {
         endpoint.MapPost("/logout",
                     async (
-                        HttpContext ctx, ICommandHandler<LogoutCommand> commandHandler, Config config) =>
+                        HttpContext ctx, ICommandHandler<LogoutCommand> commandHandler, Config config,
+                        LoggerFactory loggerFactory) =>
                     {
-                        if (!ctx.Items.TryGetValue(RequestConstants.UserKey, out var result) ||
+                        var logger = loggerFactory.CreateLogger("Auth.Logout");
+
+                        if (!ctx.Items.TryGetValue(RequestConstants.UserKey, out var userResult) ||
                             !ctx.Items.TryGetValue(RequestConstants.SessionKey, out var sessionResult) ||
-                            result is not SessionUser sessionUser ||
+                            userResult is not SessionUser sessionUser ||
                             sessionResult is not Guid sessionId)
+                        {
                             return Results.Unauthorized();
+                        }
 
                         var command = new LogoutCommand(sessionUser.Id, sessionId);
-                        await commandHandler.Handle(command);
+                        var result = await commandHandler.Handle(command);
+                        if (result.IsFailure)
+                        {
+                            return ErrorHandler.Handle(result.Error, logger);
+                        }
 
                         ClearSessionCookie(ctx, config.Application);
 

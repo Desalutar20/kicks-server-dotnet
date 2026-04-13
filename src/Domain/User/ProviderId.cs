@@ -3,18 +3,18 @@ using Domain.Shared;
 
 namespace Domain.User;
 
-public readonly record struct GoogleId
+public readonly record struct ProviderId
 {
     public const int MaxLength = 100;
 
-    private GoogleId(string value)
+    private ProviderId(string value)
     {
         Value = value;
     }
 
     public string Value { get; }
 
-    public static Result<GoogleId> Create(string value)
+    public static Result<ProviderId> Create(string value)
     {
         var errors = new List<string>();
 
@@ -23,13 +23,13 @@ public readonly record struct GoogleId
         var emptyResult = Guard.AgainstEmptyString(value);
         if (emptyResult.IsFailure) errors.Add(emptyResult.Error.Description);
 
-        var lengthResult = Guard.ForStringLength(value, 1, MaxLength, "Google id");
+        var lengthResult = Guard.ForStringLength(value, 1, MaxLength, "Provider id");
         if (lengthResult.IsFailure) errors.Add(lengthResult.Error.Description);
 
 
         return errors.Count == 0
-            ? Result<GoogleId>.Success(new GoogleId(value))
-            : Result<GoogleId>.Failure(Error.Validation("googleId", errors));
+            ? Result<ProviderId>.Success(new ProviderId(value))
+            : Result<ProviderId>.Failure(Error.Validation("providerId", errors));
     }
 
     public override string ToString() => Value;

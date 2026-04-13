@@ -22,9 +22,6 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<DomainUser>
         builder.HasIndex(x => x.GoogleId).IsUnique();
         builder.HasIndex(x => x.FacebookId).IsUnique();
 
-
-        builder.Ignore(x => x.DomainEvents);
-
         builder.Property(x => x.Id)
                .HasConversion(
                    id => id.Value,
@@ -92,20 +89,20 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<DomainUser>
                .HasConversion(
                    googleId => googleId != null ? googleId.Value.Value : null,
                    value => value != null
-                       ? GoogleId.Create(value).Value
+                       ? ProviderId.Create(value).Value
                        : null
                )
-               .HasMaxLength(GoogleId.MaxLength);
+               .HasMaxLength(ProviderId.MaxLength);
 
 
         builder.Property(x => x.FacebookId)
                .HasConversion(
                    facebookId => facebookId != null ? facebookId.Value.Value : null,
                    value => value != null
-                       ? FacebookId.Create(value).Value
+                       ? ProviderId.Create(value).Value
                        : null
                )
-               .HasMaxLength(FacebookId.MaxLength);
+               .HasMaxLength(ProviderId.MaxLength);
 
 
         builder.Property(x => x.IsVerified).IsRequired().HasDefaultValue(false);

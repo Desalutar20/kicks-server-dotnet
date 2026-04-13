@@ -1,5 +1,6 @@
 ﻿using Application.Abstractions.Cache;
 using Application.Abstractions.Events;
+using Application.Abstractions.OAuth;
 using Domain.Outbox;
 using Infrastructure.BackgroundTasks;
 using Infrastructure.Cache;
@@ -7,6 +8,7 @@ using Infrastructure.Data.Outbox;
 using Infrastructure.Data.User;
 using Infrastructure.Events;
 using Infrastructure.Services;
+using Infrastructure.Services.OAuth;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure;
@@ -23,6 +25,12 @@ public static class DependencyInjection
         services.AddSingleton<IEmailSender, EmailService>();
         services.AddSingleton<ICachingService, Redis>();
         services.AddSingleton<IAuthCache, AuthCache>();
+        services.AddKeyedSingleton<IOAuthClient, GoogleService>(OAuthProvider.Google);
+        services.AddKeyedSingleton<IOAuthClient, FacebookService>(OAuthProvider.Facebook);
+        services.AddSingleton<IOAuthClientFactory, OAuthClientFactory>();
+
+        services.AddHttpClient<GoogleService>(client => { client.Timeout = TimeSpan.FromSeconds(10); });
+        services.AddHttpClient<FacebookService>(client => { client.Timeout = TimeSpan.FromSeconds(10); });
 
         services.AddSingleton<IDomainEventPublisher, DomainEventPublisher>();
 
@@ -47,7 +55,10 @@ public static class DependencyInjection
                 ConfigValidator validator = new();
 
                 var result = validator.Validate(x);
-                if (result.IsValid) return true;
+                if (result.IsValid)
+                {
+                    return true;
+                }
 
                 foreach (var error in result.Errors)
                     Console.WriteLine(
@@ -56,7 +67,8 @@ public static class DependencyInjection
                 return result.IsValid;
             });
 
-        services.AddSingleton<Config>(sp => sp.GetRequiredService<IOptions<Config>>().Value);
+        services.AddSingleton<Config>(sp => sp.GetRequiredService<IOptions<Config>>()
+                                              .Value);
     }
 
     private static void AddDatabase(IServiceCollection services)

@@ -21,10 +21,16 @@ public readonly record struct FirstName
         value = value.Trim();
 
         var emptyResult = Guard.AgainstEmptyString(value);
-        if (emptyResult.IsFailure) errors.Add(emptyResult.Error.Description);
+        if (emptyResult.IsFailure)
+        {
+            errors.Add(emptyResult.Error.Description);
+        }
 
         var lengthResult = Guard.ForStringLength(value, 1, MaxLength, "First name");
-        if (lengthResult.IsFailure) errors.Add(lengthResult.Error.Description);
+        if (lengthResult.IsFailure)
+        {
+            errors.Add(lengthResult.Error.Description);
+        }
 
 
         return errors.Count == 0

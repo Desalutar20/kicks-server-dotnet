@@ -3,5 +3,100 @@
     image: api
     build:
       context: .
-      dockerfile: src/Api/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      Application__ClientUrl: ${CLIENT_URL}
+      Application__SessionCookieName: ${SESSION_COOKIE_NAME}
+      Application__CookieSecure: ${COOKIE_SECURE}
+      Application__AccountVerificationPath: ${ACCOUNT_VERIFICATION_PATH}
+      Application__ResetPasswordPath: ${RESET_PASSWORD_PATH}
+      Application__AccountVerificationTtlMinutes: ${ACCOUNT_VERIFICATION_TTL_MINUTES}
+      Application__SessionTtlMinutes: ${SESSION_TTL_MINUTES}
+      Application__ResetPasswordTtlMinutes: ${RESET_PASSWORD_TTL_MINUTES}
 
+      Database__Host: postgres
+      Database__Port: ${DATABASE_PORT}
+      Database__User: ${DATABASE_USER}
+      Database__Password: ${DATABASE_PASSWORD}
+      Database__Name: ${DATABASE_NAME}
+      Database__Ssl: ${DATABASE_SSL}
+
+      Redis__Host: redis
+      Redis__Port: ${REDIS_PORT}
+      Redis__User: ${REDIS_USER}
+      Redis__Password: ${REDIS_PASSWORD}
+      Redis__Database: ${REDIS_DB}
+
+      Smtp__Host: mailpit
+      Smtp__Port: 1025
+      Smtp__User: ${SMTP_USER}
+      Smtp__Password: ${SMTP_PASSWORD}
+      Smtp__From: ${SMTP_FROM}
+
+      RateLimit__SignUp: ${RATELIMIT_SIGNUP}
+      RateLimit__SignIn: ${RATELIMIT_SIGNIN}
+      RateLimit__VerifyAccount: ${RATELIMIT_VERIFYACCOUNT}
+      RateLimit__GetProfile: ${RATELIMIT_GETPROFILE}
+      RateLimit__ForgotPassword: ${RATELIMIT_FORGOTPASSWORD}
+      RateLimit__ResetPassword: ${RATELIMIT_RESETPASSWORD}
+      RateLimit__Logout: ${RATELIMIT_LOGOUT}
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  
+  postgres:
+    image: postgres:18-alpine
+    container_name: kicks-postgres
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - kicks-postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test:
+        [ "CMD-SHELL", "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8-alpine
+    container_name: kicks-redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - kicks-redis-data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    ports:
+      - "6380:6379"
+  
+  mailpit:
+    image: axllent/mailpit:v1.27.4
+    container_name: kicks-mailpit
+    restart: unless-stopped
+    command:
+      - --smtp-auth-allow-insecure
+    volumes:
+      - /opt/fakemail-data:/data
+    environment:
+      MP_UI_AUTH: "admin:admin123"
+      MP_SMTP_AUTH: "${SMTP_USER}:${SMTP_PASSWORD}"
+    ports:
+      - 8025:8025
+      - 1025:1025
+
+volumes:
+  kicks-postgres-data:
+  kicks-redis-data:

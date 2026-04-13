@@ -16,14 +16,14 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public ValueTask InitializeAsync() => ValueTask.CompletedTask;
 
-    public new async ValueTask DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await dbContext.Database.EnsureDeletedAsync();
 
-        GC.SuppressFinalize(this);
+        await base.DisposeAsync();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

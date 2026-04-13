@@ -11,8 +11,14 @@ public sealed class SignInRequestValidator : AbstractValidator<SignInRequest>
 {
     public SignInRequestValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
-        RuleFor(x => x.Password).NotEmpty().MinimumLength(Password.MinLength).MaximumLength(Password.MaxLength);
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(Email.MaxLength);
+        RuleFor(x => x.Password)
+            .NotEmpty()
+            .MinimumLength(Password.MinLength)
+            .MaximumLength(Password.MaxLength);
     }
 }
 
@@ -24,7 +30,7 @@ internal static partial class AuthEndpoint
                     async (
                         HttpContext ctx,
                         SignInRequest request,
-                        ICommandHandler<SignInCommand, Result<UserWithSessionId>> commandHandler,
+                        ICommandHandler<SignInCommand, UserWithSessionId> commandHandler,
                         Config config,
                         ILoggerFactory loggerFactory,
                         CancellationToken ct = default) =>
@@ -32,13 +38,22 @@ internal static partial class AuthEndpoint
                         var logger = loggerFactory.CreateLogger("Auth.SignIn");
 
                         var commandResult = request.ToCommand();
-                        if (commandResult.IsFailure) return ErrorHandler.Handle(commandResult.Error, logger);
+                        if (commandResult.IsFailure)
+                        {
+                            return ErrorHandler.Handle(commandResult.Error, logger);
+                        }
 
                         var result = await commandHandler.Handle(commandResult.Value, ct);
-                        if (result.IsFailure) return ErrorHandler.Handle(result.Error, logger);
+                        if (result.IsFailure)
+                        {
+                            return ErrorHandler.Handle(result.Error, logger);
+                        }
 
                         var (user, sessionId) = result.Value;
-                        if (sessionId is not null) SetSessionCookie(ctx, sessionId.Value, config.Application);
+                        if (sessionId is not null)
+                        {
+                            SetSessionCookie(ctx, sessionId.Value, config.Application);
+                        }
 
 
                         return Results.Ok(new ApiResponse<UserDto>(user.ToDto()));
@@ -59,12 +74,17 @@ internal static partial class AuthEndpoint
     private static Result<SignInCommand> ToCommand(this SignInRequest request)
     {
         var email = Email.Create(request.Email);
-        if (email.IsFailure) return Result<SignInCommand>.Failure(email.Error);
+        if (email.IsFailure)
+        {
+            return Result<SignInCommand>.Failure(email.Error);
+        }
 
         var password = Password.Create(request.Password);
         if (password.IsFailure)
+        {
             return Result<SignInCommand>.Failure(
                 password.Error);
+        }
 
 
         return Result<SignInCommand>.Success(

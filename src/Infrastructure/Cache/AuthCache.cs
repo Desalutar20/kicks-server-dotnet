@@ -2,7 +2,6 @@ using System.Text.Json;
 using Application.Abstractions.Cache;
 using Application.Auth.JsonConverters;
 using Application.Auth.Types;
-using Domain.Shared;
 using NRedisStack;
 
 namespace Infrastructure.Cache;
@@ -45,7 +44,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         var db = multiplexer.GetDatabase();
         var pipeline = new Pipeline(db);
 
-        var expireAt = DateTimeOffset.UtcNow.Add(ttl).ToUnixTimeSeconds();
+        var expireAt = DateTimeOffset.UtcNow.Add(ttl)
+                                     .ToUnixTimeSeconds();
         var sessionIdString = sessionId.ToString();
 
         var sessionKey = GenerateSessionKey(sessionIdString);
@@ -56,7 +56,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         pipeline.Execute();
 
-        await Task.WhenAll(t1, t2).WaitAsync(ct);
+        await Task.WhenAll(t1, t2)
+                  .WaitAsync(ct);
     }
 
 
@@ -71,7 +72,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         return entries
                .Select(e => (
                    SessionId: Guid.Parse(e.Element.ToString()),
-                   CreatedAt: DateTimeOffset.FromUnixTimeSeconds((long)e.Score).UtcDateTime
+                   CreatedAt: DateTimeOffset.FromUnixTimeSeconds((long)e.Score)
+                                            .UtcDateTime
                ))
                .ToList();
     }
@@ -81,7 +83,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
     {
         var db = multiplexer.GetDatabase();
 
-        var value = await db.StringGetAsync(GenerateSessionKey(sessionId.ToString())).WaitAsync(ct);
+        var value = await db.StringGetAsync(GenerateSessionKey(sessionId.ToString()))
+                            .WaitAsync(ct);
 
         return value.HasValue
             ? JsonSerializer.Deserialize<SessionUser>(value.ToString(), JsonOptions)
@@ -100,7 +103,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         var t2 = pipeline.Db.SortedSetRemoveAsync(userSessionsKey, sessionId.ToString());
 
         pipeline.Execute();
-        await Task.WhenAll(t1, t2).WaitAsync(ct);
+        await Task.WhenAll(t1, t2)
+                  .WaitAsync(ct);
     }
 
     public async Task DeleteAllSessionsAsync(UserId userId, CancellationToken ct = default)
@@ -116,7 +120,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         tasks.Add(db.KeyDeleteAsync(userSessionsKey));
 
-        await Task.WhenAll(tasks).WaitAsync(ct);
+        await Task.WhenAll(tasks)
+                  .WaitAsync(ct);
     }
 
     public async Task DeleteExpiredSessionsAsync(CancellationToken ct = default)
@@ -125,7 +130,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var server = multiplexer.GetServer(multiplexer.GetEndPoints().First());
+        var server = multiplexer.GetServer(multiplexer.GetEndPoints()
+                                                      .First());
 
         await foreach (var userSessionsKey in server.KeysAsync(pattern: $"{_prefix}{CacheConstants.SessionsPrefix}*")
                                                     .WithCancellation(ct))
@@ -135,7 +141,10 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
                 double.NegativeInfinity,
                 now);
 
-            if (expiredSessions.Length == 0) continue;
+            if (expiredSessions.Length == 0)
+            {
+                continue;
+            }
 
 
             var tasks = new List<Task>();
@@ -148,7 +157,8 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
                 tasks.Add(db.SortedSetRemoveAsync(userSessionsKey, id));
             }
 
-            await Task.WhenAll(tasks).WaitAsync(ct);
+            await Task.WhenAll(tasks)
+                      .WaitAsync(ct);
         }
     }
 
@@ -163,9 +173,13 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
             _ => throw new ArgumentException()
         };
 
-        var userId = await db.StringGetDeleteAsync(cacheKey).WaitAsync(ct);
+        var userId = await db.StringGetDeleteAsync(cacheKey)
+                             .WaitAsync(ct);
 
-        if (!userId.HasValue || !Guid.TryParse(userId.ToString(), out var parsed)) return null;
+        if (!userId.HasValue || !Guid.TryParse(userId.ToString(), out var parsed))
+        {
+            return null;
+        }
 
         return new UserId(parsed);
     }

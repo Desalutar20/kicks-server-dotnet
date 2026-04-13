@@ -8,9 +8,17 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
 {
     public ResetPasswordRequestValidator()
     {
-        RuleFor(x => x.Token).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
-        RuleFor(x => x.NewPassword).NotEmpty().MinimumLength(Password.MinLength).MaximumLength(Password.MaxLength);
+        RuleFor(x => x.Token)
+            .NotEmpty()
+            .MaximumLength(100);
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(Email.MaxLength);
+        RuleFor(x => x.NewPassword)
+            .NotEmpty()
+            .MinimumLength(Password.MinLength)
+            .MaximumLength(Password.MaxLength);
     }
 }
 
@@ -21,14 +29,17 @@ internal static partial class AuthEndpoint
         endpoint.MapPost("/reset-password",
                     async (
                         ResetPasswordRequest request,
-                        ICommandHandler<ResetPasswordCommand, Result> commandHandler,
+                        ICommandHandler<ResetPasswordCommand> commandHandler,
                         ILoggerFactory loggerFactory,
                         CancellationToken ct = default) =>
                     {
                         var logger = loggerFactory.CreateLogger("Auth.ResetPassword");
 
                         var commandResult = request.ToCommand();
-                        if (commandResult.IsFailure) return ErrorHandler.Handle(commandResult.Error, logger);
+                        if (commandResult.IsFailure)
+                        {
+                            return ErrorHandler.Handle(commandResult.Error, logger);
+                        }
 
                         var result = await commandHandler.Handle(commandResult.Value, ct);
                         return result.IsFailure
@@ -52,15 +63,23 @@ internal static partial class AuthEndpoint
     private static Result<ResetPasswordCommand> ToCommand(this ResetPasswordRequest request)
     {
         var token = NonEmptyString.Create(request.Token);
-        if (token.IsFailure) return Result<ResetPasswordCommand>.Failure(token.Error);
+        if (token.IsFailure)
+        {
+            return Result<ResetPasswordCommand>.Failure(token.Error);
+        }
 
         var email = Email.Create(request.Email);
-        if (email.IsFailure) return Result<ResetPasswordCommand>.Failure(email.Error);
+        if (email.IsFailure)
+        {
+            return Result<ResetPasswordCommand>.Failure(email.Error);
+        }
 
         var newPassword = Password.Create(request.NewPassword);
         if (newPassword.IsFailure)
+        {
             return Result<ResetPasswordCommand>.Failure(
                 newPassword.Error);
+        }
 
 
         return Result<ResetPasswordCommand>.Success(
