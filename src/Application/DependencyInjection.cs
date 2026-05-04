@@ -1,4 +1,16 @@
 ﻿using Application.Abstractions.OAuth;
+using Application.Admin.Brands.UseCases.CreateBrand;
+using Application.Admin.Brands.UseCases.DeleteBrand;
+using Application.Admin.Brands.UseCases.GetBrands;
+using Application.Admin.Brands.UseCases.UpdateBrand;
+using Application.Admin.Categories.UseCases.CreateCategory;
+using Application.Admin.Categories.UseCases.DeleteCategory;
+using Application.Admin.Categories.UseCases.GetCategories;
+using Application.Admin.Categories.UseCases.UpdateCategory;
+using Application.Admin.Users.Types;
+using Application.Admin.Users.UseCases.DeleteUser;
+using Application.Admin.Users.UseCases.GetAllAdminUsers;
+using Application.Admin.Users.UseCases.ToggleBanUser;
 using Application.Auth.Types;
 using Application.Auth.UseCases.Authenticate;
 using Application.Auth.UseCases.DeleteExpiredSessions;
@@ -10,6 +22,9 @@ using Application.Auth.UseCases.ResetPassword;
 using Application.Auth.UseCases.SignIn;
 using Application.Auth.UseCases.SignUp;
 using Application.Auth.UseCases.VerifyAccount;
+using Domain.Product.Brand;
+using Domain.Product.Category;
+using Domain.Shared.Pagination;
 
 namespace Application;
 
@@ -17,38 +32,57 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services
-            .AddScoped<ICommandHandler<SignUpCommand>,
-                SignUpCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<SignInCommand, UserWithSessionId>,
-                SignInCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<VerifyAccountCommand, UserWithSessionId>,
-                VerifyAccountCommandHandler>();
+        services.AddScoped<ICommandHandler<SignUpCommand>, SignUpCommandHandler>();
+        services.AddScoped<
+            ICommandHandler<SignInCommand, UserWithSessionId>,
+            SignInCommandHandler
+        >();
+        services.AddScoped<ICommandHandler<VerifyAccountCommand>, VerifyAccountCommandHandler>();
 
-        services
-            .AddScoped<ICommandHandler<ForgotPasswordCommand>,
-                ForgotPasswordCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<ResetPasswordCommand>,
-                ResetPasswordHandler>();
+        services.AddScoped<ICommandHandler<ForgotPasswordCommand>, ForgotPasswordCommandHandler>();
+        services.AddScoped<ICommandHandler<ResetPasswordCommand>, ResetPasswordHandler>();
 
-        services
-            .AddScoped<ICommandHandler<AuthenticateCommand, SessionUser>,
-                AuthenticateCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<LogoutCommand>,
-                LogoutCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<DeleteExpiredSessionCommand>,
-                DeleteExpiredSessionCommandHandler>();
+        services.AddScoped<
+            ICommandHandler<AuthenticateCommand, SessionUser>,
+            AuthenticateCommandHandler
+        >();
+        services.AddScoped<ICommandHandler<LogoutCommand>, LogoutCommandHandler>();
+        services.AddScoped<
+            ICommandHandler<DeleteExpiredSessionCommand>,
+            DeleteExpiredSessionCommandHandler
+        >();
 
-        services
-            .AddScoped<ICommandHandler<GenerateOAuthUrlCommand, (Uri, OAuthState)>, GenerateOAuthUrlCommandHandler>();
-        services
-            .AddScoped<ICommandHandler<OAuthSignInCommand, Guid>, OAuthSignInCommandHandler>();
+        services.AddScoped<
+            ICommandHandler<GenerateOAuthUrlCommand, (Uri, OAuthState)>,
+            GenerateOAuthUrlCommandHandler
+        >();
+        services.AddScoped<ICommandHandler<OAuthSignInCommand, Guid>, OAuthSignInCommandHandler>();
 
+        services.AddScoped<
+            IQueryHandler<GetAllAdminUsersQuery, KeysetPaginated<AdminUser, UserId>>,
+            GetAllAdminUsersQueryHandler
+        >();
+        services.AddScoped<ICommandHandler<ToggleBanUserCommand>, ToggleBanUserCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteUserCommand>, DeleteUserCommandHandler>();
+
+        services.AddScoped<
+            IQueryHandler<GetBrandsQuery, KeysetPaginated<Brand, BrandId>>,
+            GetBrandsQueryHandler
+        >();
+        services.AddScoped<ICommandHandler<CreateBrandCommand>, CreateBrandCommandHandler>();
+        services.AddScoped<ICommandHandler<UpdateBrandCommand>, UpdateBrandCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteBrandCommand>, DeleteBrandCommandHandler>();
+
+        services.AddScoped<
+            IQueryHandler<GetCategoriesQuery, KeysetPaginated<Category, CategoryId>>,
+            GetCategoriesQueryHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<CreateCategoryCommand, Category>,
+            CreateCategoryCommandHandler
+        >();
+        services.AddScoped<ICommandHandler<UpdateCategoryCommand>, UpdateCategoryCommandHandler>();
+        services.AddScoped<ICommandHandler<DeleteCategoryCommand>, DeleteCategoryCommandHandler>();
 
         return services;
     }

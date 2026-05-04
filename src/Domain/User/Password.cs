@@ -3,7 +3,7 @@ using Domain.Shared;
 
 namespace Domain.User;
 
-public readonly record struct Password
+public sealed record Password
 {
     public const int MinLength = 8;
     public const int MaxLength = 40;
@@ -22,11 +22,16 @@ public readonly record struct Password
         value = value.Trim();
 
         var emptyResult = Guard.AgainstEmptyString(value);
-        if (emptyResult.IsFailure) errors.Add(emptyResult.Error.Description);
+        if (emptyResult.IsFailure)
+        {
+            errors.Add(emptyResult.Error.Description);
+        }
 
         var lengthResult = Guard.ForStringLength(value, MinLength, MaxLength, "Password");
-        if (lengthResult.IsFailure) errors.Add(lengthResult.Error.Description);
-
+        if (lengthResult.IsFailure)
+        {
+            errors.Add(lengthResult.Error.Description);
+        }
 
         return errors.Count == 0
             ? Result<Password>.Success(new Password(value))

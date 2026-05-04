@@ -11,21 +11,16 @@ builder.Host.UseDefaultServiceProvider(config =>
     config.ValidateScopes = true;
 });
 
-
 builder.WebHost.UseKestrel(options => options.AddServerHeader = false);
 
 builder.Services.ConfigureServices(builder.Configuration);
-builder.Services.AddInfrastructure(builder.Configuration)
-       .AddApplication()
-       .AddPresentation();
-
+builder.Services.AddInfrastructure(builder.Configuration).AddApplication().AddPresentation();
 
 var app = builder.Build();
 
 app.UseHttpLogging();
 app.UseExceptionHandler();
 app.UseCors();
-
 
 if (app.Environment.IsDevelopment())
 {

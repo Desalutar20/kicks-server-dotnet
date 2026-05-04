@@ -3,7 +3,7 @@ using Domain.Shared;
 
 namespace Domain.User;
 
-public readonly record struct LastName
+public sealed record LastName
 {
     public const int MaxLength = 30;
 
@@ -21,11 +21,16 @@ public readonly record struct LastName
         value = value.Trim();
 
         var emptyResult = Guard.AgainstEmptyString(value);
-        if (emptyResult.IsFailure) errors.Add(emptyResult.Error.Description);
+        if (emptyResult.IsFailure)
+        {
+            errors.Add(emptyResult.Error.Description);
+        }
 
         var lengthResult = Guard.ForStringLength(value, 1, MaxLength, "Last name");
-        if (lengthResult.IsFailure) errors.Add(lengthResult.Error.Description);
-
+        if (lengthResult.IsFailure)
+        {
+            errors.Add(lengthResult.Error.Description);
+        }
 
         return errors.Count == 0
             ? Result<LastName>.Success(new LastName(value))
@@ -33,4 +38,8 @@ public readonly record struct LastName
     }
 
     public override string ToString() => Value;
+
+    public static implicit operator string(LastName firstName) => firstName.Value;
+
+    public static implicit operator LastName(string value) => Create(value).Value;
 }

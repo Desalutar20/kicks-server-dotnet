@@ -30,35 +30,39 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.ConfigureLogging(logger => logger.ClearProviders());
 
-        builder.ConfigureAppConfiguration((_, configBuilder) =>
-        {
-            var guid = Guid.NewGuid();
-            configBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+        builder.ConfigureAppConfiguration(
+            (_, configBuilder) =>
             {
-                ["Database:Name"] = $"test-{guid}",
-                ["Redis:KeyPrefix"] = $"{guid}:",
+                var guid = Guid.NewGuid();
+                configBuilder.AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["Database:Name"] = $"test-{guid}",
+                        ["Redis:KeyPrefix"] = $"{guid}:",
 
-                ["RateLimit:SignUp"] = "20",
-                ["RateLimit:SignIn"] = "20",
-                ["RateLimit:VerifyAccount"] = "20",
-                ["RateLimit:ForgotPassword"] = "20",
-                ["RateLimit:ResetPassword"] = "20"
-            });
-        });
+                        ["RateLimit:SignUp"] = "20",
+                        ["RateLimit:SignIn"] = "20",
+                        ["RateLimit:VerifyAccount"] = "20",
+                        ["RateLimit:ForgotPassword"] = "20",
+                        ["RateLimit:ResetPassword"] = "20",
+                    }
+                );
+            }
+        );
 
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
 
-            services.AddDbContext<AppDbContext>((sp, opt) =>
-            {
-                var cfg = sp.GetRequiredService<Config>();
-                opt
-                    .UseNpgsql(cfg.Database.GetConnectionString())
-                    .AddInterceptors(sp.GetServices<ISaveChangesInterceptor>())
-                    .UseSnakeCaseNamingConvention();
-            });
-
+            services.AddDbContext<AppDbContext>(
+                (sp, opt) =>
+                {
+                    var cfg = sp.GetRequiredService<Config>();
+                    opt.UseNpgsql(cfg.Database.GetConnectionString())
+                        .AddInterceptors(sp.GetServices<ISaveChangesInterceptor>())
+                        .UseSnakeCaseNamingConvention();
+                }
+            );
 
             var serviceProvider = services.BuildServiceProvider();
             var scope = serviceProvider.CreateScope();

@@ -9,16 +9,16 @@ public partial class TestApp
         var server = _multiplexer.GetServer(_multiplexer.GetEndPoints().First());
         var pattern = GeneratePattern(type);
 
-        await foreach (var key in server.KeysAsync(
-                           pattern: $"{pattern}*"
-                       ).WithCancellation(ct))
+        await foreach (var key in server.KeysAsync(pattern: $"{pattern}*").WithCancellation(ct))
             return key.ToString().Split(pattern)[1];
-
 
         return null;
     }
 
-    protected async Task DeleteRedisAccountVerificationToken(TokenType type, CancellationToken ct = default)
+    protected async Task DeleteRedisAccountVerificationToken(
+        TokenType type,
+        CancellationToken ct = default
+    )
     {
         var db = _multiplexer.GetDatabase();
         var token = await GetRedisToken(type, ct);
@@ -33,9 +33,8 @@ public partial class TestApp
         var prefix = type switch
         {
             TokenType.AccountVerification => CacheConstants.AccountVerificationPrefix,
-            _ => CacheConstants.ResetPasswordPrefix
+            _ => CacheConstants.ResetPasswordPrefix,
         };
-
 
         var pattern = $"{_config.Redis.KeyPrefix}{prefix}";
 
@@ -45,6 +44,6 @@ public partial class TestApp
     protected enum TokenType
     {
         AccountVerification,
-        ResetPassword
+        ResetPassword,
     }
 }

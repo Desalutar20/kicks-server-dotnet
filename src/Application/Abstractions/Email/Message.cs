@@ -4,4 +4,5 @@ public record struct Message(
     NonEmptyString Subject,
     Domain.User.Email To,
     NonEmptyString PlainText,
-    NonEmptyString? HtmlText);
+    NonEmptyString? HtmlText
+);

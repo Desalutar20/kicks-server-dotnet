@@ -6,9 +6,16 @@ public interface IOutboxRepository
 {
     void CreateOutbox(Outbox outbox);
 
-    Task<IEnumerable<Outbox>> GetAndLockOutboxesForProcessingAsync(OutboxType type, PositiveInt batchSize,
+    Task<IEnumerable<Outbox>> GetAndLockOutboxesForProcessingAsync(
+        OutboxType type,
+        PositiveInt batchSize,
         bool trackChanges,
-        CancellationToken ct = default);
+        CancellationToken ct = default
+    );
 
-    Task MarkAsProcessedAsync(IReadOnlyCollection<OutboxId> ids, DateTimeOffset now, CancellationToken ct = default);
+    Task MarkAsProcessedAsync(
+        IReadOnlyCollection<OutboxId> ids,
+        DateTimeOffset now,
+        CancellationToken ct = default
+    );
 }

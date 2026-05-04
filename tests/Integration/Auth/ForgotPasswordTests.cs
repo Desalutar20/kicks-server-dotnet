@@ -32,6 +32,6 @@ public class ForgotPasswordTests(ApiFactory factory) : TestApp(factory)
         var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);
 
         error!.Status.Should().Be(400);
-        error!.Errors["email"].Should().NotBeNull();
+        error.Errors["email"].Should().NotBeNull();
     }
 }

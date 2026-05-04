@@ -6,5 +6,5 @@ namespace Domain.User;
 public enum Role
 {
     Admin,
-    Regular
+    Regular,
 }

@@ -8,52 +8,61 @@ namespace Api.Extensions;
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection ConfigureServices(this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection ConfigureServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         services.AddOpenApi();
         services.AddHttpLogging();
-        services.AddProblemDetails(options => options.CustomizeProblemDetails = ctx =>
-        {
-            ctx.ProblemDetails.Extensions.TryAdd("requestId", ctx.HttpContext.TraceIdentifier);
-            ctx.ProblemDetails.Extensions.TryAdd("timestamp", DateTime.UtcNow);
-        });
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = ctx =>
+            {
+                ctx.ProblemDetails.Extensions.TryAdd("requestId", ctx.HttpContext.TraceIdentifier);
+                ctx.ProblemDetails.Extensions.TryAdd("timestamp", DateTime.UtcNow);
+            }
+        );
 
         services.AddCors(op =>
         {
-            var applicationConfig =
-                configuration.GetRequiredSection("Application")
-                             .Get<ApplicationConfig>();
+            var applicationConfig = configuration
+                .GetRequiredSection("Application")
+                .Get<ApplicationConfig>();
 
             ArgumentNullException.ThrowIfNull(applicationConfig);
 
             op.AddDefaultPolicy(options =>
             {
-                options.AllowAnyHeader()
-                       .AllowAnyMethod()
-                       .WithOrigins(applicationConfig.ClientUrl)
-                       .AllowCredentials();
+                options
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins(applicationConfig.ClientUrl)
+                    .AllowCredentials();
             });
         });
 
         services.AddRateLimiter(options =>
         {
-            var rateLimitConfig =
-                configuration.GetRequiredSection("RateLimit")
-                             .Get<RateLimitConfig>();
+            var rateLimitConfig = configuration
+                .GetRequiredSection("RateLimit")
+                .Get<RateLimitConfig>();
 
             ArgumentNullException.ThrowIfNull(rateLimitConfig);
 
             foreach (var property in typeof(RateLimitConfig).GetProperties())
             {
                 var value = property.GetValue(rateLimitConfig, null);
-                if (value is null) continue;
+                if (value is null)
+                    continue;
 
-                options.AddFixedWindowLimiter(property.Name, cfg =>
-                {
-                    cfg.PermitLimit = (int)value;
-                    cfg.Window = TimeSpan.FromMinutes(1);
-                });
+                options.AddFixedWindowLimiter(
+                    property.Name,
+                    cfg =>
+                    {
+                        cfg.PermitLimit = (int)value;
+                        cfg.Window = TimeSpan.FromMinutes(1);
+                    }
+                );
             }
 
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -73,9 +82,11 @@ public static class ServiceExtensions
                             Extensions =
                             {
                                 ["requestId"] = ctx.HttpContext.TraceIdentifier,
-                                ["timestamp"] = DateTime.UtcNow
-                            }
-                        }, token);
+                                ["timestamp"] = DateTime.UtcNow,
+                            },
+                        },
+                        token
+                    );
                 }
             };
         });

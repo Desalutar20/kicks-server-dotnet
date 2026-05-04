@@ -7,17 +7,21 @@ public sealed record OAuthSignInCommand(
     OAuthProvider Provider,
     NonEmptyString Code,
     OAuthState Received,
-    OAuthState Expected) : ICommand<Guid>;
+    OAuthState Expected
+) : ICommand<Guid>;
 
 internal sealed class OAuthSignInCommandHandler(
     IOAuthClientFactory clientFactory,
     IUnitOfWork unitOfWork,
     IUserRepository userRepository,
     IAuthCache authCache,
-    Config.Config config)
-    : ICommandHandler<OAuthSignInCommand, Guid>
+    Config.Config config
+) : ICommandHandler<OAuthSignInCommand, Guid>
 {
-    public async Task<Result<Guid>> Handle(OAuthSignInCommand command, CancellationToken ct = default)
+    public async Task<Result<Guid>> Handle(
+        OAuthSignInCommand command,
+        CancellationToken ct = default
+    )
     {
         var client = clientFactory.Get(command.Provider);
         if (!client.IsValidState(command.Received, command.Expected))
@@ -46,7 +50,8 @@ internal sealed class OAuthSignInCommandHandler(
 
         await unitOfWork.SaveChangesAsync(ct);
 
-        return
-            Result<Guid>.Success(await AuthService.GenerateSession(user, authCache, config.Application, ct));
+        return Result<Guid>.Success(
+            await AuthService.GenerateSession(user, authCache, config.Application, ct)
+        );
     }
 }

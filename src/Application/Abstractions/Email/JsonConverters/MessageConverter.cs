@@ -5,7 +5,11 @@ namespace Application.Abstractions.Email.JsonConverters;
 
 public sealed class MessageConverter : JsonConverter<Message>
 {
-    public override Message Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override Message Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options
+    )
     {
         var root = JsonDocument.ParseValue(ref reader).RootElement;
 
@@ -16,7 +20,6 @@ public sealed class MessageConverter : JsonConverter<Message>
         NonEmptyString? htmlText = root.TryGetProperty("htmlText", out var fn)
             ? NonEmptyString.Create(fn.GetString()!).Value
             : null;
-
 
         return new Message(subject, email, plainText, htmlText);
     }
@@ -29,7 +32,8 @@ public sealed class MessageConverter : JsonConverter<Message>
         writer.WriteString("to", value.To.Value);
         writer.WriteString("plainText", value.PlainText.ToString());
 
-        if (value.HtmlText is not null) writer.WriteString("htmlText", value.HtmlText.Value.Value);
+        if (value.HtmlText is not null)
+            writer.WriteString("htmlText", value.HtmlText.Value.Value);
 
         writer.WriteEndObject();
     }

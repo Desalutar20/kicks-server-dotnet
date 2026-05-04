@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Api Debug",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/Api/bin/Debug/net10.0/Api",
+      "cwd": "${workspaceFolder}/src/Api",
+      "env": {
+          "ASPNETCORE_ENVIRONMENT": "Development",
+          "ASPNETCORE_URLS": "http://localhost:4000"
+       },
+       "stopAtEntry": false,
+      "preLaunchTask": "build"
+    },
+    {
+      "name": "Debug Tests",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "test",
+        "${workspaceFolder}",
+        "--no-build",
+      ],
+    "cwd": "${workspaceFolder}",
+    "stopAtEntry": false,
+    "console": "integratedTerminal"
+  }
+  ]
+}

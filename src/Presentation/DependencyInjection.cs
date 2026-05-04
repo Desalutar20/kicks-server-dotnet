@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Presentation.Admin;
 using Presentation.Auth.Endpoints;
 
 namespace Presentation;
@@ -16,6 +17,7 @@ public static class DependencyInjection
         var group = app.MapGroup("/api/v1");
 
         group.MapAuthV1();
+        group.MapAdminV1();
 
         return app;
     }

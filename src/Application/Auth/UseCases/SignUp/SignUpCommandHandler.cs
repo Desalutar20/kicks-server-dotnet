@@ -7,7 +7,8 @@ public sealed record SignUpCommand(
     Password Password,
     FirstName FirstName,
     LastName LastName,
-    Gender Gender) : ICommand;
+    Gender Gender
+) : ICommand;
 
 internal sealed class SignUpCommandHandler(
     IUnitOfWork unitOfWork,
@@ -15,8 +16,8 @@ internal sealed class SignUpCommandHandler(
     IOutboxRepository outboxRepository,
     IHashingService hashingService,
     IAuthCache authCache,
-    Config.Config config)
-    : ICommandHandler<SignUpCommand>
+    Config.Config config
+) : ICommandHandler<SignUpCommand>
 {
     public async Task<Result> Handle(SignUpCommand command, CancellationToken ct = default)
     {
@@ -33,25 +34,36 @@ internal sealed class SignUpCommandHandler(
             return hashedPasswordResult;
         }
 
-
         var tokenResult = RandomTokenGenerator.Generate();
         if (tokenResult.IsFailure)
         {
             return tokenResult;
         }
 
+        var user = User.Create(
+            command.Email,
+            hashedPasswordResult.Value,
+            command.FirstName,
+            command.LastName,
+            command.Gender,
+            null,
+            null
+        );
 
-        var user = User.Create(command.Email, hashedPasswordResult.Value, command.FirstName, command.LastName,
-            command.Gender, null, null);
-
-
-        var message = EmailService.BuildAccountVerificationEmail(config.Application, command.Email, tokenResult.Value);
+        var message = EmailService.BuildAccountVerificationEmail(
+            config.Application,
+            command.Email,
+            tokenResult.Value
+        );
         var data = EmailService.SerializeMessage(message);
-        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data)
-                                                                   .Value);
+        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data).Value);
 
-        await authCache.StoreVerificationTokenAsync(user.Id, tokenResult.Value,
-            TimeSpan.FromMinutes(config.Application.AccountVerificationTtlMinutes), ct);
+        await authCache.StoreVerificationTokenAsync(
+            user.Id,
+            tokenResult.Value,
+            TimeSpan.FromMinutes(config.Application.AccountVerificationTtlMinutes),
+            ct
+        );
 
         userRepository.CreateUser(user);
         outboxRepository.CreateOutbox(outbox);

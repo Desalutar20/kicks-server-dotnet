@@ -4,7 +4,7 @@ namespace Presentation.Auth.Endpoints;
 
 internal static partial class AuthEndpoint
 {
-    public static IEndpointRouteBuilder MapAuthV1(this IEndpointRouteBuilder router)
+    public static void MapAuthV1(this IEndpointRouteBuilder router)
     {
         var group = router.MapGroup("/auth")
                           .WithTags("Authentication");
@@ -19,8 +19,6 @@ internal static partial class AuthEndpoint
             .LogoutV1()
             .GetOauthRedirectUrlV1()
             .OAuthSignInV1();
-
-        return group;
     }
 
     private static void SetSessionCookie(HttpContext ctx, Guid sessionId, ApplicationConfig config)
@@ -30,7 +28,7 @@ internal static partial class AuthEndpoint
             Expires = DateTimeOffset.UtcNow.AddMinutes(config.SessionTtlMinutes),
             HttpOnly = true,
             Secure = config.CookieSecure,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.Lax,
             Path = "/"
         };
 

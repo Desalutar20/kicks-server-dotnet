@@ -1,5 +1,6 @@
 using Application.Config;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -23,20 +24,29 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
         _httpClient = factory.CreateClient();
     }
 
-    public ValueTask InitializeAsync() => ValueTask.CompletedTask;
+    public async ValueTask InitializeAsync()
+    {
+        _dbContext.Users.AddRange(TestData.SeedUsers());
+        _dbContext.Brands.AddRange(TestData.SeedBrands());
+        _dbContext.Categories.AddRange(TestData.SeedCategories());
+
+        await _dbContext.SaveChangesAsync();
+    }
 
     public async ValueTask DisposeAsync()
     {
-        var tableNames = _dbContext.Model.GetEntityTypes()
-                                   .Select(t => t.GetTableName())
-                                   .Distinct()
-                                   .ToList();
+        var tableNames = _dbContext
+            .Model.GetEntityTypes()
+            .Select(t => t.GetTableName())
+            .Distinct()
+            .ToList();
 
-        foreach (var sql in tableNames.Select(tableName => $"TRUNCATE TABLE \"{tableName}\" CASCADE;"))
+        foreach (
+            var sql in tableNames.Select(tableName => $"TRUNCATE TABLE \"{tableName}\" CASCADE;")
+        )
             await _dbContext.Database.ExecuteSqlRawAsync(sql);
 
         var db = _multiplexer.GetDatabase();
-
         var redisServer = _multiplexer.GetServer(_multiplexer.GetEndPoints().First());
 
         await foreach (var key in redisServer.KeysAsync(pattern: $"{_config.Redis.KeyPrefix}*"))
@@ -49,22 +59,46 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
         GC.SuppressFinalize(this);
     }
 
-    private async Task<HttpResponseMessage>
-        Request<TValue>(TValue data, HttpMethod method, string path, string? cookie, CancellationToken ct = default)
+    private async Task<HttpResponseMessage> Request<TValue>(
+        TValue? data,
+        HttpMethod method,
+        string path,
+        string? cookie,
+        CancellationToken ct = default
+    )
     {
         var message = new HttpRequestMessage(method, path);
-        if (cookie is not null) message.Headers.Add("Cookie", cookie);
+        if (cookie is not null)
+        {
+            message.Headers.Add("Cookie", cookie);
+        }
 
-        message.Content = JsonContent.Create(data);
+        if (data is not null)
+        {
+            message.Content = JsonContent.Create(data);
+        }
 
         return await _httpClient.SendAsync(message, ct);
     }
 
-    private async Task<HttpResponseMessage>
-        Request(string path, string? cookie, CancellationToken ct = default)
+    private async Task<HttpResponseMessage> Request(
+        string path,
+        string? cookie,
+        CancellationToken ct = default,
+        IDictionary<string, string?>? query = null
+    )
     {
-        var message = new HttpRequestMessage(HttpMethod.Get, path);
-        if (cookie is not null) message.Headers.Add("Cookie", cookie);
+        var requestUri = path;
+        if (query is not null)
+        {
+            requestUri = QueryHelpers.AddQueryString(path, query);
+        }
+
+        var message = new HttpRequestMessage(HttpMethod.Get, requestUri);
+        if (cookie is not null)
+        {
+            message.Headers.Add("Cookie", cookie);
+        }
 
         return await _httpClient.SendAsync(message, ct);
     }

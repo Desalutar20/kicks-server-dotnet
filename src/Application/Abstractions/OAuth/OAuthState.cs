@@ -34,5 +34,7 @@ public sealed record OAuthState(Guid StateId, NonEmptyString? AdditionalState)
     }
 
     public override string ToString() =>
-        AdditionalState is not null ? $"{StateId}{Delimiter}{AdditionalState.Value}" : StateId.ToString();
+        AdditionalState is not null
+            ? $"{StateId}{Delimiter}{AdditionalState.Value}"
+            : StateId.ToString();
 }

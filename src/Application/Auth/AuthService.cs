@@ -7,9 +7,12 @@ internal static class AuthService
 {
     private const int MaxSessionCount = 3;
 
-
-    public static async Task<Guid> GenerateSession(User user, IAuthCache authCache, ApplicationConfig applicationConfig,
-        CancellationToken ct = default)
+    public static async Task<Guid> GenerateSession(
+        User user,
+        IAuthCache authCache,
+        ApplicationConfig applicationConfig,
+        CancellationToken ct = default
+    )
     {
         var sessions = await authCache.GetAllSessionsAsync(user.Id, ct);
         if (sessions.Count >= MaxSessionCount)
@@ -20,9 +23,12 @@ internal static class AuthService
         var sessionId = Guid.NewGuid();
         var sessionUser = user.ToSessionUser();
 
-        await authCache.StoreSessionAsync(sessionUser, sessionId,
-            TimeSpan.FromMinutes(applicationConfig.SessionTtlMinutes), ct);
-
+        await authCache.StoreSessionAsync(
+            sessionUser,
+            sessionId,
+            TimeSpan.FromMinutes(applicationConfig.SessionTtlMinutes),
+            ct
+        );
 
         return sessionId;
     }

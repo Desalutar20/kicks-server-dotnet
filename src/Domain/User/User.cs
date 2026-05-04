@@ -2,26 +2,31 @@ using Domain.Abstractions;
 
 namespace Domain.User;
 
-public class User : Entity<UserId>
+public sealed class User : Entity<UserId>
 {
-    private User() : base(new UserId(Guid.NewGuid()))
-    {
-    }
+    private User()
+        : base(new UserId(Guid.NewGuid())) { }
 
     public FirstName? FirstName { get; private set; }
     public LastName? LastName { get; private set; }
-    public Email Email { get; private set; }
+    public Email Email { get; private set; } = null!;
     public HashedPassword? HashedPassword { get; private set; }
     public Gender? Gender { get; private set; }
     public Role Role { get; private set; } = Role.Regular;
     public ProviderId? GoogleId { get; private set; }
     public ProviderId? FacebookId { get; private set; }
     public bool IsVerified { get; private set; }
-    public bool IsBanned { get; } = false;
+    public bool IsBanned { get; private set; }
 
-
-    public static User Create(Email email, HashedPassword? hashedPassword, FirstName? firstName, LastName? lastName,
-        Gender? gender, ProviderId? googleId, ProviderId? facebookId)
+    public static User Create(
+        Email email,
+        HashedPassword? hashedPassword,
+        FirstName? firstName,
+        LastName? lastName,
+        Gender? gender,
+        ProviderId? googleId,
+        ProviderId? facebookId
+    )
     {
         var user = new User
         {
@@ -31,19 +36,26 @@ public class User : Entity<UserId>
             LastName = lastName,
             Gender = gender,
             GoogleId = googleId,
-            FacebookId = facebookId
+            FacebookId = facebookId,
+            IsVerified = false,
+            IsBanned = false,
         };
 
         return user;
     }
 
-
     public bool IsValid() => !IsBanned && IsVerified;
+
     public void ConfirmAccount() => IsVerified = true;
 
     public void UpdatePassword(HashedPassword newPassword)
     {
         HashedPassword = newPassword;
+    }
+
+    public void ToggleIsBanned()
+    {
+        IsBanned = !IsBanned;
     }
 
     public Result LinkOAuthProvider(OAuthProvider provider, ProviderId providerId)

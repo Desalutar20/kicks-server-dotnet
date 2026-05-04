@@ -42,13 +42,13 @@
       RateLimit__ForgotPassword: ${RATELIMIT_FORGOTPASSWORD}
       RateLimit__ResetPassword: ${RATELIMIT_RESETPASSWORD}
       RateLimit__Logout: ${RATELIMIT_LOGOUT}
-    
+
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-  
+
   postgres:
     image: postgres:18-alpine
     container_name: kicks-postgres
@@ -81,7 +81,7 @@
       retries: 5
     ports:
       - "6380:6379"
-  
+
   mailpit:
     image: axllent/mailpit:v1.27.4
     container_name: kicks-mailpit

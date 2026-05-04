@@ -9,8 +9,8 @@ internal sealed class ForgotPasswordCommandHandler(
     IUserRepository userRepository,
     IOutboxRepository outboxRepository,
     IAuthCache authCache,
-    Config.Config config)
-    : ICommandHandler<ForgotPasswordCommand>
+    Config.Config config
+) : ICommandHandler<ForgotPasswordCommand>
 {
     public async Task<Result> Handle(ForgotPasswordCommand command, CancellationToken ct = default)
     {
@@ -27,14 +27,20 @@ internal sealed class ForgotPasswordCommandHandler(
             return Result.Failure(Error.Internal("Something went wrong"));
         }
 
-        var message = EmailService.BuildResetPasswordEmail(config.Application, command.Email, tokenResult.Value);
+        var message = EmailService.BuildResetPasswordEmail(
+            config.Application,
+            command.Email,
+            tokenResult.Value
+        );
         var data = EmailService.SerializeMessage(message);
-        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data)
-                                                                   .Value);
+        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data).Value);
 
-        await authCache.StorePasswordResetTokenAsync(user.Id, tokenResult.Value,
-            TimeSpan.FromMinutes(config.Application.ResetPasswordTtlMinutes), ct);
-
+        await authCache.StorePasswordResetTokenAsync(
+            user.Id,
+            tokenResult.Value,
+            TimeSpan.FromMinutes(config.Application.ResetPasswordTtlMinutes),
+            ct
+        );
 
         outboxRepository.CreateOutbox(outbox);
 

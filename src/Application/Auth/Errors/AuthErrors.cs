@@ -8,6 +8,10 @@ internal static class AuthErrors
         Result<UserWithSessionId>.Failure(Error.Failure("Invalid credentials"));
 
     public static Error InvalidOrExpiredToken => Error.Failure("Invalid or expired token");
-    public static Result<Guid> InvalidOAuthState => Result<Guid>.Failure(Error.Failure("Invalid or expired token"));
-    public static Result<SessionUser> Unauthorized => Result<SessionUser>.Failure(Error.Unauthorized("Unauthorized"));
+
+    public static Result<Guid> InvalidOAuthState =>
+        Result<Guid>.Failure(Error.Failure("Invalid or expired token"));
+
+    public static Result<SessionUser> Unauthorized =>
+        Result<SessionUser>.Failure(Error.Unauthorized("Unauthorized"));
 }

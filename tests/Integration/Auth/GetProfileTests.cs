@@ -13,16 +13,13 @@ public class GetProfileTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response =
-            await GetProfile(sessionCookie, ct);
+        var response = await GetProfile(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body =
-            await response.Content.ReadFromJsonAsync<ApiResponse<UserDto>>(
-                ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<UserDto>>(ct);
 
         body.Should().NotBeNull();
-        body!.Data.Should().NotBeNull();
+        body.Data.Should().NotBeNull();
     }
 
     [Fact]
@@ -30,8 +27,7 @@ public class GetProfileTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var response =
-            await GetProfile(null, ct);
+        var response = await GetProfile(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

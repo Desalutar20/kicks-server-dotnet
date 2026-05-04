@@ -17,7 +17,8 @@ public readonly record struct NonEmptyString
 
         if (Guard.AgainstEmptyString(value).IsFailure)
             return Result<NonEmptyString>.Failure(
-                Error.Validation(value, ["Value cannot be empty."]));
+                Error.Validation(value, ["Value cannot be empty."])
+            );
 
         return Result<NonEmptyString>.Success(new NonEmptyString(value));
     }

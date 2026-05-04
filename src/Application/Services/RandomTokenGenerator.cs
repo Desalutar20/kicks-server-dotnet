@@ -9,7 +9,8 @@ internal static class RandomTokenGenerator
         var bytes = RandomNumberGenerator.GetBytes(length);
         var result = new char[length];
 
-        for (var i = 0; i < length; i++) result[i] = Chars[bytes[i] % Chars.Length];
+        for (var i = 0; i < length; i++)
+            result[i] = Chars[bytes[i] % Chars.Length];
 
         return NonEmptyString.Create(new string(result));
     }

@@ -3,15 +3,16 @@ using Domain.Outbox;
 
 namespace Application.Auth.UseCases.ResetPassword;
 
-public sealed record ResetPasswordCommand(NonEmptyString Token, Email Email, Password NewPassword) : ICommand;
+public sealed record ResetPasswordCommand(NonEmptyString Token, Email Email, Password NewPassword)
+    : ICommand;
 
 internal sealed class ResetPasswordHandler(
     IUserRepository userRepository,
     IOutboxRepository outboxRepository,
     IUnitOfWork unitOfWork,
     IAuthCache authCache,
-    IHashingService hashingService)
-    : ICommandHandler<ResetPasswordCommand>
+    IHashingService hashingService
+) : ICommandHandler<ResetPasswordCommand>
 {
     public async Task<Result> Handle(ResetPasswordCommand command, CancellationToken ct = default)
     {
@@ -21,7 +22,7 @@ internal sealed class ResetPasswordHandler(
             return Result.Failure(AuthErrors.InvalidOrExpiredToken);
         }
 
-        var user = await userRepository.GetUserByIdAsync(userId.Value, false, ct);
+        var user = await userRepository.GetUserByIdAsync(userId, false, ct);
         if (user is null || user.Email != command.Email || !user.IsValid())
         {
             return Result.Failure(AuthErrors.InvalidOrExpiredToken);
@@ -35,8 +36,7 @@ internal sealed class ResetPasswordHandler(
 
         var message = EmailService.BuildPasswordChangedEmail(user.Email);
         var data = EmailService.SerializeMessage(message);
-        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data)
-                                                                   .Value);
+        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data).Value);
 
         user.UpdatePassword(hashedPasswordResult.Value);
 

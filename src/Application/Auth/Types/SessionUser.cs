@@ -6,7 +6,8 @@ public sealed record SessionUser(
     FirstName? FirstName,
     LastName? LastName,
     Role Role,
-    Gender? Gender);
+    Gender? Gender
+);
 
 internal static class SessionUserMapper
 {
