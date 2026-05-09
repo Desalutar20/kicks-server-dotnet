@@ -2,7 +2,6 @@ using Application.Admin.Users.Constants;
 using Application.Admin.Users.Types;
 using Application.Admin.Users.UseCases.GetAllAdminUsers;
 using Application.Auth.Types;
-using Domain.Shared.Pagination;
 using Presentation.Admin.Users.Dto;
 
 namespace Presentation.Admin.Users.Endpoints;

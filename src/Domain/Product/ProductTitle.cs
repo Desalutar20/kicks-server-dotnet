@@ -5,7 +5,7 @@ namespace Domain.Product;
 
 public sealed record ProductTitle
 {
-    public const int MaxLength = 50;
+    public const int MaxLength = 60;
 
     private ProductTitle(string value)
     {

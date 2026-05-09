@@ -1,5 +1,4 @@
 using Application.Admin.Categories.Errors;
-using Domain.Product.Category;
 
 namespace Application.Admin.Categories.UseCases.DeleteCategory;
 
@@ -12,10 +11,10 @@ internal sealed class DeleteCategoryCommandHandler(
 {
     public async Task<Result> Handle(DeleteCategoryCommand command, CancellationToken ct = default)
     {
-        var category = await categoryRepository.GetCategoryByIdAsync(command.CategoryId, true, ct);
+        var category = await categoryRepository.GetCategoryByIdAsync(command.CategoryId, false, ct);
         if (category is null)
         {
-            return AdminCategoriesErrors.CategoryNotFound(command.CategoryId);
+            return AdminCategoryErrors.CategoryNotFound(command.CategoryId);
         }
 
         categoryRepository.DeleteCategory(category);

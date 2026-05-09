@@ -5,6 +5,7 @@ namespace Domain.Product;
 public interface IProductRepository
 {
     Task<KeysetPaginated<Product, ProductId>> GetProductsAsync(
+        ProductFilters filters,
         KeysetPagination<ProductId> keysetPagination,
         bool trackChanges,
         CancellationToken ct = default
@@ -12,6 +13,11 @@ public interface IProductRepository
 
     Task<Product?> GetProductByIdAsync(
         ProductId productId,
+        bool trackChanges,
+        CancellationToken ct = default
+    );
+
+    Task<ProductFilterOptions> GetProductsFilterOptions(
         bool trackChanges,
         CancellationToken ct = default
     );

@@ -1,4 +1,3 @@
-using Domain.Shared.Pagination;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.User;
@@ -33,14 +32,19 @@ internal sealed class UserRepository(AppDbContext dbContext)
                     || (u.FirstName != null && ((string)u.FirstName).ToLower().StartsWith(search!))
                     || (u.LastName != null && ((string)u.LastName).ToLower().StartsWith(search!))
             )
-            .WhereNotNull(filters.gender, u => u.Gender == filters.gender)
+            .WhereNotNull(filters.Gender, u => u.Gender == filters.Gender)
             .WhereNotNull(filters.IsVerified, u => u.IsVerified == filters.IsVerified)
             .WhereNotNull(filters.IsBanned, u => u.IsBanned == filters.IsBanned)
             .ApplyKeysetPagination(keysetPagination);
 
         var result = await query.ToListAsync(ct);
 
-        return result.ToKeysetPaginated(keysetPagination, u => u.CreatedAt, u => u.Id);
+        return new KeysetPaginated<DomainUser, UserId>(
+            result,
+            keysetPagination,
+            u => u.CreatedAt,
+            u => u.Id
+        );
     }
 
     public async Task<DomainUser?> GetUserByIdAsync(

@@ -1,6 +1,7 @@
 global using Application.Abstractions.CQRS;
 global using Domain.Abstractions;
 global using Domain.Shared;
+global using Domain.Shared.Pagination;
 global using Domain.User;
 global using FluentValidation;
 global using Microsoft.AspNetCore.Builder;

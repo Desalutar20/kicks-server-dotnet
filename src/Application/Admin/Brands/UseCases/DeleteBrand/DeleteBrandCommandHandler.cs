@@ -1,5 +1,4 @@
 using Application.Admin.Brands.Errors;
-using Domain.Product.Brand;
 
 namespace Application.Admin.Brands.UseCases.DeleteBrand;
 
@@ -12,7 +11,7 @@ internal sealed class DeleteBrandCommandHandler(
 {
     public async Task<Result> Handle(DeleteBrandCommand command, CancellationToken ct = default)
     {
-        var brand = await brandRepository.GetBrandByIdAsync(command.BrandId, true, ct);
+        var brand = await brandRepository.GetBrandByIdAsync(command.BrandId, false, ct);
         if (brand is null)
         {
             return AdminBrandErrors.BrandNotFound(command.BrandId);

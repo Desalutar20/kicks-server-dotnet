@@ -88,6 +88,7 @@ public class CreateBrandTests(ApiFactory factory) : TestApp(factory)
         return
         [
             ("name", new CreateBrandRequest("")),
+            ("name", new CreateBrandRequest("   ")),
             ("name", new CreateBrandRequest(TestData.String(BrandName.MaxLength + 1))),
         ];
     }

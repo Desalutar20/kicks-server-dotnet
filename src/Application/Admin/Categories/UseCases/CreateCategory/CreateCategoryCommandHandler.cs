@@ -1,5 +1,5 @@
 using Application.Admin.Categories.Errors;
-using Domain.Product.Category;
+using Domain.Product.Category.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.CreateCategory;
 
@@ -15,19 +15,20 @@ internal sealed class CreateCategoryCommandHandler(
         CancellationToken ct = default
     )
     {
-        var category = await categoryRepository.GetCategoryByNameAsync(command.Name, false, ct);
-        if (category is not null)
+        try
+        {
+            var newCategory = Category.Create(command.Name);
+            categoryRepository.CreateCategory(newCategory);
+
+            await unitOfWork.SaveChangesAsync(ct);
+
+            return Result<Category>.Success(newCategory);
+        }
+        catch (CategoryAlreadyExistsException)
         {
             return Result<Category>.Failure(
-                AdminCategoriesErrors.CategoryAlreadyExists(command.Name)
+                AdminCategoryErrors.CategoryAlreadyExists(command.Name)
             );
         }
-
-        var newCategory = Category.Create(command.Name);
-        categoryRepository.CreateCategory(newCategory);
-
-        await unitOfWork.SaveChangesAsync(ct);
-
-        return Result<Category>.Success(newCategory);
     }
 }

@@ -60,7 +60,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-
+        services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         services.AddHostedService<OutboxEmailSender>();

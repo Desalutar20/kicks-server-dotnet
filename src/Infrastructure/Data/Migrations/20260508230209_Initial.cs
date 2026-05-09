@@ -139,8 +139,8 @@ namespace Infrastructure.Data.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     title = table.Column<string>(
-                        type: "character varying(50)",
-                        maxLength: 50,
+                        type: "character varying(60)",
+                        maxLength: 60,
                         nullable: false
                     ),
                     description = table.Column<string>(
@@ -176,6 +176,7 @@ namespace Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.SetNull,
                         onUpdate: ReferentialAction.Cascade
                     );
+
                     table.ForeignKey(
                         name: "fk_product_category_category_id",
                         column: x => x.category_id,
@@ -243,14 +244,14 @@ namespace Infrastructure.Data.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "ix_brand_name",
+                name: "uq_brand_name",
                 table: "brand",
                 column: "name",
                 unique: true
             );
 
             migrationBuilder.CreateIndex(
-                name: "ix_category_name",
+                name: "uq_category_name",
                 table: "category",
                 column: "name",
                 unique: true

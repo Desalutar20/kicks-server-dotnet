@@ -7,6 +7,11 @@ using Application.Admin.Categories.UseCases.CreateCategory;
 using Application.Admin.Categories.UseCases.DeleteCategory;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Admin.Categories.UseCases.UpdateCategory;
+using Application.Admin.Products.UseCases.CreateProduct;
+using Application.Admin.Products.UseCases.DeleteProduct;
+using Application.Admin.Products.UseCases.GetProductFilters;
+using Application.Admin.Products.UseCases.GetProducts;
+using Application.Admin.Products.UseCases.UpdateProduct;
 using Application.Admin.Users.Types;
 using Application.Admin.Users.UseCases.DeleteUser;
 using Application.Admin.Users.UseCases.GetAllAdminUsers;
@@ -22,9 +27,6 @@ using Application.Auth.UseCases.ResetPassword;
 using Application.Auth.UseCases.SignIn;
 using Application.Auth.UseCases.SignUp;
 using Application.Auth.UseCases.VerifyAccount;
-using Domain.Product.Brand;
-using Domain.Product.Category;
-using Domain.Shared.Pagination;
 
 namespace Application;
 
@@ -69,7 +71,7 @@ public static class DependencyInjection
             IQueryHandler<GetBrandsQuery, KeysetPaginated<Brand, BrandId>>,
             GetBrandsQueryHandler
         >();
-        services.AddScoped<ICommandHandler<CreateBrandCommand>, CreateBrandCommandHandler>();
+        services.AddScoped<ICommandHandler<CreateBrandCommand, Brand>, CreateBrandCommandHandler>();
         services.AddScoped<ICommandHandler<UpdateBrandCommand>, UpdateBrandCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteBrandCommand>, DeleteBrandCommandHandler>();
 
@@ -83,6 +85,27 @@ public static class DependencyInjection
         >();
         services.AddScoped<ICommandHandler<UpdateCategoryCommand>, UpdateCategoryCommandHandler>();
         services.AddScoped<ICommandHandler<DeleteCategoryCommand>, DeleteCategoryCommandHandler>();
+
+        services.AddScoped<
+            IQueryHandler<GetProductFiltersQuery, ProductFilterOptions>,
+            GetProductFiltersQueryHandler
+        >();
+        services.AddScoped<
+            IQueryHandler<GetProductsQuery, KeysetPaginated<Product, ProductId>>,
+            GetProductsQueryHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<CreateProductCommand, Product>,
+            CreateProductCommandHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<UpdateProductCommand, Product>,
+            UpdateProductCommandHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<ToggleProductIsDeletedCommand>,
+            ToggleProductIsDeletedCommandHandler
+        >();
 
         return services;
     }

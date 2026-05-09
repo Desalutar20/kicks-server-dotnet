@@ -1,6 +1,7 @@
 using Domain.Product;
 using Domain.Product.Brand;
 using Domain.Product.Category;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Product;
@@ -33,7 +34,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<DomainProduct>
                 x.BrandId,
             })
             .IsUnique()
-            .HasDatabaseName("uq_product_title_gender_category_brand");
+            .HasDatabaseName(DbConstants.ProductUniqueIndex);
 
         builder
             .Property(x => x.Id)
@@ -67,7 +68,18 @@ public class ProductConfiguration : IEntityTypeConfiguration<DomainProduct>
             .Property(x => x.Tags)
             .HasConversion(tags => tags.Value, value => ProductTags.Create(value).Value)
             .IsRequired()
-            .HasDefaultValueSql("'{}'::text[]");
+            .HasDefaultValueSql("'{}'::text[]")
+            .Metadata.SetValueComparer(
+                new ValueComparer<ProductTags>(
+                    (a, b) => a!.Value.SequenceEqual(b!.Value),
+                    tags =>
+                        tags.Value.Aggregate(
+                            0,
+                            (hash, item) => HashCode.Combine(hash, item.GetHashCode())
+                        ),
+                    tags => ProductTags.Create(tags.Value.ToList()).Value
+                )
+            );
 
         builder.Property(x => x.IsDeleted).IsRequired().HasDefaultValue(false);
 

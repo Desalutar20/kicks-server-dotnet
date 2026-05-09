@@ -1,5 +1,7 @@
+using Domain.Product;
 using Domain.Product.Brand;
 using Domain.Product.Category;
+using Presentation.Admin.Products.Endpoints;
 
 namespace Integration;
 
@@ -7,16 +9,28 @@ public static class TestData
 {
     private static readonly Faker Faker = new();
 
-    private static readonly Faker<SignUpRequest> SignUpFaker =
-        new Faker<SignUpRequest>().CustomInstantiator(f => new SignUpRequest(
-            f.Internet.Email(),
-            f.Internet.Password(),
-            f.Name.FirstName(),
-            f.Name.LastName(),
-            "male"
-        ));
+    public static SignUpRequest SignUpRequest() =>
+        new Faker<SignUpRequest>()
+            .CustomInstantiator(f => new SignUpRequest(
+                f.Internet.Email(),
+                f.Internet.Password(),
+                f.Name.FirstName(),
+                f.Name.LastName(),
+                "male"
+            ))
+            .Generate();
 
-    public static SignUpRequest SignUpRequest() => SignUpFaker.Generate();
+    public static CreateProductRequest CreateProductRequest(string categoryId, string brandId) =>
+        new Faker<CreateProductRequest>()
+            .CustomInstantiator(f => new CreateProductRequest(
+                f.Commerce.ProductName(),
+                f.Commerce.ProductDescription(),
+                "men",
+                [],
+                categoryId,
+                brandId
+            ))
+            .Generate();
 
     public static string Email() => Faker.Internet.Email();
 
@@ -48,4 +62,36 @@ public static class TestData
             .Range(0, 50)
             .Select(_ => Category.Create(CategoryName.Create(String(CategoryName.MaxLength)).Value))
             .ToList();
+
+    public static List<Product> SeedProducts(List<Brand> brands, List<Category> categories)
+    {
+        var faker = new Faker();
+
+        return
+        [
+            .. brands.SelectMany(brand =>
+                categories.Select(category =>
+                {
+                    var title = ProductTitle.Create(faker.Commerce.ProductName()).Value;
+
+                    var description = ProductDescription
+                        .Create(faker.Commerce.ProductDescription())
+                        .Value;
+
+                    var gender = faker.PickRandom<ProductGender>();
+
+                    var tags = ProductTags
+                        .Create([
+                            .. Enumerable
+                                .Range(0, faker.Random.Int(1, ProductTags.MaxTags))
+                                .Select(_ => faker.Commerce.ProductAdjective())
+                                .Distinct(),
+                        ])
+                        .Value;
+
+                    return Product.Create(title, description, gender, tags, brand.Id, category.Id);
+                })
+            ),
+        ];
+    }
 }

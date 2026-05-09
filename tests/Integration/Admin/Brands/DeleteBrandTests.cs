@@ -35,7 +35,7 @@ public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await DeleteBrand(new BrandId(Guid.NewGuid()), sessionCookie, ct);
+        var response = await DeleteBrand(Guid.NewGuid(), sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -44,7 +44,7 @@ public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var response = await DeleteBrand(new UserId(Guid.Empty), null, ct);
+        var response = await DeleteBrand(Guid.Empty, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -56,7 +56,7 @@ public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await DeleteBrand(new UserId(Guid.Empty), sessionCookie, ct);
+        var response = await DeleteBrand(Guid.Empty, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

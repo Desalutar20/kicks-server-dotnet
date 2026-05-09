@@ -25,7 +25,7 @@ public sealed class Product : Entity<ProductId>
         ProductTitle title,
         ProductDescription description,
         ProductGender gender,
-        ProductTags? tags,
+        ProductTags tags,
         BrandId brandId,
         CategoryId categoryId
     ) =>
@@ -34,13 +34,30 @@ public sealed class Product : Entity<ProductId>
             Title = title,
             Description = description,
             Gender = gender,
-            Tags = tags ?? ProductTags.Empty(),
+            Tags = tags,
             BrandId = brandId,
             CategoryId = categoryId,
         };
 
-    public void MarkAsDeleted()
+    public void ToggleIsDeleted()
     {
-        IsDeleted = true;
+        IsDeleted = !IsDeleted;
+    }
+
+    public void Update(
+        ProductTitle? title,
+        ProductDescription? description,
+        ProductGender? gender,
+        ProductTags? tags,
+        BrandId? brandId,
+        CategoryId? categoryId
+    )
+    {
+        Title = title ?? Title;
+        Description = description ?? Description;
+        Gender = gender ?? Gender;
+        Tags = tags ?? Tags;
+        BrandId = brandId ?? BrandId;
+        CategoryId = categoryId ?? CategoryId;
     }
 }

@@ -1,5 +1,6 @@
 using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
+using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Users.Endpoints;
 
 namespace Presentation.Admin;
@@ -13,5 +14,6 @@ public static class AdminEndpoints
         group.MapAdminUsersV1();
         group.MapBrandsV1();
         group.MapCategoriesV1();
+        group.MapProductsV1();
     }
 }

@@ -17,7 +17,15 @@ public sealed record KeysetCursor<T>(DateTimeOffset CreatedAt, T Id)
             return Result<KeysetCursor<T>>.Failure(Error.Validation("cursor", ["Invalid cursor"]));
         }
 
-        if (!DateTimeOffset.TryParse(parts[0], out var date))
+        if (
+            !DateTimeOffset.TryParseExact(
+                parts[0],
+                "O",
+                null,
+                System.Globalization.DateTimeStyles.RoundtripKind,
+                out var date
+            )
+        )
         {
             errors.Add("Invalid cursor date format");
         }
@@ -35,7 +43,7 @@ public sealed record KeysetCursor<T>(DateTimeOffset CreatedAt, T Id)
 
     public override string ToString()
     {
-        var fullValue = $"{CreatedAt}{CursorSeparator}{Id}";
+        var fullValue = $"{CreatedAt:O}{CursorSeparator}{Id}";
         var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(fullValue);
 
         return Convert.ToBase64String(plainTextBytes);

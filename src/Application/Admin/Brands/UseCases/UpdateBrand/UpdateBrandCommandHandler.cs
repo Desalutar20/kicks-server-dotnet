@@ -1,5 +1,5 @@
 using Application.Admin.Brands.Errors;
-using Domain.Product.Brand;
+using Domain.Product.Brand.Exceptions;
 
 namespace Application.Admin.Brands.UseCases.UpdateBrand;
 
@@ -12,21 +12,22 @@ internal sealed class UpdateBrandCommandHandler(
 {
     public async Task<Result> Handle(UpdateBrandCommand command, CancellationToken ct = default)
     {
-        var existingBrand = await brandRepository.GetBrandByNameAsync(command.Name, false, ct);
-        if (existingBrand is not null)
+        try
         {
-            return AdminBrandErrors.BrandAlreadyExists(command.Name);
-        }
+            var brand = await brandRepository.GetBrandByIdAsync(command.Id, true, ct);
+            if (brand is null)
+            {
+                return AdminBrandErrors.BrandNotFound(command.Id);
+            }
 
-        var brand = await brandRepository.GetBrandByIdAsync(command.Id, true, ct);
-        if (brand is null)
+            brand.UpdateName(command.Name);
+            await unitOfWork.SaveChangesAsync(ct);
+
+            return Result.Success();
+        }
+        catch (BrandAlreadyExistsException)
         {
-            return AdminBrandErrors.BrandNotFound(command.Id);
+            return Result.Failure(AdminBrandErrors.BrandAlreadyExists(command.Name));
         }
-
-        brand.UpdateName(command.Name);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        return Result.Success();
     }
 }

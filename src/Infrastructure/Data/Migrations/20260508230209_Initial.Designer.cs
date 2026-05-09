@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260501085011_Initial")]
+    [Migration("20260508230209_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -92,7 +92,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("ix_brand_name");
+                        .HasDatabaseName("uq_brand_name");
 
                     b.ToTable("brand", (string)null);
                 });
@@ -122,7 +122,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("ix_category_name");
+                        .HasDatabaseName("uq_category_name");
 
                     b.ToTable("category", (string)null);
                 });
@@ -171,8 +171,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("title");
 
                     b.Property<DateTimeOffset>("UpdatedAt")

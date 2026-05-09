@@ -1,6 +1,5 @@
 using Domain.Product.Category;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
 
 namespace Integration.Admin.Categories;
@@ -96,6 +95,7 @@ public class CreateCategoryTests(ApiFactory factory) : TestApp(factory)
         return
         [
             ("name", new CreateCategoryRequest("")),
+            ("name", new CreateCategoryRequest("   ")),
             ("name", new CreateCategoryRequest(TestData.String(CategoryName.MaxLength + 1))),
         ];
     }

@@ -2,11 +2,11 @@ using System.Linq.Expressions;
 
 namespace Infrastructure.Data.Shared;
 
-internal class RepositoryBase<T>(AppDbContext dbContext) : IRepositoryBase<T> where T : class, IEntity
+internal class RepositoryBase<T>(AppDbContext dbContext) : IRepositoryBase<T>
+    where T : class, IEntity
 {
     public IQueryable<T> FindAll(bool trackChanges) =>
         !trackChanges ? dbContext.Set<T>().AsNoTracking() : dbContext.Set<T>();
-
 
     public void Create(T entity)
     {

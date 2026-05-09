@@ -7,6 +7,7 @@ global using Application.Config;
 global using Domain.Abstractions;
 global using Domain.Abstractions.Events;
 global using Domain.Shared;
+global using Domain.Shared.Pagination;
 global using Domain.User;
 global using FluentValidation;
 global using Infrastructure.Data;

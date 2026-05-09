@@ -1,7 +1,6 @@
 namespace Infrastructure.Services;
 
-internal sealed class EmailService(
-    Config config) : IEmailSender, IAsyncDisposable
+internal sealed class EmailService(Config config) : IEmailSender, IAsyncDisposable
 {
     private static readonly TimeSpan SmtpClientTimeout = TimeSpan.FromSeconds(10);
 
@@ -11,7 +10,8 @@ internal sealed class EmailService(
 
     public async ValueTask DisposeAsync()
     {
-        if (_smtpClient.IsConnected) await _smtpClient.DisconnectAsync(true);
+        if (_smtpClient.IsConnected)
+            await _smtpClient.DisconnectAsync(true);
 
         _semaphore.Dispose();
         _smtpClient.Dispose();
@@ -21,7 +21,8 @@ internal sealed class EmailService(
     public async Task<Result> SendAsync(Message message, CancellationToken ct = default)
     {
         var mimeMessageResult = BuildMimeMessage(message);
-        if (mimeMessageResult.IsFailure) return Result.Failure(mimeMessageResult.Error);
+        if (mimeMessageResult.IsFailure)
+            return Result.Failure(mimeMessageResult.Error);
 
         await _semaphore.WaitAsync(ct);
 
@@ -38,24 +39,21 @@ internal sealed class EmailService(
         }
     }
 
-
     private Result<MimeMessage> BuildMimeMessage(Message message)
     {
         if (!MailboxAddress.TryParse(message.To.Value, out var to))
-            return Result<MimeMessage>.Failure(Error.Failure($"invalid address {message.To.Value}"));
+            return Result<MimeMessage>.Failure(
+                Error.Failure($"invalid address {message.To.Value}")
+            );
 
-        var msg = new MimeMessage();
-
-        msg.Subject = message.Subject.Value;
+        var msg = new MimeMessage { Subject = message.Subject.Value };
         msg.From.Add(MailboxAddress.Parse(config.Smtp.From));
         msg.To.Add(to);
 
-        var builder = new BodyBuilder
-        {
-            TextBody = message.PlainText.Value
-        };
+        var builder = new BodyBuilder { TextBody = message.PlainText.Value };
 
-        if (message.HtmlText is not null) builder.HtmlBody = message.HtmlText.Value.Value;
+        if (message.HtmlText is not null)
+            builder.HtmlBody = message.HtmlText.Value.Value;
 
         msg.Body = builder.ToMessageBody();
 
@@ -70,8 +68,15 @@ internal sealed class EmailService(
         }
         else
         {
-            await _smtpClient.ConnectAsync(config.Smtp.Host, config.Smtp.Port, cancellationToken: ct);
-            await _smtpClient.AuthenticateAsync(new NetworkCredential(config.Smtp.User, config.Smtp.Password), ct);
+            await _smtpClient.ConnectAsync(
+                config.Smtp.Host,
+                config.Smtp.Port,
+                cancellationToken: ct
+            );
+            await _smtpClient.AuthenticateAsync(
+                new NetworkCredential(config.Smtp.User, config.Smtp.Password),
+                ct
+            );
         }
 
         ScheduleDisconnect(ct);
@@ -83,7 +88,8 @@ internal sealed class EmailService(
         Task.Run(async () =>
         {
             await Task.Delay(SmtpClientTimeout.Add(TimeSpan.FromSeconds(1)), ct);
-            if (DateTimeOffset.UtcNow > _disconnectAfter) await DisconnectAsync(ct);
+            if (DateTimeOffset.UtcNow > _disconnectAfter)
+                await DisconnectAsync(ct);
         });
     }
 
@@ -93,10 +99,10 @@ internal sealed class EmailService(
 
         try
         {
-            if (!_smtpClient.IsConnected) return;
+            if (!_smtpClient.IsConnected)
+                return;
 
-            await _smtpClient.DisconnectAsync(
-                true, ct);
+            await _smtpClient.DisconnectAsync(true, ct);
             _disconnectAfter = DateTimeOffset.MinValue;
         }
         finally

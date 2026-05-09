@@ -35,7 +35,7 @@ public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await DeleteCategory(new CategoryId(Guid.NewGuid()), sessionCookie, ct);
+        var response = await DeleteCategory(Guid.NewGuid(), sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -44,7 +44,7 @@ public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var response = await DeleteCategory(new UserId(Guid.Empty), null, ct);
+        var response = await DeleteCategory(Guid.Empty, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -56,7 +56,7 @@ public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await DeleteCategory(new UserId(Guid.Empty), sessionCookie, ct);
+        var response = await DeleteCategory(Guid.Empty, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

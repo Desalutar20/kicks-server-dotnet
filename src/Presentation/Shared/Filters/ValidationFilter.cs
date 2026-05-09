@@ -38,7 +38,6 @@ internal sealed class ValidationFilter(IServiceProvider services) : IEndpointFil
             if (result.IsValid)
                 continue;
 
-            Console.WriteLine(result.Errors);
             var errors = result
                 .Errors.GroupBy(e => e.PropertyName)
                 .ToDictionary(

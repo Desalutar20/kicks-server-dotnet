@@ -4,7 +4,7 @@ namespace Domain.User;
 
 public sealed record UsersFilters(
     NonEmptyString? Search,
-    Gender? gender,
+    Gender? Gender,
     bool? IsBanned,
     bool? IsVerified
 );

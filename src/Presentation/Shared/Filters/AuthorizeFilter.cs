@@ -6,12 +6,15 @@ public sealed class AuthorizeFilter(params Role[] roles) : IEndpointFilter
 {
     public async ValueTask<object?> InvokeAsync(
         EndpointFilterInvocationContext context,
-        EndpointFilterDelegate next)
+        EndpointFilterDelegate next
+    )
     {
         var httpContext = context.HttpContext;
 
-        if (!httpContext.Items.TryGetValue(RequestConstants.UserKey, out var result) ||
-            result is not SessionUser user)
+        if (
+            !httpContext.Items.TryGetValue(RequestConstants.UserKey, out var result)
+            || result is not SessionUser user
+        )
             return TypedResults.Problem(
                 "Unauthorized",
                 statusCode: StatusCodes.Status401Unauthorized

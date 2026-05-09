@@ -9,7 +9,8 @@ namespace Infrastructure.BackgroundTasks;
 
 internal sealed class OutboxEmailSender(
     ILogger<OutboxEmailSender> logger,
-    IServiceScopeFactory serviceFactory) : BackgroundService
+    IServiceScopeFactory serviceFactory
+) : BackgroundService
 {
     private const int BatchSize = 100;
     private const int MaxAttempts = 3;
@@ -17,10 +18,7 @@ internal sealed class OutboxEmailSender(
     private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters =
-        {
-            new MessageConverter()
-        }
+        Converters = { new MessageConverter() },
     };
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,51 +29,71 @@ internal sealed class OutboxEmailSender(
         {
             await using var scope = serviceFactory.CreateAsyncScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var outboxRepository =
-                scope.ServiceProvider
-                     .GetRequiredService<IOutboxRepository>();
+            var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
             var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-            await unitOfWork.BeginTransactionAsync(async () =>
-            {
-                try
+            await unitOfWork.BeginTransactionAsync(
+                async () =>
                 {
-                    var outboxes = await outboxRepository.GetAndLockOutboxesForProcessingAsync(OutboxType.Email,
-                        PositiveInt.Create(BatchSize).Value, false, stoppingToken);
-
-                    var processedIds = new List<OutboxId>(BatchSize);
-
-                    foreach (var outbox in outboxes)
-                        try
-                        {
-                            var success = await TrySendWithRetry(emailSender, outbox, stoppingToken);
-                            if (success) processedIds.Add(outbox.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, "Unexpected error while processing Outbox {OutboxId}", outbox.Id);
-                        }
-
-
-                    if (processedIds.Count > 0)
+                    try
                     {
-                        var now = DateTimeOffset.UtcNow;
+                        var outboxes = await outboxRepository.GetAndLockOutboxesForProcessingAsync(
+                            OutboxType.Email,
+                            PositiveInt.Create(BatchSize).Value,
+                            false,
+                            stoppingToken
+                        );
 
-                        await outboxRepository.MarkAsProcessedAsync(processedIds, now, stoppingToken);
+                        var processedIds = new List<OutboxId>(BatchSize);
+
+                        foreach (var outbox in outboxes)
+                            try
+                            {
+                                var success = await TrySendWithRetry(
+                                    emailSender,
+                                    outbox,
+                                    stoppingToken
+                                );
+                                if (success)
+                                    processedIds.Add(outbox.Id);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(
+                                    ex,
+                                    "Unexpected error while processing Outbox {OutboxId}",
+                                    outbox.Id
+                                );
+                            }
+
+                        if (processedIds.Count > 0)
+                        {
+                            var now = DateTimeOffset.UtcNow;
+
+                            await outboxRepository.MarkAsProcessedAsync(
+                                processedIds,
+                                now,
+                                stoppingToken
+                            );
+                        }
                     }
-                }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Error while processing email outbox");
+                    }
 
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Error while processing email outbox");
-                }
-
-                await Task.CompletedTask;
-            }, stoppingToken);
+                    await Task.CompletedTask;
+                },
+                stoppingToken
+            );
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 
-    private async Task<bool> TrySendWithRetry(IEmailSender emailSender, DomainOutbox outbox, CancellationToken ct)
+    private async Task<bool> TrySendWithRetry(
+        IEmailSender emailSender,
+        DomainOutbox outbox,
+        CancellationToken ct
+    )
     {
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
@@ -84,10 +102,14 @@ internal sealed class OutboxEmailSender(
                 var message = JsonSerializer.Deserialize<Message>(outbox.Data.Value, Options);
                 var result = await emailSender.SendAsync(message, ct);
 
-                if (result.IsSuccess) return true;
+                if (result.IsSuccess)
+                    return true;
 
-                logger.LogWarning("Failed to send email for Outbox {OutboxId}: {Error}",
-                    outbox.Id, result.Error.Description);
+                logger.LogWarning(
+                    "Failed to send email for Outbox {OutboxId}: {Error}",
+                    outbox.Id,
+                    result.Error.Description
+                );
 
                 return false;
             }
@@ -106,7 +128,10 @@ internal sealed class OutboxEmailSender(
 
             if (attempt == MaxAttempts)
             {
-                logger.LogWarning("Failed to send email after retries for Outbox {OutboxId}", outbox.Id);
+                logger.LogWarning(
+                    "Failed to send email after retries for Outbox {OutboxId}",
+                    outbox.Id
+                );
                 return false;
             }
 

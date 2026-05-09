@@ -122,8 +122,8 @@ public class UpdateCategoryTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var createCategoryRequest = new UpdateCategoryRequest("");
-        var response = await UpdateCategory(createCategoryRequest, Guid.Empty, sessionCookie, ct);
+        var updateCategoryRequest = new UpdateCategoryRequest("");
+        var response = await UpdateCategory(updateCategoryRequest, Guid.Empty, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -132,6 +132,7 @@ public class UpdateCategoryTests(ApiFactory factory) : TestApp(factory)
         return
         [
             ("name", new UpdateCategoryRequest("")),
+            ("name", new UpdateCategoryRequest("   ")),
             ("name", new UpdateCategoryRequest(TestData.String(CategoryName.MaxLength + 1))),
         ];
     }

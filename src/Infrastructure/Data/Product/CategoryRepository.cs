@@ -1,5 +1,4 @@
 using Domain.Product.Category;
-using Domain.Shared.Pagination;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.Product;
@@ -36,7 +35,12 @@ internal sealed class CategoryRepository(AppDbContext dbContext)
 
         var result = await query.ToListAsync(ct);
 
-        return result.ToKeysetPaginated(keysetPagination, u => u.CreatedAt, u => u.Id);
+        return new KeysetPaginated<Category, CategoryId>(
+            result,
+            keysetPagination,
+            u => u.CreatedAt,
+            u => u.Id
+        );
     }
 
     public async Task<Category?> GetCategoryByNameAsync(

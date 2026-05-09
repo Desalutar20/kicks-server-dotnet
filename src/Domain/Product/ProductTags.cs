@@ -18,7 +18,9 @@ public sealed record ProductTags
             ? Result<ProductTags>.Failure(
                 Error.Validation("productTags", [$"Product cannot have more than {MaxTags} tags."])
             )
-            : Result<ProductTags>.Success(new ProductTags([.. value.Distinct()]));
+            : Result<ProductTags>.Success(
+                new ProductTags([.. value.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct()])
+            );
     }
 
     public static ProductTags Empty() => new([]);

@@ -2,7 +2,6 @@ using Application.Admin.Categories.Constants;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Auth.Types;
 using Domain.Product.Category;
-using Domain.Shared.Pagination;
 using Presentation.Admin.Categories.Dto;
 
 namespace Presentation.Admin.Categories.Endpoints;

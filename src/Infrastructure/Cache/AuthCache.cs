@@ -11,41 +11,48 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        Converters =
-        {
-            new SessionUserConverter()
-        }
+        Converters = { new SessionUserConverter() },
     };
 
     private readonly string _prefix = config.Redis.KeyPrefix ?? "";
 
-    public async Task StoreVerificationTokenAsync(UserId userId, NonEmptyString token, TimeSpan ttl,
-        CancellationToken ct = default) =>
-        await StoreToken(TokenType.AccountVerification, userId, token, ttl, ct);
+    public async Task StoreVerificationTokenAsync(
+        UserId userId,
+        NonEmptyString token,
+        TimeSpan ttl,
+        CancellationToken ct = default
+    ) => await StoreToken(TokenType.AccountVerification, userId, token, ttl, ct);
 
-    public async Task<UserId?>
-        GetUserIdByVerificationTokenAsync(NonEmptyString token, CancellationToken ct = default) =>
-        await GetUserIdByToken(TokenType.AccountVerification, token, ct);
+    public async Task<UserId?> GetUserIdByVerificationTokenAsync(
+        NonEmptyString token,
+        CancellationToken ct = default
+    ) => await GetUserIdByToken(TokenType.AccountVerification, token, ct);
 
-    public async Task StorePasswordResetTokenAsync(UserId userId, NonEmptyString token, TimeSpan ttl,
-        CancellationToken ct = default) =>
-        await StoreToken(TokenType.ResetPassword, userId, token, ttl, ct);
+    public async Task StorePasswordResetTokenAsync(
+        UserId userId,
+        NonEmptyString token,
+        TimeSpan ttl,
+        CancellationToken ct = default
+    ) => await StoreToken(TokenType.ResetPassword, userId, token, ttl, ct);
 
-    public async Task<UserId?>
-        GetUserIdByPasswordResetTokenAsync(NonEmptyString token, CancellationToken ct = default) =>
-        await GetUserIdByToken(TokenType.ResetPassword, token, ct);
+    public async Task<UserId?> GetUserIdByPasswordResetTokenAsync(
+        NonEmptyString token,
+        CancellationToken ct = default
+    ) => await GetUserIdByToken(TokenType.ResetPassword, token, ct);
 
-
-    public async Task StoreSessionAsync(SessionUser sessionUser, Guid sessionId, TimeSpan ttl,
-        CancellationToken ct = default)
+    public async Task StoreSessionAsync(
+        SessionUser sessionUser,
+        Guid sessionId,
+        TimeSpan ttl,
+        CancellationToken ct = default
+    )
     {
         var json = JsonSerializer.Serialize(sessionUser, JsonOptions);
 
         var db = multiplexer.GetDatabase();
         var pipeline = new Pipeline(db);
 
-        var expireAt = DateTimeOffset.UtcNow.Add(ttl)
-                                     .ToUnixTimeSeconds();
+        var expireAt = DateTimeOffset.UtcNow.Add(ttl).ToUnixTimeSeconds();
         var sessionIdString = sessionId.ToString();
 
         var sessionKey = GenerateSessionKey(sessionIdString);
@@ -56,42 +63,48 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         pipeline.Execute();
 
-        await Task.WhenAll(t1, t2)
-                  .WaitAsync(ct);
+        await Task.WhenAll(t1, t2).WaitAsync(ct);
     }
 
-
-    public async Task<IReadOnlyList<(Guid SessionId, DateTime CreatedAt)>> GetAllSessionsAsync(UserId userId,
-        CancellationToken ct = default)
+    public async Task<IReadOnlyList<(Guid SessionId, DateTime CreatedAt)>> GetAllSessionsAsync(
+        UserId userId,
+        CancellationToken ct = default
+    )
     {
         var db = multiplexer.GetDatabase();
         var userSessionsKey = GenerateSessionsKey(userId);
 
-        var entries = await db.SortedSetRangeByScoreWithScoresAsync(userSessionsKey, order: Order.Ascending);
+        var entries = await db.SortedSetRangeByScoreWithScoresAsync(
+            userSessionsKey,
+            order: Order.Ascending
+        );
 
         return entries
-               .Select(e => (
-                   SessionId: Guid.Parse(e.Element.ToString()),
-                   CreatedAt: DateTimeOffset.FromUnixTimeSeconds((long)e.Score)
-                                            .UtcDateTime
-               ))
-               .ToList();
+            .Select(e =>
+                (
+                    SessionId: Guid.Parse(e.Element.ToString()),
+                    CreatedAt: DateTimeOffset.FromUnixTimeSeconds((long)e.Score).UtcDateTime
+                )
+            )
+            .ToList();
     }
-
 
     public async Task<SessionUser?> GetSessionAsync(Guid sessionId, CancellationToken ct = default)
     {
         var db = multiplexer.GetDatabase();
 
-        var value = await db.StringGetAsync(GenerateSessionKey(sessionId.ToString()))
-                            .WaitAsync(ct);
+        var value = await db.StringGetAsync(GenerateSessionKey(sessionId.ToString())).WaitAsync(ct);
 
         return value.HasValue
             ? JsonSerializer.Deserialize<SessionUser>(value.ToString(), JsonOptions)
             : null;
     }
 
-    public async Task DeleteSessionAsync(UserId userId, Guid sessionId, CancellationToken ct = default)
+    public async Task DeleteSessionAsync(
+        UserId userId,
+        Guid sessionId,
+        CancellationToken ct = default
+    )
     {
         var db = multiplexer.GetDatabase();
         var pipeline = new Pipeline(db);
@@ -103,8 +116,7 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         var t2 = pipeline.Db.SortedSetRemoveAsync(userSessionsKey, sessionId.ToString());
 
         pipeline.Execute();
-        await Task.WhenAll(t1, t2)
-                  .WaitAsync(ct);
+        await Task.WhenAll(t1, t2).WaitAsync(ct);
     }
 
     public async Task DeleteAllSessionsAsync(UserId userId, CancellationToken ct = default)
@@ -114,14 +126,11 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         var sessionIds = await db.SortedSetRangeByScoreAsync(userSessionsKey);
 
-        var tasks = sessionIds
-                    .Select(id => db.KeyDeleteAsync(GenerateSessionKey(id!)))
-                    .ToList();
+        var tasks = sessionIds.Select(id => db.KeyDeleteAsync(GenerateSessionKey(id!))).ToList();
 
         tasks.Add(db.KeyDeleteAsync(userSessionsKey));
 
-        await Task.WhenAll(tasks)
-                  .WaitAsync(ct);
+        await Task.WhenAll(tasks).WaitAsync(ct);
     }
 
     public async Task DeleteExpiredSessionsAsync(CancellationToken ct = default)
@@ -130,22 +139,24 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        var server = multiplexer.GetServer(multiplexer.GetEndPoints()
-                                                      .First());
+        var server = multiplexer.GetServer(multiplexer.GetEndPoints().First());
 
-        await foreach (var userSessionsKey in server.KeysAsync(pattern: $"{_prefix}{CacheConstants.SessionsPrefix}*")
-                                                    .WithCancellation(ct))
+        await foreach (
+            var userSessionsKey in server
+                .KeysAsync(pattern: $"{_prefix}{CacheConstants.SessionsPrefix}*")
+                .WithCancellation(ct)
+        )
         {
             var expiredSessions = await db.SortedSetRangeByScoreAsync(
                 userSessionsKey,
                 double.NegativeInfinity,
-                now);
+                now
+            );
 
             if (expiredSessions.Length == 0)
             {
                 continue;
             }
-
 
             var tasks = new List<Task>();
 
@@ -157,12 +168,15 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
                 tasks.Add(db.SortedSetRemoveAsync(userSessionsKey, id));
             }
 
-            await Task.WhenAll(tasks)
-                      .WaitAsync(ct);
+            await Task.WhenAll(tasks).WaitAsync(ct);
         }
     }
 
-    private async Task<UserId?> GetUserIdByToken(TokenType tokenType, NonEmptyString token, CancellationToken ct)
+    private async Task<UserId?> GetUserIdByToken(
+        TokenType tokenType,
+        NonEmptyString token,
+        CancellationToken ct
+    )
     {
         var db = multiplexer.GetDatabase();
 
@@ -170,11 +184,10 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         {
             TokenType.AccountVerification => GenerateAccountVerificationKey(token),
             TokenType.ResetPassword => GenerateResetPasswordKey(token),
-            _ => throw new ArgumentException()
+            _ => throw new ArgumentException(),
         };
 
-        var userId = await db.StringGetDeleteAsync(cacheKey)
-                             .WaitAsync(ct);
+        var userId = await db.StringGetDeleteAsync(cacheKey).WaitAsync(ct);
 
         if (!userId.HasValue || !Guid.TryParse(userId.ToString(), out var parsed))
         {
@@ -184,8 +197,13 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         return new UserId(parsed);
     }
 
-    private async Task StoreToken(TokenType tokenType, UserId userId, NonEmptyString token, TimeSpan ttl,
-        CancellationToken ct)
+    private async Task StoreToken(
+        TokenType tokenType,
+        UserId userId,
+        NonEmptyString token,
+        TimeSpan ttl,
+        CancellationToken ct
+    )
     {
         var db = multiplexer.GetDatabase();
 
@@ -193,7 +211,7 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
         {
             TokenType.AccountVerification => GenerateAccountVerificationKey(token),
             TokenType.ResetPassword => GenerateResetPasswordKey(token),
-            _ => throw new ArgumentException()
+            _ => throw new ArgumentException(),
         };
 
         await db.StringSetAsync(cacheKey, userId.Value.ToString(), ttl);
@@ -205,13 +223,15 @@ internal sealed class AuthCache(IConnectionMultiplexer multiplexer, Config confi
     private string GenerateResetPasswordKey(NonEmptyString token) =>
         $"{_prefix}{CacheConstants.ResetPasswordPrefix}{token.Value}";
 
-    private string GenerateSessionKey(string sessionId) => $"{_prefix}{CacheConstants.SessionPrefix}{sessionId}";
+    private string GenerateSessionKey(string sessionId) =>
+        $"{_prefix}{CacheConstants.SessionPrefix}{sessionId}";
 
-    private string GenerateSessionsKey(UserId userId) => $"{_prefix}{CacheConstants.SessionsPrefix}{userId.Value}";
+    private string GenerateSessionsKey(UserId userId) =>
+        $"{_prefix}{CacheConstants.SessionsPrefix}{userId.Value}";
 
     private enum TokenType
     {
         AccountVerification,
-        ResetPassword
+        ResetPassword,
     }
 }

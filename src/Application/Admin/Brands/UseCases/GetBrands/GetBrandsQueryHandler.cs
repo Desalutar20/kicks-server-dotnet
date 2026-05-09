@@ -1,6 +1,3 @@
-using Domain.Product.Brand;
-using Domain.Shared.Pagination;
-
 namespace Application.Admin.Brands.UseCases.GetBrands;
 
 public sealed record GetBrandsQuery(

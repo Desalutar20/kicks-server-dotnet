@@ -26,7 +26,7 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
                 x.Color,
             })
             .IsUnique()
-            .HasDatabaseName("uq_product_sku_product_size_color");
+            .HasDatabaseName(DbConstants.ProductSkuUniqueIndex);
 
         builder
             .Property(x => x.Id)

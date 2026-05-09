@@ -1,5 +1,7 @@
+using Application.Admin.Products.UseCases.GetProducts;
 using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
+using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Users.Endpoints;
 
 namespace Integration.Setup;
@@ -128,6 +130,60 @@ public partial class TestApp
             null,
             HttpMethod.Delete,
             $"/api/v1/admin/categories/{categoryId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> GetProductFilters(
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request("/api/v1/admin/products/filters", cookie, ct);
+
+    protected async Task<HttpResponseMessage> GetProducts(
+        GetProductsRequest? data,
+        string? cookie,
+        CancellationToken ct = default
+    )
+    {
+        var query = new Dictionary<string, string?>
+        {
+            ["search"] = data?.Search,
+            ["gender"] = data?.Gender,
+            ["brandId"] = data?.BrandId,
+            ["categoryId"] = data?.CategoryId,
+            ["isDeleted"] = data?.IsDeleted?.ToString(),
+            ["limit"] = data?.Limit?.ToString(),
+            ["prevCursor"] = data?.PrevCursor,
+            ["nextCursor"] = data?.NextCursor,
+        }
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);
+
+        return await Request("/api/v1/admin/products", cookie, ct, query);
+    }
+
+    protected async Task<HttpResponseMessage> CreateProduct(
+        CreateProductRequest data,
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request(data, HttpMethod.Post, "/api/v1/admin/products", cookie, ct);
+
+    protected async Task<HttpResponseMessage> UpdateProduct(
+        UpdateProductRequest data,
+        Guid productId,
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request(data, HttpMethod.Patch, $"/api/v1/admin/products/{productId}", cookie, ct);
+
+    protected async Task<HttpResponseMessage> ToggleProductIsDeleted(
+        Guid productId,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request<object?>(
+            null,
+            HttpMethod.Post,
+            $"/api/v1/admin/products/{productId}",
             cookie,
             ct
         );

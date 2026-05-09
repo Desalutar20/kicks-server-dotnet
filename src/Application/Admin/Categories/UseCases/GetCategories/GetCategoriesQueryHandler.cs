@@ -1,6 +1,3 @@
-using Domain.Product.Category;
-using Domain.Shared.Pagination;
-
 namespace Application.Admin.Categories.UseCases.GetCategories;
 
 public sealed record GetCategoriesQuery(

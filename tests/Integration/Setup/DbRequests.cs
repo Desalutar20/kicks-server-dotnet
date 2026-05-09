@@ -1,3 +1,4 @@
+using Domain.Product;
 using Domain.Product.Brand;
 using Domain.Product.Category;
 using Microsoft.EntityFrameworkCore;
@@ -33,4 +34,7 @@ public partial class TestApp
 
     protected async Task<Category?> GetCategoryFromDbById(CategoryId id, CancellationToken ct) =>
         await _dbContext.Categories.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
+
+    protected async Task<Product?> GetProductFromDbById(ProductId id, CancellationToken ct) =>
+        await _dbContext.Products.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
 }

@@ -1,5 +1,5 @@
 using Application.Admin.Categories.Errors;
-using Domain.Product.Category;
+using Domain.Product.Category.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.UpdateCategory;
 
@@ -12,25 +12,22 @@ internal sealed class UpdateCategoryCommandHandler(
 {
     public async Task<Result> Handle(UpdateCategoryCommand command, CancellationToken ct = default)
     {
-        var existingCategory = await categoryRepository.GetCategoryByNameAsync(
-            command.Name,
-            false,
-            ct
-        );
-        if (existingCategory is not null)
+        try
         {
-            return Result.Failure(AdminCategoriesErrors.CategoryAlreadyExists(command.Name));
-        }
+            var category = await categoryRepository.GetCategoryByIdAsync(command.Id, true, ct);
+            if (category is null)
+            {
+                return AdminCategoryErrors.CategoryNotFound(command.Id);
+            }
 
-        var category = await categoryRepository.GetCategoryByIdAsync(command.Id, true, ct);
-        if (category is null)
+            category.UpdateName(command.Name);
+            await unitOfWork.SaveChangesAsync(ct);
+
+            return Result.Success();
+        }
+        catch (CategoryAlreadyExistsException)
         {
-            return AdminCategoriesErrors.CategoryNotFound(command.Id);
+            return Result.Failure(AdminCategoryErrors.CategoryAlreadyExists(command.Name));
         }
-
-        category.UpdateName(command.Name);
-        await unitOfWork.SaveChangesAsync(ct);
-
-        return Result.Success();
     }
 }

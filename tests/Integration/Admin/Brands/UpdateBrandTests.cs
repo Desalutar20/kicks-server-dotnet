@@ -120,8 +120,8 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var createBrandRequest = new UpdateBrandRequest("");
-        var response = await UpdateBrand(createBrandRequest, Guid.Empty, sessionCookie, ct);
+        var updateBrandRequest = new UpdateBrandRequest("");
+        var response = await UpdateBrand(updateBrandRequest, Guid.Empty, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -130,6 +130,7 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         return
         [
             ("name", new UpdateBrandRequest("")),
+            ("name", new UpdateBrandRequest("   ")),
             ("name", new UpdateBrandRequest(TestData.String(BrandName.MaxLength + 1))),
         ];
     }

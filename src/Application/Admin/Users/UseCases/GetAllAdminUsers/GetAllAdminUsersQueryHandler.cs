@@ -1,5 +1,4 @@
 using Application.Admin.Users.Types;
-using Domain.Shared.Pagination;
 
 namespace Application.Admin.Users.UseCases.GetAllAdminUsers;
 

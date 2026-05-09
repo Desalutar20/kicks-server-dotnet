@@ -11,7 +11,7 @@ public class BrandConfiguration : IEntityTypeConfiguration<Brand>
 
         builder.HasKey(x => x.Id);
 
-        builder.HasIndex(x => x.Name).IsUnique();
+        builder.HasIndex(x => x.Name).IsUnique().HasDatabaseName(DbConstants.BrandUniqueIndex);
 
         builder
             .Property(x => x.Id)

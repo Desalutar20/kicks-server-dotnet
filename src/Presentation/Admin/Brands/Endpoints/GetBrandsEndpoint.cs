@@ -2,7 +2,6 @@ using Application.Admin.Brands.Constants;
 using Application.Admin.Brands.UseCases.GetBrands;
 using Application.Auth.Types;
 using Domain.Product.Brand;
-using Domain.Shared.Pagination;
 using Presentation.Admin.Brands.Dto;
 
 namespace Presentation.Admin.Brands.Endpoints;
