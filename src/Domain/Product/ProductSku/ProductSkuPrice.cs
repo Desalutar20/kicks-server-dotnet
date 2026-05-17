@@ -8,6 +8,8 @@ public sealed record ProductSkuPrice
     public PositiveInt Price { get; }
     public PositiveInt? SalePrice { get; }
 
+    public PositiveInt CurrentPrice => SalePrice ?? Price;
+
     private ProductSkuPrice(PositiveInt price, PositiveInt? salePrice)
     {
         Price = price;

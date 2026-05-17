@@ -22,15 +22,15 @@ public class CreateProductTests(ApiFactory factory) : TestApp(factory)
         getCategoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var categories = await getCategoriesResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<CategoryDto>
+            ApiCursorResponse<AdminCategoryDto>
         >(ct);
 
         var getBrandsResponse = await GetBrands(null, sessionCookie, ct);
         getBrandsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var brands = await getBrandsResponse.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(
-            ct
-        );
+        var brands = await getBrandsResponse.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminBrandDto>
+        >(ct);
 
         var createProductRequest = TestData.CreateProductRequest(
             categories!.Data[0].Id.ToString(),
@@ -40,7 +40,7 @@ public class CreateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await CreateProduct(createProductRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var product = await response.Content.ReadFromJsonAsync<ApiResponse<ProductDto>>(ct);
+        var product = await response.Content.ReadFromJsonAsync<ApiResponse<AdminProductDto>>(ct);
 
         var productFromDb = await GetProductFromDbById(new ProductId(product!.Data.Id), ct);
         productFromDb.Should().NotBeNull();
@@ -79,15 +79,15 @@ public class CreateProductTests(ApiFactory factory) : TestApp(factory)
         getCategoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var categories = await getCategoriesResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<CategoryDto>
+            ApiCursorResponse<AdminCategoryDto>
         >(ct);
 
         var getBrandsResponse = await GetBrands(null, sessionCookie, ct);
         getBrandsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var brands = await getBrandsResponse.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(
-            ct
-        );
+        var brands = await getBrandsResponse.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminBrandDto>
+        >(ct);
 
         var createProductRequest = TestData.CreateProductRequest(
             categories!.Data[0].Id.ToString(),

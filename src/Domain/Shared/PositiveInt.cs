@@ -25,6 +25,8 @@ public readonly record struct PositiveInt
         return Result<PositiveInt>.Success(new PositiveInt(value));
     }
 
+    public static implicit operator int(PositiveInt positiveInt) => positiveInt.Value;
+
     public static PositiveInt operator +(PositiveInt left, PositiveInt right) =>
         new(left.Value + right.Value);
 
@@ -46,4 +48,6 @@ public readonly record struct PositiveInt
 
     public static bool operator <=(PositiveInt left, PositiveInt right) =>
         left.Value <= right.Value;
+
+    public override string ToString() => Value.ToString();
 }

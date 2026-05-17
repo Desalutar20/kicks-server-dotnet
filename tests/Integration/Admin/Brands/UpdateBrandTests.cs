@@ -1,4 +1,4 @@
-using Domain.Product.Brand;
+using Domain.Brand;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Brands.Dto;
 using Presentation.Admin.Brands.Endpoints;
@@ -19,14 +19,14 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
         body.Should().NotBeNull();
 
         var newName = TestData.String(BrandName.MaxLength);
         var updateBrandRequest = new UpdateBrandRequest(newName);
         var updateBrandResponse = await UpdateBrand(
-            updateBrandRequest,
             body.Data[0].Id,
+            updateBrandRequest,
             sessionCookie,
             ct
         );
@@ -49,7 +49,7 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await UpdateBrand(invalidRequest, Guid.Empty, sessionCookie, ct);
+        var response = await UpdateBrand(Guid.Empty, invalidRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);
@@ -69,13 +69,13 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
         body.Should().NotBeNull();
 
         var updateBrandRequest = new UpdateBrandRequest(body.Data[1].Name);
         var updateBrandResponse = await UpdateBrand(
-            updateBrandRequest,
             body.Data[0].Id,
+            updateBrandRequest,
             sessionCookie,
             ct
         );
@@ -93,8 +93,8 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
 
         var updateBrandRequest = new UpdateBrandRequest(TestData.String(BrandName.MaxLength));
         var updateBrandResponse = await UpdateBrand(
-            updateBrandRequest,
             Guid.NewGuid(),
+            updateBrandRequest,
             sessionCookie,
             ct
         );
@@ -108,7 +108,7 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
         var request = new UpdateBrandRequest("");
 
-        var response = await UpdateBrand(request, Guid.Empty, null, ct);
+        var response = await UpdateBrand(Guid.Empty, request, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -121,7 +121,7 @@ public class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var sessionCookie = await CreateAndSignIn(request, ct);
 
         var updateBrandRequest = new UpdateBrandRequest("");
-        var response = await UpdateBrand(updateBrandRequest, Guid.Empty, sessionCookie, ct);
+        var response = await UpdateBrand(Guid.Empty, updateBrandRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 

@@ -7,6 +7,12 @@ using Application.Admin.Categories.UseCases.CreateCategory;
 using Application.Admin.Categories.UseCases.DeleteCategory;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Admin.Categories.UseCases.UpdateCategory;
+using Application.Admin.Products.ProductSkus.UseCases.CreateProductSku;
+using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSku;
+using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSkuImage;
+using Application.Admin.Products.ProductSkus.UseCases.GetProductSku;
+using Application.Admin.Products.ProductSkus.UseCases.GetProductSkus;
+using Application.Admin.Products.ProductSkus.UseCases.UpdateProductSku;
 using Application.Admin.Products.UseCases.CreateProduct;
 using Application.Admin.Products.UseCases.DeleteProduct;
 using Application.Admin.Products.UseCases.GetProductFilters;
@@ -27,6 +33,7 @@ using Application.Auth.UseCases.ResetPassword;
 using Application.Auth.UseCases.SignIn;
 using Application.Auth.UseCases.SignUp;
 using Application.Auth.UseCases.VerifyAccount;
+using Domain.Product.ProductSku;
 
 namespace Application;
 
@@ -105,6 +112,32 @@ public static class DependencyInjection
         services.AddScoped<
             ICommandHandler<ToggleProductIsDeletedCommand>,
             ToggleProductIsDeletedCommandHandler
+        >();
+
+        services.AddScoped<
+            IQueryHandler<GetProductSkusQuery, KeysetPaginated<ProductSku, ProductSkuId>>,
+            GetProductSkusQueryHandler
+        >();
+        services.AddScoped<
+            IQueryHandler<GetProductSkuQuery, ProductSku>,
+            GetProductSkuQueryHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<CreateProductSkuCommand, ProductSkuId>,
+            CreateProductSkuCommandHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<UpdateProductSkuCommand, ProductSku>,
+            UpdateProductSkuCommandHandler
+        >();
+
+        services.AddScoped<
+            ICommandHandler<DeleteProductSkuCommand>,
+            DeleteProductSkuCommandHandler
+        >();
+        services.AddScoped<
+            ICommandHandler<DeleteProductSkuImageCommand>,
+            DeleteProductSkuImageCommandHandler
         >();
 
         return services;

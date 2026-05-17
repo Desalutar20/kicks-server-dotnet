@@ -1,5 +1,6 @@
 using Application.Admin.Users.UseCases.DeleteUser;
 using Application.Auth.Types;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Users.Endpoints;
 

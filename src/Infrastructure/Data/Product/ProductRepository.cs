@@ -42,7 +42,7 @@ internal sealed class ProductRepository(AppDbContext dbContext)
 
         if (!trackChanges)
         {
-            query = query.AsNoTracking().Include(x => x.Brand).Include(x => x.Category);
+            query = query.AsNoTracking();
         }
 
         var search = filters.Search?.Value.ToLower();
@@ -58,7 +58,9 @@ internal sealed class ProductRepository(AppDbContext dbContext)
             .WhereNotNull(filters.IsDeleted, p => p.IsDeleted == filters.IsDeleted)
             .WhereNotNull(filters.BrandId, p => p.BrandId == filters.BrandId)
             .WhereNotNull(filters.CategoryId, p => p.CategoryId == filters.CategoryId)
-            .ApplyKeysetPagination(keysetPagination);
+            .ApplyKeysetPagination(keysetPagination)
+            .Include(x => x.Brand)
+            .Include(x => x.Category);
 
         var result = await query.ToListAsync(ct);
 

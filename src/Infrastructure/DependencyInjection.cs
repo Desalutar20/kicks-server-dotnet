@@ -1,10 +1,12 @@
 ﻿using Application.Abstractions.Cache;
 using Application.Abstractions.Events;
+using Application.Abstractions.FileUploader;
 using Application.Abstractions.OAuth;
+using Domain.Brand;
+using Domain.Category;
 using Domain.Outbox;
 using Domain.Product;
-using Domain.Product.Brand;
-using Domain.Product.Category;
+using Domain.Product.ProductSku;
 using Infrastructure.BackgroundTasks;
 using Infrastructure.Cache;
 using Infrastructure.Data.Outbox;
@@ -30,29 +32,17 @@ public static class DependencyInjection
 
         services.AddSingleton<IHashingService, HashingService>();
         services.AddSingleton<IEmailSender, EmailService>();
+        services.AddSingleton<IFileUploader, FileUploaderService>();
         services.AddSingleton<ICachingService, Redis>();
         services.AddSingleton<IAuthCache, AuthCache>();
-        // services.AddKeyedSingleton<IOAuthClient, GoogleService>(OAuthProvider.Google);
-        // services.AddKeyedSingleton<IOAuthClient, FacebookService>(OAuthProvider.Facebook);
-        services.AddHttpClient<IOAuthClient, GoogleService>(client =>
-        {
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
-        services.AddHttpClient<IOAuthClient, FacebookService>(client =>
-        {
-            client.Timeout = TimeSpan.FromSeconds(10);
-        });
-
+        services.AddKeyedSingleton<IOAuthClient, GoogleService>(OAuthProvider.Google);
+        services.AddKeyedSingleton<IOAuthClient, FacebookService>(OAuthProvider.Facebook);
         services.AddSingleton<IOAuthClientFactory, OAuthClientFactory>();
 
-        // services.AddHttpClient<GoogleService>(client =>
-        // {
-        //     client.Timeout = TimeSpan.FromSeconds(10);
-        // });
-        // services.AddHttpClient<FacebookService>(client =>
-        // {
-        //     client.Timeout = TimeSpan.FromSeconds(10);
-        // });
+        services.AddHttpClient<GoogleService>(client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddHttpClient<FacebookService>(client =>
+            client.Timeout = TimeSpan.FromSeconds(10)
+        );
 
         services.AddSingleton<IDomainEventPublisher, DomainEventPublisher>();
 
@@ -61,9 +51,12 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductSkusRepository, ProductSkusRepository>();
+
         services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         services.AddHostedService<OutboxEmailSender>();
+        services.AddHostedService<OutboxFileDeleter>();
         services.AddHostedService<DeleteExpiredSessions>();
 
         return services;

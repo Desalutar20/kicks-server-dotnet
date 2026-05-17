@@ -1,4 +1,4 @@
-using Domain.Product.Category;
+using Domain.Category;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Categories.Endpoints;
 

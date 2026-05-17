@@ -1,4 +1,5 @@
 using Application.Config;
+using CloudinaryDotNet;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -20,8 +21,14 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var config = scope.ServiceProvider.GetRequiredService<Config>().Cloudinary;
+
+        var cloudinary = new Cloudinary(
+            new Account(config.CloudName, config.ApiKey, config.Secret)
+        );
 
         await dbContext.Database.EnsureDeletedAsync();
+        await cloudinary.DeleteAllResourcesAsync();
 
         await base.DisposeAsync();
     }
@@ -38,11 +45,14 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                     new Dictionary<string, string?>
                     {
                         ["Database:Name"] = $"test-{guid}",
+
                         ["Redis:KeyPrefix"] = $"{guid}:",
 
-                        ["RateLimit:SignUp"] = "20",
-                        ["RateLimit:SignIn"] = "20",
-                        ["RateLimit:VerifyAccount"] = "20",
+                        ["Cloudinary:Folder"] = "kicks-test",
+
+                        ["RateLimit:SignUp"] = "30",
+                        ["RateLimit:SignIn"] = "30",
+                        ["RateLimit:VerifyAccount"] = "30",
                         ["RateLimit:ForgotPassword"] = "20",
                         ["RateLimit:ResetPassword"] = "20",
                     }

@@ -1,4 +1,4 @@
-using Domain.Product.Brand;
+using Domain.Brand;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Brands.Endpoints;
 

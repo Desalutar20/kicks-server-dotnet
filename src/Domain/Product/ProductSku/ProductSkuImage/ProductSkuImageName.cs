@@ -39,7 +39,7 @@ public sealed record ProductSkuImageName
 
     public override string ToString() => Value;
 
-    public static implicit operator string(ProductSkuImageName brand) => brand.Value;
+    public static implicit operator string(ProductSkuImageName imageName) => imageName.Value;
 
     public static implicit operator ProductSkuImageName(string value) => Create(value).Value;
 };

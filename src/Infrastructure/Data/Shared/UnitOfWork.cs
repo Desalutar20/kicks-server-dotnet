@@ -1,6 +1,7 @@
-using Domain.Product.Brand.Exceptions;
-using Domain.Product.Category.Exceptions;
+using Domain.Brand.Exceptions;
+using Domain.Category.Exceptions;
 using Domain.Product.Exceptions;
+using Domain.Product.ProductSku.Exceptions;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -11,16 +12,21 @@ internal sealed class UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> log
     private static readonly Dictionary<string, Func<Exception, Exception>> DuplicateExceptions =
         new()
         {
-            [DbConstants.BrandUniqueIndex] = (ex) => new BrandAlreadyExistsException(ex),
-            [DbConstants.CategoryUniqueIndex] = (ex) => new CategoryAlreadyExistsException(ex),
-            [DbConstants.ProductUniqueIndex] = (ex) => new ProductAlreadyExistsException(ex),
+            [DbConstants.BrandUniqueIndex] = ex => new BrandAlreadyExistsException(ex),
+            [DbConstants.CategoryUniqueIndex] = ex => new CategoryAlreadyExistsException(ex),
+            [DbConstants.ProductUniqueIndex] = ex => new ProductAlreadyExistsException(ex),
+            [DbConstants.ProductSkuDuplicateCombinationUniqueIndex] =
+                ex => new ProductSkuDuplicateCombinationException(ex),
+            [DbConstants.ProductSkuSkuUniqueIndex] = ex => new ProductSkuSkuAlreadyExistsException(
+                ex
+            ),
         };
 
     private static readonly Dictionary<string, Func<Exception, Exception>> ForeignKeyExceptions =
         new()
         {
-            ["fk_product_brand_brand_id"] = (ex) => new BrandDoesNotExistsException(ex),
-            ["fk_product_category_category_id"] = (ex) => new CategoryDoesNotExistsException(ex),
+            ["fk_product_brand_brand_id"] = ex => new BrandDoesNotExistsException(ex),
+            ["fk_product_category_category_id"] = ex => new CategoryDoesNotExistsException(ex),
         };
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)
@@ -32,7 +38,9 @@ internal sealed class UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> log
         catch (DbUpdateException ex)
         {
             if (ex.InnerException is not PostgresException pex)
+            {
                 throw;
+            }
 
             if (
                 TryMapException(

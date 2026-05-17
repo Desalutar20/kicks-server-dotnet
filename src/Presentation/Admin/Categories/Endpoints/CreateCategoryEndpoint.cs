@@ -1,7 +1,8 @@
 using Application.Admin.Categories.UseCases.CreateCategory;
 using Application.Auth.Types;
-using Domain.Product.Category;
+using Domain.Category;
 using Presentation.Admin.Categories.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -49,13 +50,16 @@ internal static partial class AdminCategoriesEndpoints
                     var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
-                        : Results.Created("/", new ApiResponse<CategoryDto>(result.Value.ToDto()));
+                        : Results.Created(
+                            "/",
+                            new ApiResponse<AdminCategoryDto>(result.Value.ToDto())
+                        );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminCategoryDto>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

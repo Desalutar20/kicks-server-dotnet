@@ -1,10 +1,11 @@
 using Application.Admin.Products.UseCases.DeleteProduct;
 using Application.Auth.Types;
 using Domain.Product;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
-internal static partial class AdminProductsEndpoints
+internal static partial class AdminProductSkusEndpoints
 {
     private static IEndpointRouteBuilder ToggleProductIsDeletedV1(
         this IEndpointRouteBuilder endpoint

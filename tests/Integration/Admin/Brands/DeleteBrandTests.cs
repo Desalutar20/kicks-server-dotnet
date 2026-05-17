@@ -1,4 +1,4 @@
-using Domain.Product.Brand;
+using Domain.Brand;
 using Presentation.Admin.Brands.Dto;
 using Presentation.Shared.Dto;
 
@@ -17,11 +17,11 @@ public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
         body.Should().NotBeNull();
 
-        var toggleBanUserResponse = await DeleteBrand(body.Data[0].Id, sessionCookie, ct);
-        toggleBanUserResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var deleteBrandResponse = await DeleteBrand(body.Data[0].Id, sessionCookie, ct);
+        deleteBrandResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var dbUser = await GetBrandFromDbById(new BrandId(body.Data[0].Id), ct);
         dbUser.Should().BeNull();

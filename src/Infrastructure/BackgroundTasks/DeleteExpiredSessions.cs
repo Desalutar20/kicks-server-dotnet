@@ -13,8 +13,9 @@ public class DeleteExpiredSessions(IServiceScopeFactory serviceFactory) : Backgr
         do
         {
             await using var scope = serviceFactory.CreateAsyncScope();
-            var commandHandler =
-                scope.ServiceProvider.GetRequiredService<ICommandHandler<DeleteExpiredSessionCommand>>();
+            var commandHandler = scope.ServiceProvider.GetRequiredService<
+                ICommandHandler<DeleteExpiredSessionCommand>
+            >();
 
             await commandHandler.Handle(new DeleteExpiredSessionCommand(), stoppingToken);
         } while (await timer.WaitForNextTickAsync(stoppingToken));

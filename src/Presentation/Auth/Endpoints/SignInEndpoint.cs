@@ -2,6 +2,7 @@ using Application.Auth.Types;
 using Application.Auth.UseCases.SignIn;
 using Application.Config;
 using Presentation.Auth.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 

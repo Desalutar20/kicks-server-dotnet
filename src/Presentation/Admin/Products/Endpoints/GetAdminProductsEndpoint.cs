@@ -1,10 +1,11 @@
 using Application.Admin.Products.Constants;
 using Application.Admin.Products.UseCases.GetProducts;
 using Application.Auth.Types;
+using Domain.Brand;
+using Domain.Category;
 using Domain.Product;
-using Domain.Product.Brand;
-using Domain.Product.Category;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -32,7 +33,7 @@ public sealed class GetProductsRequestValidator : AbstractValidator<GetProductsR
             .WithMessage("'Gender' must be one of Men, Women, Unisex");
 
         RuleFor(x => x)
-            .Must(x => !(x.PrevCursor is not null && x.NextCursor is not null))
+            .Must(x => x.PrevCursor is null || x.NextCursor is null)
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
@@ -42,7 +43,7 @@ public sealed class GetProductsRequestValidator : AbstractValidator<GetProductsR
     }
 }
 
-internal static partial class AdminProductsEndpoints
+internal static partial class AdminProductSkusEndpoints
 {
     private static IEndpointRouteBuilder GetProductsV1(this IEndpointRouteBuilder endpoint)
     {
@@ -70,17 +71,17 @@ internal static partial class AdminProductsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.GetProducts");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
+                    var queryResult = request.ToQuery();
+                    if (queryResult.IsFailure)
                     {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
+                        return ErrorHandler.Handle(queryResult.Error, logger);
                     }
 
-                    var result = await queryHandler.Handle(commandResult.Value, ct);
+                    var result = await queryHandler.Handle(queryResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(
-                            new ApiCursorResponse<ProductDto>(
+                            new ApiCursorResponse<AdminProductDto>(
                                 [.. result.Value.Data.Select(u => u.ToDto())],
                                 result.Value.PrevCursor?.ToString(),
                                 result.Value.NextCursor?.ToString()
@@ -91,7 +92,7 @@ internal static partial class AdminProductsEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<ProductDto>>()
+            .Produces<ApiResponse<AdminProductDto>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
@@ -106,7 +107,7 @@ internal static partial class AdminProductsEndpoints
         return endpoint;
     }
 
-    private static Result<GetProductsQuery> ToCommand(this GetProductsRequest request)
+    private static Result<GetProductsQuery> ToQuery(this GetProductsRequest request)
     {
         var limit = PositiveInt
             .Create(request.Limit ?? ProductsConstants.GetProductsDefaultLimit)

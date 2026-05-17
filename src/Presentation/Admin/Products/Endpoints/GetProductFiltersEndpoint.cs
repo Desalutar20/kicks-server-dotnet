@@ -2,10 +2,11 @@ using Application.Admin.Products.UseCases.GetProductFilters;
 using Application.Auth.Types;
 using Domain.Product;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
-internal static partial class AdminProductsEndpoints
+internal static partial class AdminProductSkusEndpoints
 {
     private static IEndpointRouteBuilder GetProductFiltersV1(this IEndpointRouteBuilder endpoint)
     {

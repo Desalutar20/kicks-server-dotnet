@@ -17,7 +17,7 @@ public class ToggleProductIsDeletedTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
         body.Should().NotBeNull();
 
         var toggleBanUserResponse = await ToggleProductIsDeleted(

@@ -1,4 +1,4 @@
-using Domain.Product.Brand;
+using Domain.Brand;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Product;

@@ -3,6 +3,7 @@ using Application.Admin.Users.Types;
 using Application.Admin.Users.UseCases.GetAllAdminUsers;
 using Application.Auth.Types;
 using Presentation.Admin.Users.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Users.Endpoints;
 
@@ -25,7 +26,7 @@ public sealed class GetAdminUsersRequestValidator : AbstractValidator<GetAdminUs
         RuleFor(x => x.Limit).InclusiveBetween(1, AdminUsersConstants.GetAdminUsersMaxLimit);
 
         RuleFor(x => x)
-            .Must(x => !(x.PrevCursor is not null && x.NextCursor is not null))
+            .Must(x => x.PrevCursor is null || x.NextCursor is null)
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 

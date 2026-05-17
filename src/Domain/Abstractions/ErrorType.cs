@@ -8,5 +8,5 @@ public enum ErrorType
     Conflict = 3,
     Unauthorized = 4,
     AccessForbidden = 5,
-    Internal = 6
+    Internal = 6,
 }

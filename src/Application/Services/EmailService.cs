@@ -194,6 +194,6 @@ internal static class EmailService
         return new Message(PasswordChangedSubject, to, text, html);
     }
 
-    public static string SerializeMessage(Message message) =>
-        JsonSerializer.Serialize(message, Options);
+    public static NonEmptyString SerializeMessage(Message message) =>
+        NonEmptyString.Create(JsonSerializer.Serialize(message, Options)).Value;
 }

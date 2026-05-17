@@ -39,7 +39,7 @@ public sealed record ProductTitle
 
     public override string ToString() => Value;
 
-    public static implicit operator string(ProductTitle brand) => brand.Value;
+    public static implicit operator string(ProductTitle title) => title.Value;
 
     public static implicit operator ProductTitle(string value) => Create(value).Value;
 };

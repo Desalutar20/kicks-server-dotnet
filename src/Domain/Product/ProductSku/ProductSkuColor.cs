@@ -40,4 +40,6 @@ public sealed record ProductSkuColor
             ? Result<ProductSkuColor>.Success(new ProductSkuColor(value))
             : Result<ProductSkuColor>.Failure(Error.Validation("color", errors));
     }
+
+    public override string ToString() => Value.ToString();
 }

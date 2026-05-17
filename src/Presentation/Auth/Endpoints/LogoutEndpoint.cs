@@ -1,6 +1,7 @@
 using Application.Auth.Types;
 using Application.Auth.UseCases.Logout;
 using Application.Config;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 

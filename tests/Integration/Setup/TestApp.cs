@@ -28,11 +28,13 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
     {
         var brands = TestData.SeedBrands();
         var categories = TestData.SeedCategories();
+        var products = TestData.SeedProducts(brands, categories);
 
         _dbContext.Users.AddRange(TestData.SeedUsers());
         _dbContext.Brands.AddRange(brands);
         _dbContext.Categories.AddRange(categories);
-        _dbContext.Products.AddRange(TestData.SeedProducts(brands, categories));
+        _dbContext.Products.AddRange(products);
+        _dbContext.ProductSkus.AddRange(TestData.SeedProductSkus(products));
 
         await _dbContext.SaveChangesAsync();
     }
@@ -79,7 +81,12 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
 
         if (data is not null)
         {
-            message.Content = JsonContent.Create(data);
+            message.Content = data switch
+            {
+                MultipartFormDataContent form => form,
+                HttpContent httpContent => httpContent,
+                _ => JsonContent.Create(data),
+            };
         }
 
         return await _httpClient.SendAsync(message, ct);
@@ -88,8 +95,8 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
     private async Task<HttpResponseMessage> Request(
         string path,
         string? cookie,
-        CancellationToken ct = default,
-        IDictionary<string, string?>? query = null
+        IDictionary<string, string?>? query = null,
+        CancellationToken ct = default
     )
     {
         var requestUri = path;

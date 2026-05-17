@@ -32,7 +32,7 @@ public partial class TestApp
     protected async Task<HttpResponseMessage> GetProfile(
         string? cookie,
         CancellationToken ct = default
-    ) => await Request("/api/v1/auth/profile", cookie, ct);
+    ) => await Request("/api/v1/auth/profile", cookie, ct: ct);
 
     protected async Task<HttpResponseMessage> Logout(
         string? cookie,

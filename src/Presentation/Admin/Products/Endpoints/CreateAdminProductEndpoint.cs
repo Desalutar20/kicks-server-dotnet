@@ -1,9 +1,10 @@
 using Application.Admin.Products.UseCases.CreateProduct;
 using Application.Auth.Types;
+using Domain.Brand;
+using Domain.Category;
 using Domain.Product;
-using Domain.Product.Brand;
-using Domain.Product.Category;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -35,7 +36,7 @@ public sealed class CreateProductRequestValidator : AbstractValidator<CreateProd
     }
 }
 
-internal static partial class AdminProductsEndpoints
+internal static partial class AdminProductSkusEndpoints
 {
     private static IEndpointRouteBuilder CreateProductV1(this IEndpointRouteBuilder endpoint)
     {
@@ -69,13 +70,16 @@ internal static partial class AdminProductsEndpoints
                     var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
-                        : Results.Created("/", new ApiResponse<ProductDto>(result.Value.ToDto()));
+                        : Results.Created(
+                            "/",
+                            new ApiResponse<AdminProductDto>(result.Value.ToDto())
+                        );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<ProductDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminProductDto>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

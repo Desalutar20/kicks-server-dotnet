@@ -1,8 +1,9 @@
 using Application.Admin.Categories.Constants;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Auth.Types;
-using Domain.Product.Category;
+using Domain.Category;
 using Presentation.Admin.Categories.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -22,7 +23,7 @@ public sealed class GetCategoriesRequestValidator : AbstractValidator<GetCategor
         RuleFor(x => x.Limit).InclusiveBetween(1, CategoriesConstants.GetCategoriesMaxLimit);
 
         RuleFor(x => x)
-            .Must(x => !(x.PrevCursor is not null && x.NextCursor is not null))
+            .Must(x => x.PrevCursor is null || x.NextCursor is null)
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
@@ -73,7 +74,7 @@ internal static partial class AdminCategoriesEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<CategoryDto>(
+                        new ApiCursorResponse<AdminCategoryDto>(
                             [.. result.Value.Data.Select(u => u.ToDto())],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
@@ -84,7 +85,7 @@ internal static partial class AdminCategoriesEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<CategoryDto>>()
+            .Produces<ApiCursorResponse<AdminCategoryDto>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

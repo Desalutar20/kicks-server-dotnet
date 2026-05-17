@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Application.Abstractions.Email.JsonConverters;
 using Domain.Outbox;
-using Domain.Shared;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 

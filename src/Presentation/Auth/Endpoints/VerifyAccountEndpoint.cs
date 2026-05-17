@@ -1,5 +1,6 @@
 using Application.Auth.UseCases.VerifyAccount;
 using Application.Config;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 

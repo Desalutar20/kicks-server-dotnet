@@ -1,8 +1,5 @@
 using Domain.Product;
-using Domain.Product.Brand;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Brands.Dto;
-using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Shared.Dto;
@@ -22,14 +19,14 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
         body.Should().NotBeNull();
 
         var newTitle = TestData.String(ProductTitle.MaxLength);
         var updateProductRequest = new UpdateProductRequest(newTitle, null, null, null, null, null);
         var updateProductResponse = await UpdateProduct(
-            updateProductRequest,
             body.Data[0].Id,
+            updateProductRequest,
             sessionCookie,
             ct
         );
@@ -52,7 +49,7 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await UpdateProduct(invalidRequest, Guid.Empty, sessionCookie, ct);
+        var response = await UpdateProduct(Guid.Empty, invalidRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);
@@ -72,7 +69,7 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
         body.Should().NotBeNull();
 
         var updateProductRequest = new UpdateProductRequest(
@@ -84,8 +81,8 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
             body.Data[1].CategoryId.ToString()
         );
         var updateProductResponse = await UpdateProduct(
-            updateProductRequest,
             body.Data[0].Id,
+            updateProductRequest,
             sessionCookie,
             ct
         );
@@ -103,8 +100,8 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
 
         var updateProductRequest = new UpdateProductRequest(null, null, null, null, null, null);
         var updateProductResponse = await UpdateProduct(
-            updateProductRequest,
             Guid.NewGuid(),
+            updateProductRequest,
             sessionCookie,
             ct
         );
@@ -118,7 +115,7 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
         var request = new UpdateProductRequest(null, null, null, null, null, null);
 
-        var response = await UpdateProduct(request, Guid.Empty, null, ct);
+        var response = await UpdateProduct(Guid.Empty, request, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -132,7 +129,7 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
 
         var updateProductRequest = new UpdateProductRequest(null, null, null, null, null, null);
 
-        var response = await UpdateProduct(updateProductRequest, Guid.Empty, sessionCookie, ct);
+        var response = await UpdateProduct(Guid.Empty, updateProductRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 

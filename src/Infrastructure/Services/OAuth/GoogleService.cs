@@ -6,15 +6,13 @@ using Application.Abstractions.OAuth;
 namespace Infrastructure.Services.OAuth;
 
 internal sealed record GoogleAccessTokenResponse(
-    [property: JsonPropertyName("access_token")]
-    string AccessToken
+    [property: JsonPropertyName("access_token")] string AccessToken
 );
 
 internal sealed record GoogleUserResponse(
     [property: JsonPropertyName("sub")] string Sub,
     [property: JsonPropertyName("email")] string Email,
-    [property: JsonPropertyName("email_verified")]
-    bool EmailVerified
+    [property: JsonPropertyName("email_verified")] bool EmailVerified
 );
 
 internal sealed class GoogleService(HttpClient httpClient, Config config) : IOAuthClient
@@ -32,7 +30,10 @@ internal sealed class GoogleService(HttpClient httpClient, Config config) : IOAu
 
     public bool IsValidState(OAuthState received, OAuthState expected) => received == expected;
 
-    public async Task<Result<OAuthUser>> GetUserAsync(NonEmptyString code, CancellationToken ct = default)
+    public async Task<Result<OAuthUser>> GetUserAsync(
+        NonEmptyString code,
+        CancellationToken ct = default
+    )
     {
         try
         {
@@ -42,36 +43,43 @@ internal sealed class GoogleService(HttpClient httpClient, Config config) : IOAu
                 ["client_id"] = Cfg.ClientId,
                 ["client_secret"] = Cfg.ClientSecret,
                 ["redirect_uri"] = Cfg.RedirectUrl,
-                ["grant_type"] = "authorization_code"
+                ["grant_type"] = "authorization_code",
             };
 
             var tokenResponse = await httpClient.PostAsync(
                 "https://oauth2.googleapis.com/token",
-                new FormUrlEncodedContent(tokenRequest), ct);
+                new FormUrlEncodedContent(tokenRequest),
+                ct
+            );
 
             var tokenJson = await tokenResponse.Content.ReadAsStringAsync(ct);
 
-            var token = JsonSerializer.Deserialize<GoogleAccessTokenResponse>(tokenJson)
-                        ?? throw new Exception("Google token response is null");
-
+            var token =
+                JsonSerializer.Deserialize<GoogleAccessTokenResponse>(tokenJson)
+                ?? throw new Exception("Google token response is null");
 
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "https://openidconnect.googleapis.com/v1/userinfo");
+                "https://openidconnect.googleapis.com/v1/userinfo"
+            );
 
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", token.AccessToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue(
+                "Bearer",
+                token.AccessToken
+            );
 
             var userResponse = await httpClient.SendAsync(request, ct);
             var userJson = await userResponse.Content.ReadAsStringAsync(ct);
 
-            var user = JsonSerializer.Deserialize<GoogleUserResponse>(userJson)
-                       ?? throw new Exception("Google user response is null");
+            var user =
+                JsonSerializer.Deserialize<GoogleUserResponse>(userJson)
+                ?? throw new Exception("Google user response is null");
 
             if (!user.EmailVerified)
             {
                 return Result<OAuthUser>.Failure(
-                    Error.Conflict("Google user email is not verified"));
+                    Error.Conflict("Google user email is not verified")
+                );
             }
 
             var providerIdResult = ProviderId.Create(user.Sub);
@@ -87,7 +95,8 @@ internal sealed class GoogleService(HttpClient httpClient, Config config) : IOAu
             }
 
             return Result<OAuthUser>.Success(
-                new OAuthUser(providerIdResult.Value, emailResult.Value));
+                new OAuthUser(providerIdResult.Value, emailResult.Value)
+            );
         }
         catch (Exception ex)
         {

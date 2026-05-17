@@ -1,5 +1,5 @@
-using Domain.Product.Brand;
-using Domain.Product.Category;
+using Domain.Brand;
+using Domain.Category;
 
 namespace Domain.Product;
 

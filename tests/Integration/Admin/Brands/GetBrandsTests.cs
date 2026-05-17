@@ -19,7 +19,7 @@ public class GetBrandsTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<BrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(BrandsConstants.GetBrandsDefaultLimit);

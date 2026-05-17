@@ -1,6 +1,7 @@
 using Application.Abstractions.OAuth;
 using Application.Auth.UseCases.GenerateOAuthUrl;
 using Application.Config;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 

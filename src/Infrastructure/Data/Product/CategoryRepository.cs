@@ -1,4 +1,4 @@
-using Domain.Product.Category;
+using Domain.Category;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.Product;

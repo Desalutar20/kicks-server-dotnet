@@ -1,6 +1,7 @@
 using Application.Admin.Categories.UseCases.UpdateCategory;
 using Application.Auth.Types;
-using Domain.Product.Category;
+using Domain.Category;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Categories.Endpoints;
 

@@ -1,6 +1,7 @@
+using Domain.Brand;
+using Domain.Category;
 using Domain.Product;
-using Domain.Product.Brand;
-using Domain.Product.Category;
+using Domain.Product.ProductSku;
 using Microsoft.EntityFrameworkCore;
 
 namespace Integration.Setup;
@@ -37,4 +38,13 @@ public partial class TestApp
 
     protected async Task<Product?> GetProductFromDbById(ProductId id, CancellationToken ct) =>
         await _dbContext.Products.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
+
+    protected async Task<ProductSku?> GetProductSkuFromDbById(
+        ProductSkuId id,
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .ProductSkus.AsNoTracking()
+            .Include(x => x.ProductSkuImages)
+            .SingleOrDefaultAsync(c => c.Id == id, ct);
 }

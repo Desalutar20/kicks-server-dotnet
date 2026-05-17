@@ -1,5 +1,5 @@
 using Application.Admin.Brands.Errors;
-using Domain.Product.Brand.Exceptions;
+using Domain.Brand.Exceptions;
 
 namespace Application.Admin.Brands.UseCases.CreateBrand;
 

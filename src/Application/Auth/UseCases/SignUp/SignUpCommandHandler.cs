@@ -55,8 +55,7 @@ internal sealed class SignUpCommandHandler(
             command.Email,
             tokenResult.Value
         );
-        var data = EmailService.SerializeMessage(message);
-        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data).Value);
+        var outbox = Outbox.Create(OutboxType.Email, EmailService.SerializeMessage(message));
 
         await authCache.StoreVerificationTokenAsync(
             user.Id,

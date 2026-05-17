@@ -9,5 +9,7 @@ internal static class DbConstants
     public const string CategoryUniqueIndex = "uq_category_name";
 
     public const string ProductUniqueIndex = "uq_product_title_gender_category_brand";
-    public const string ProductSkuUniqueIndex = "uq_product_sku_product_size_color";
+    public const string ProductSkuDuplicateCombinationUniqueIndex =
+        "uq_product_sku_product_size_color";
+    public const string ProductSkuSkuUniqueIndex = "uq_product_sku_sku";
 }

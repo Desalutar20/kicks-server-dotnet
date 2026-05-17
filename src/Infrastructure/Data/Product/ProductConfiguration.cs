@@ -1,6 +1,6 @@
+using Domain.Brand;
+using Domain.Category;
 using Domain.Product;
-using Domain.Product.Brand;
-using Domain.Product.Category;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

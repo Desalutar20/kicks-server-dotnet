@@ -19,7 +19,9 @@ public class GetCategoriesTests(ApiFactory factory) : TestApp(factory)
         var response = await GetCategories(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<CategoryDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminCategoryDto>>(
+            ct
+        );
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(CategoriesConstants.GetCategoriesDefaultLimit);

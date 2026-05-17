@@ -1,4 +1,5 @@
 using Application.Auth.UseCases.ResetPassword;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 

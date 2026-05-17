@@ -1,6 +1,7 @@
 using Application.Admin.Brands.UseCases.DeleteBrand;
 using Application.Auth.Types;
-using Domain.Product.Brand;
+using Domain.Brand;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Brands.Endpoints;
 

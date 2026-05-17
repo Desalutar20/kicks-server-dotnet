@@ -5,24 +5,37 @@ namespace Infrastructure.Cache;
 
 internal sealed class Redis(IConnectionMultiplexer cache, Config config) : ICachingService
 {
-    public async Task SetAsync(NonEmptyString key, NonEmptyString data, TimeSpan? exp, CancellationToken ct = default)
+    public async Task SetAsync(
+        NonEmptyString key,
+        NonEmptyString data,
+        TimeSpan? exp,
+        CancellationToken ct = default
+    )
     {
         var db = cache.GetDatabase();
         var k = GenerateKey(key.Value);
 
-        await (exp is not null
-            ? db.StringSetAsync(k, data.Value, exp.Value).WaitAsync(ct)
-            : db.StringSetAsync(k, data.Value)).WaitAsync(ct);
+        await (
+            exp is not null
+                ? db.StringSetAsync(k, data.Value, exp.Value).WaitAsync(ct)
+                : db.StringSetAsync(k, data.Value)
+        ).WaitAsync(ct);
     }
 
-    public async Task<string?> GetAsync(NonEmptyString key, TimeSpan? exp, CancellationToken ct = default)
+    public async Task<string?> GetAsync(
+        NonEmptyString key,
+        TimeSpan? exp,
+        CancellationToken ct = default
+    )
     {
         var db = cache.GetDatabase();
         var k = GenerateKey(key.Value);
 
-        var data = await (exp is not null
-            ? db.StringGetSetExpiryAsync(k, exp).WaitAsync(ct)
-            : db.StringGetAsync(k)).WaitAsync(ct);
+        var data = await (
+            exp is not null
+                ? db.StringGetSetExpiryAsync(k, exp).WaitAsync(ct)
+                : db.StringGetAsync(k)
+        ).WaitAsync(ct);
 
         return data.HasValue ? data.ToString() : null;
     }

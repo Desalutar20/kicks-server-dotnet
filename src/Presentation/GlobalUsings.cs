@@ -9,7 +9,6 @@ global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Routing;
 global using Microsoft.Extensions.Logging;
-global using Presentation.Common;
 global using Presentation.Shared.Constants;
 global using Presentation.Shared.Dto;
 global using Presentation.Shared.Filters;

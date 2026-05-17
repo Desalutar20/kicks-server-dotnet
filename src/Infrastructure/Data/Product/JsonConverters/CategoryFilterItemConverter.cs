@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Domain.Category;
 using Domain.Product;
-using Domain.Product.Category;
 
 namespace Infrastructure.Data.Product.JsonConverters;
 

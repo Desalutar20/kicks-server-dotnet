@@ -1,4 +1,4 @@
-using Domain.Product.Category;
+using Domain.Category;
 using Presentation.Admin.Categories.Dto;
 using Presentation.Shared.Dto;
 
@@ -17,11 +17,13 @@ public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
         var response = await GetCategories(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<CategoryDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminCategoryDto>>(
+            ct
+        );
         body.Should().NotBeNull();
 
-        var toggleBanUserResponse = await DeleteCategory(body.Data[0].Id, sessionCookie, ct);
-        toggleBanUserResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var deleteCategoryResponse = await DeleteCategory(body.Data[0].Id, sessionCookie, ct);
+        deleteCategoryResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var dbUser = await GetCategoryFromDbById(new CategoryId(body.Data[0].Id), ct);
         dbUser.Should().BeNull();

@@ -1,4 +1,4 @@
-using Domain.Product.Category;
+using Domain.Category;
 
 namespace Unit.Category;
 

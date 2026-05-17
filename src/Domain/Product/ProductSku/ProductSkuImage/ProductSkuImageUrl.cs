@@ -5,7 +5,7 @@ namespace Domain.Product.ProductSku.ProductSkuImage;
 
 public sealed record ProductSkuImageUrl
 {
-    public const int MaxLength = 30;
+    public const int MaxLength = 200;
 
     private ProductSkuImageUrl(string value)
     {

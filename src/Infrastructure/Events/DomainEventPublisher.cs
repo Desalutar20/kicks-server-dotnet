@@ -17,7 +17,8 @@ internal sealed class DomainEventPublisher(IServiceProvider serviceProvider) : I
             foreach (var handler in handlers)
             {
                 var handleMethod = handlerType.GetMethod("Handle");
-                if (handleMethod is null) continue;
+                if (handleMethod is null)
+                    continue;
 
                 await (Task)handleMethod.Invoke(handler, new object[] { domainEvent, ct })!;
             }

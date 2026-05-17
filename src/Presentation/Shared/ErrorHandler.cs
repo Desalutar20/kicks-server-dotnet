@@ -1,4 +1,4 @@
-namespace Presentation.Common;
+namespace Presentation.Shared;
 
 public static class ErrorHandler
 {
@@ -15,7 +15,7 @@ public static class ErrorHandler
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
             ErrorType.AccessForbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError
+            _ => StatusCodes.Status500InternalServerError,
         };
 
         if (statusCode == StatusCodes.Status500InternalServerError)
@@ -33,18 +33,18 @@ public static class ErrorHandler
         if (error.ErrorType is ErrorType.Validation && error.Errors is not null)
             errors = new Dictionary<string, IEnumerable<string>>
             {
-                { error.Errors.Value.Item1, error.Errors.Value.Item2 }
+                { error.Errors.Value.Item1, error.Errors.Value.Item2 },
             };
-
 
         ProblemDetails problemDetails = new()
         {
             Title = title,
             Detail = detail,
-            Status = statusCode
+            Status = statusCode,
         };
 
-        if (errors is not null) problemDetails.Extensions.TryAdd("errors", errors);
+        if (errors is not null)
+            problemDetails.Extensions.TryAdd("errors", errors);
 
         return TypedResults.Problem(problemDetails);
     }

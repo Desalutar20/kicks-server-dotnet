@@ -23,6 +23,66 @@ namespace Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Brand.Brand", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_brand");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("uq_brand_name");
+
+                    b.ToTable("brand", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Category.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_category");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("uq_category_name");
+
+                    b.ToTable("category", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Outbox.Outbox", b =>
                 {
                     b.Property<Guid>("Id")
@@ -60,68 +120,8 @@ namespace Infrastructure.Data.Migrations
 
                     b.ToTable("outbox", null, t =>
                         {
-                            t.HasCheckConstraint("CK_type", "type IN ('email')");
+                            t.HasCheckConstraint("CK_type", "type IN ('email', 'file')");
                         });
-                });
-
-            modelBuilder.Entity("Domain.Product.Brand.Brand", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_brand");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("uq_brand_name");
-
-                    b.ToTable("brand", (string)null);
-                });
-
-            modelBuilder.Entity("Domain.Product.Category.Category", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_category");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("uq_category_name");
-
-                    b.ToTable("category", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Product.Product", b =>
@@ -222,6 +222,11 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("size");
 
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("sku");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
@@ -229,13 +234,17 @@ namespace Infrastructure.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_product_sku");
 
+                    b.HasIndex("Sku")
+                        .IsUnique()
+                        .HasDatabaseName("uq_product_sku_sku");
+
                     b.HasIndex("ProductId", "Size", "Color")
                         .IsUnique()
                         .HasDatabaseName("uq_product_sku_product_size_color");
 
                     b.ToTable("product_sku", null, t =>
                         {
-                            t.HasCheckConstraint("CK_product_sku_quantity_positive", "quantity > 0");
+                            t.HasCheckConstraint("CK_product_sku_quantity_positive", "quantity >= 0");
                         });
                 });
 
@@ -373,13 +382,13 @@ namespace Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Domain.Product.Product", b =>
                 {
-                    b.HasOne("Domain.Product.Brand.Brand", "Brand")
+                    b.HasOne("Domain.Brand.Brand", "Brand")
                         .WithMany()
                         .HasForeignKey("BrandId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_product_brand_brand_id");
 
-                    b.HasOne("Domain.Product.Category.Category", "Category")
+                    b.HasOne("Domain.Category.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull)

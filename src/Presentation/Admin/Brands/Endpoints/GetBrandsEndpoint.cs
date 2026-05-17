@@ -1,8 +1,9 @@
 using Application.Admin.Brands.Constants;
 using Application.Admin.Brands.UseCases.GetBrands;
 using Application.Auth.Types;
-using Domain.Product.Brand;
+using Domain.Brand;
 using Presentation.Admin.Brands.Dto;
+using Presentation.Shared;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -22,7 +23,7 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
         RuleFor(x => x.Limit).InclusiveBetween(1, BrandsConstants.GetBrandsMaxLimit);
 
         RuleFor(x => x)
-            .Must(x => !(x.PrevCursor is not null && x.NextCursor is not null))
+            .Must(x => x.PrevCursor is null || x.NextCursor is null)
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
@@ -70,7 +71,7 @@ internal static partial class AdminBrandsEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<BrandDto>(
+                        new ApiCursorResponse<AdminBrandDto>(
                             [.. result.Value.Data.Select(u => u.ToDto())],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
@@ -81,7 +82,7 @@ internal static partial class AdminBrandsEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<BrandDto>>()
+            .Produces<ApiCursorResponse<AdminBrandDto>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

@@ -12,12 +12,16 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
             "product_sku",
             table =>
             {
-                table.HasCheckConstraint("CK_product_sku_quantity_positive", "quantity > 0");
+                table.HasCheckConstraint("CK_product_sku_quantity_positive", "quantity >= 0");
             }
         );
 
         builder.HasKey(x => x.Id);
 
+        builder
+            .HasIndex(x => x.Sku)
+            .IsUnique()
+            .HasDatabaseName(DbConstants.ProductSkuSkuUniqueIndex);
         builder
             .HasIndex(x => new
             {
@@ -26,7 +30,7 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
                 x.Color,
             })
             .IsUnique()
-            .HasDatabaseName(DbConstants.ProductSkuUniqueIndex);
+            .HasDatabaseName(DbConstants.ProductSkuDuplicateCombinationUniqueIndex);
 
         builder
             .Property(x => x.Id)
@@ -68,6 +72,11 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
         builder
             .Property(x => x.Color)
             .HasConversion(c => c.Value, value => ProductSkuColor.Create(value).Value)
+            .IsRequired();
+
+        builder
+            .Property(x => x.Sku)
+            .HasConversion(c => c.Value, value => ProductSkuSku.Create(value).Value)
             .IsRequired();
 
         builder

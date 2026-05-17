@@ -1,5 +1,5 @@
 using Application.Admin.Categories.Errors;
-using Domain.Product.Category.Exceptions;
+using Domain.Category.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.UpdateCategory;
 

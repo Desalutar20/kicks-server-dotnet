@@ -35,8 +35,7 @@ internal sealed class ResetPasswordHandler(
         }
 
         var message = EmailService.BuildPasswordChangedEmail(user.Email);
-        var data = EmailService.SerializeMessage(message);
-        var outbox = Outbox.Create(OutboxType.Email, NonEmptyString.Create(data).Value);
+        var outbox = Outbox.Create(OutboxType.Email, EmailService.SerializeMessage(message));
 
         user.UpdatePassword(hashedPasswordResult.Value);
 

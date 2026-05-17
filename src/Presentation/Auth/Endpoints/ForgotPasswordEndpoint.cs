@@ -1,4 +1,5 @@
 using Application.Auth.UseCases.ForgotPassword;
+using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
