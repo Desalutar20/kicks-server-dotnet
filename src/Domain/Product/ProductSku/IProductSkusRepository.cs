@@ -12,8 +12,26 @@ public interface IProductSkusRepository
         CancellationToken ct = default
     );
 
+    Task<IEnumerable<ProductSku>> GetVariants(
+        ProductId productId,
+        bool trackChanges,
+        CancellationToken ct = default
+    );
+
+    Task<KeysetPaginated<ProductSku, ProductSkuId>> GetAdminProductSkusAsync(
+        AdminProductSkusFilters filters,
+        KeysetPagination<ProductSkuId> keysetPagination,
+        bool trackChanges,
+        CancellationToken ct = default
+    );
+
     Task<ProductSku?> GetProductSkuByIdAsync(
         ProductSkuId productId,
+        bool trackChanges,
+        CancellationToken ct = default
+    );
+
+    Task<ProductSkusFilterOptions> GetProductSkusFilterOptions(
         bool trackChanges,
         CancellationToken ct = default
     );

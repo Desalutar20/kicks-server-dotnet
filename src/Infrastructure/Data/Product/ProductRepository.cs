@@ -9,12 +9,6 @@ internal sealed class ProductRepository(AppDbContext dbContext)
     : RepositoryBase<DomainProduct>(dbContext),
         IProductRepository
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new BrandFilterItemConverter(), new CategoryFilterItemConverter() },
-    };
-
     private readonly AppDbContext _dbContext = dbContext;
 
     public void CreateProduct(DomainProduct product) => Create(product);
@@ -117,7 +111,7 @@ internal sealed class ProductRepository(AppDbContext dbContext)
             );
 
         var result = new ProductFilterOptions(
-            ParseTags(reader["tags"]),
+            ParseArray<string>(reader["tags"]),
             Deserialize<List<CategoryFilterItem>>(reader["categories"]) ?? [],
             Deserialize<List<CategoryFilterItem>>(reader["availableCategories"]) ?? [],
             Deserialize<List<BrandFilterItem>>(reader["brands"]) ?? [],
@@ -128,30 +122,4 @@ internal sealed class ProductRepository(AppDbContext dbContext)
     }
 
     public void UpdateProduct(DomainProduct product) => Update(product);
-
-    private static T? Deserialize<T>(object? value)
-    {
-        if (value is null || value is DBNull)
-            return default!;
-
-        var json = value switch
-        {
-            string s => s,
-            JsonElement e => e.GetRawText(),
-            _ => value.ToString(),
-        };
-
-        return JsonSerializer.Deserialize<T>(json!, JsonOptions)!;
-    }
-
-    private static string[] ParseTags(object? value)
-    {
-        if (value is null || value is DBNull)
-            return [];
-
-        if (value is string[] arr)
-            return arr;
-
-        return JsonSerializer.Deserialize<string[]>(value.ToString()!) ?? [];
-    }
 }

@@ -2,9 +2,9 @@ using Presentation.Admin.Products.ProductSkus.Endpoints;
 
 namespace Presentation.Admin.Products.Endpoints;
 
-internal static partial class AdminProductSkusEndpoints
+internal static partial class AdminProductsEndpoints
 {
-    public static void MapProductsV1(this IEndpointRouteBuilder router)
+    public static void MapAdminProductsV1(this IEndpointRouteBuilder router)
     {
         var group = router.MapGroup("/products").WithTags("Admin products");
 
@@ -15,6 +15,6 @@ internal static partial class AdminProductSkusEndpoints
             .UpdateProductV1()
             .ToggleProductIsDeletedV1();
 
-        group.MapProductSkusV1();
+        group.MapAdminProductSkusV1();
     }
 }

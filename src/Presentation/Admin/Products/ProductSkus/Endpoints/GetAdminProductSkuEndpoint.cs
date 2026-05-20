@@ -1,4 +1,4 @@
-using Application.Admin.Products.ProductSkus.UseCases.GetProductSku;
+using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSku;
 using Application.Auth.Types;
 using Domain.Product.ProductSku;
 using Presentation.Admin.Products.ProductSkus.Dto;
@@ -8,7 +8,7 @@ namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
 internal static partial class AdminProductSkusEndpoints
 {
-    private static IEndpointRouteBuilder GetProductSkuV1(this IEndpointRouteBuilder endpoint)
+    private static IEndpointRouteBuilder GetAdminProductSkuV1(this IEndpointRouteBuilder endpoint)
     {
         endpoint
             .MapGet(
@@ -16,7 +16,7 @@ internal static partial class AdminProductSkusEndpoints
                 async (
                     HttpContext ctx,
                     Guid id,
-                    IQueryHandler<GetProductSkuQuery, ProductSku> queryHandler,
+                    IQueryHandler<GetAdminProductSkuQuery, ProductSku> queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -29,9 +29,9 @@ internal static partial class AdminProductSkusEndpoints
                         return Results.Unauthorized();
                     }
 
-                    var logger = loggerFactory.CreateLogger("Admin.GetProductSku");
+                    var logger = loggerFactory.CreateLogger("Admin.GetAdminProductSku");
 
-                    var query = new GetProductSkuQuery(new ProductSkuId(id));
+                    var query = new GetAdminProductSkuQuery(new ProductSkuId(id));
                     var result = await queryHandler.Handle(query, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
@@ -47,8 +47,8 @@ internal static partial class AdminProductSkusEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .ProducesValidationProblem()
-            .WithName("GetProductSku")
-            .WithSummary("Get product SKU by ID")
+            .WithName("GetAdminProductSku")
+            .WithSummary("Get admin product SKU by ID")
             .WithDescription(
                 "Fetches a single product SKU including product details. Admin access required."
             );

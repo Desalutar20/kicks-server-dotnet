@@ -19,7 +19,6 @@ internal sealed class OutboxFileDeleter(
 
         do
         {
-            Console.WriteLine("PROCESSING FILE OUTBOX\n\n\n\n\n\n");
             await using var scope = serviceFactory.CreateAsyncScope();
             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();

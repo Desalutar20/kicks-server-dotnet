@@ -6,7 +6,7 @@ using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
-internal static partial class AdminProductSkusEndpoints
+internal static partial class AdminProductsEndpoints
 {
     private static IEndpointRouteBuilder GetProductFiltersV1(this IEndpointRouteBuilder endpoint)
     {
@@ -31,14 +31,12 @@ internal static partial class AdminProductSkusEndpoints
                     var logger = loggerFactory.CreateLogger("Admin.GetProductFilters");
 
                     var result = await queryHandler.Handle(new GetProductFiltersQuery(), ct);
-                    if (result.IsFailure)
-                    {
-                        return ErrorHandler.Handle(result.Error, logger);
-                    }
 
-                    return Results.Ok(
-                        new ApiResponse<ProductFilterOptionsDto>(result.Value.ToDto())
-                    );
+                    return result.IsFailure
+                        ? ErrorHandler.Handle(result.Error, logger)
+                        : Results.Ok(
+                            new ApiResponse<ProductFilterOptionsDto>(result.Value.ToDto())
+                        );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
@@ -47,7 +45,6 @@ internal static partial class AdminProductSkusEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .ProducesValidationProblem()
             .WithName("GetProductFilters")
             .WithSummary("Retrieves available product filter options for the admin panel.")
             .WithDescription(

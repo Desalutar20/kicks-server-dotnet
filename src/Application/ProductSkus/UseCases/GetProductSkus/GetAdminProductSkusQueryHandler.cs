@@ -1,6 +1,4 @@
-using Domain.Product.ProductSku;
-
-namespace Application.Admin.Products.ProductSkus.UseCases.GetProductSkus;
+namespace Application.ProductSkus.UseCases.GetProductSkus;
 
 public sealed record GetProductSkusQuery(
     ProductSkusFilters Filters,

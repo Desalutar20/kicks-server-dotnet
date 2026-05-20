@@ -1,5 +1,5 @@
 using Application.Admin.Products.ProductSkus.Constants;
-using Application.Admin.Products.ProductSkus.UseCases.GetProductSkus;
+using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSkus;
 using Application.Auth.Types;
 using Domain.Product.ProductSku;
 using Presentation.Admin.Products.ProductSkus.Dto;
@@ -7,7 +7,7 @@ using Presentation.Shared;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
-public sealed record GetProductSkusRequest(
+public sealed record GetAdminProductSkusRequest(
     bool? InStock,
     int? MinPrice,
     int? MaxPrice,
@@ -21,11 +21,11 @@ public sealed record GetProductSkusRequest(
     string? NextCursor
 );
 
-public sealed class GetProductSkusRequestValidator : AbstractValidator<GetProductSkusRequest>
+public sealed class GetProductSkusRequestValidator : AbstractValidator<GetAdminProductSkusRequest>
 {
     public GetProductSkusRequestValidator()
     {
-        RuleFor(x => x.Limit).InclusiveBetween(1, ProductSkusConstants.GetProductSkusMaxLimit);
+        RuleFor(x => x.Limit).InclusiveBetween(1, ProductSkusConstants.GetAdminProductSkusMaxLimit);
 
         RuleFor(x => x.MinPrice).GreaterThan(0);
         RuleFor(x => x.MaxPrice).GreaterThan(0);
@@ -63,16 +63,16 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetProduc
 
 internal static partial class AdminProductSkusEndpoints
 {
-    private static IEndpointRouteBuilder GetProductSkusV1(this IEndpointRouteBuilder endpoint)
+    private static IEndpointRouteBuilder GetAdminProductSkusV1(this IEndpointRouteBuilder endpoint)
     {
         endpoint
             .MapGet(
                 "/skus",
                 async (
                     HttpContext ctx,
-                    [AsParameters] GetProductSkusRequest request,
+                    [AsParameters] GetAdminProductSkusRequest request,
                     IQueryHandler<
-                        GetProductSkusQuery,
+                        GetAdminProductSkusQuery,
                         KeysetPaginated<ProductSku, ProductSkuId>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
@@ -87,7 +87,7 @@ internal static partial class AdminProductSkusEndpoints
                         return Results.Unauthorized();
                     }
 
-                    var logger = loggerFactory.CreateLogger("Admin.GetProductSkus");
+                    var logger = loggerFactory.CreateLogger("Admin.GetAdminProductSkus");
 
                     var queryResult = request.ToQuery();
                     if (queryResult.IsFailure)
@@ -116,17 +116,17 @@ internal static partial class AdminProductSkusEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .ProducesValidationProblem()
-            .WithName("GetProductSkus")
-            .WithSummary("Retrieves a paginated list of product skus for admin panel.")
+            .WithName("GetAdminProductSkus")
+            .WithSummary("Retrieves a paginated list of admin product skus for admin panel.")
             .WithDescription("Returns a filtered and paginated list of product skus.");
 
         return endpoint;
     }
 
-    private static Result<GetProductSkusQuery> ToQuery(this GetProductSkusRequest request)
+    private static Result<GetAdminProductSkusQuery> ToQuery(this GetAdminProductSkusRequest request)
     {
         var limit = PositiveInt
-            .Create(request.Limit ?? ProductSkusConstants.GetProductSkusDefaultLimit)
+            .Create(request.Limit ?? ProductSkusConstants.GetAdminProductSkusDefaultLimit)
             .Value;
 
         PositiveInt? minPrice = null;
@@ -144,7 +144,7 @@ internal static partial class AdminProductSkusEndpoints
             var minPriceResult = PositiveInt.Create(request.MinPrice.Value, "minPrice");
             if (minPriceResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(minPriceResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(minPriceResult.Error);
             }
 
             minPrice = minPriceResult.Value;
@@ -155,7 +155,7 @@ internal static partial class AdminProductSkusEndpoints
             var maxPriceResult = PositiveInt.Create(request.MaxPrice.Value, "maxPrice");
             if (maxPriceResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(maxPriceResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(maxPriceResult.Error);
             }
 
             maxPrice = maxPriceResult.Value;
@@ -166,7 +166,7 @@ internal static partial class AdminProductSkusEndpoints
             var minSalePriceResult = PositiveInt.Create(request.MinSalePrice.Value, "minSalePrice");
             if (minSalePriceResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(minSalePriceResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(minSalePriceResult.Error);
             }
 
             minSalePrice = minSalePriceResult.Value;
@@ -177,7 +177,7 @@ internal static partial class AdminProductSkusEndpoints
             var maxSalePriceResult = PositiveInt.Create(request.MaxSalePrice.Value, "maxSalePrice");
             if (maxSalePriceResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(maxSalePriceResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(maxSalePriceResult.Error);
             }
 
             maxSalePrice = maxSalePriceResult.Value;
@@ -188,7 +188,7 @@ internal static partial class AdminProductSkusEndpoints
             var sizeResult = PositiveInt.Create(request.Size.Value, "size");
             if (sizeResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(sizeResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(sizeResult.Error);
             }
 
             size = sizeResult.Value;
@@ -199,7 +199,7 @@ internal static partial class AdminProductSkusEndpoints
             var colorResult = ProductSkuColor.Create(request.Color);
             if (colorResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(colorResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(colorResult.Error);
             }
 
             color = colorResult.Value;
@@ -210,7 +210,7 @@ internal static partial class AdminProductSkusEndpoints
             var skuResult = ProductSkuSku.Create(request.Sku);
             if (skuResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(skuResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(skuResult.Error);
             }
 
             sku = skuResult.Value;
@@ -228,7 +228,7 @@ internal static partial class AdminProductSkusEndpoints
 
             if (prevCursorResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(prevCursorResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(prevCursorResult.Error);
             }
 
             prev = prevCursorResult.Value;
@@ -246,14 +246,14 @@ internal static partial class AdminProductSkusEndpoints
 
             if (nextCursorResult.IsFailure)
             {
-                return Result<GetProductSkusQuery>.Failure(nextCursorResult.Error);
+                return Result<GetAdminProductSkusQuery>.Failure(nextCursorResult.Error);
             }
 
             next = nextCursorResult.Value;
         }
 
         var pagination = new KeysetPagination<ProductSkuId>(limit, prev, next);
-        var filters = new ProductSkusFilters(
+        var filters = new AdminProductSkusFilters(
             request.InStock,
             minPrice,
             maxPrice,
@@ -264,6 +264,8 @@ internal static partial class AdminProductSkusEndpoints
             sku
         );
 
-        return Result<GetProductSkusQuery>.Success(new GetProductSkusQuery(filters, pagination));
+        return Result<GetAdminProductSkusQuery>.Success(
+            new GetAdminProductSkusQuery(filters, pagination)
+        );
     }
 }

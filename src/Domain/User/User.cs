@@ -26,9 +26,8 @@ public sealed class User : Entity<UserId>
         Gender? gender,
         ProviderId? googleId,
         ProviderId? facebookId
-    )
-    {
-        var user = new User
+    ) =>
+        new()
         {
             Email = email,
             HashedPassword = hashedPassword,
@@ -40,9 +39,6 @@ public sealed class User : Entity<UserId>
             IsVerified = false,
             IsBanned = false,
         };
-
-        return user;
-    }
 
     public bool IsValid() => !IsBanned && IsVerified;
 

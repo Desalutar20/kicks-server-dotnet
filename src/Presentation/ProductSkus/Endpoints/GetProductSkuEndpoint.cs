@@ -1,0 +1,44 @@
+using Application.Auth.Types;
+using Application.ProductSkus.Types;
+using Application.ProductSkus.UseCases.GetProductSku;
+using Domain.Product.ProductSku;
+using Presentation.ProductSkus.Dto;
+using Presentation.Shared;
+
+namespace Presentation.ProductSkus.Endpoints;
+
+internal static partial class ProductSkusEndpoints
+{
+    private static IEndpointRouteBuilder GetProductSkuV1(this IEndpointRouteBuilder endpoint)
+    {
+        endpoint
+            .MapGet(
+                "/{id:guid}",
+                async (
+                    Guid id,
+                    IQueryHandler<GetProductSkuQuery, ProductSkuWithVariants> queryHandler,
+                    ILoggerFactory loggerFactory,
+                    CancellationToken ct
+                ) =>
+                {
+                    var logger = loggerFactory.CreateLogger("GetProductSku");
+
+                    var query = new GetProductSkuQuery(new ProductSkuId(id));
+                    var result = await queryHandler.Handle(query, ct);
+                    return result.IsFailure
+                        ? ErrorHandler.Handle(result.Error, logger)
+                        : Results.Ok(
+                            new ApiResponse<ProductSkuWithVariantsDto>(result.Value.ToDto())
+                        );
+                }
+            )
+            .Produces<ApiResponse<ProductSkuWithVariantsDto>>()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .WithName("GetProductSku")
+            .WithSummary("Get product SKU and it's variants by ID")
+            .WithDescription("Fetches a single product SKU including with variants.");
+
+        return endpoint;
+    }
+}

@@ -1,6 +1,3 @@
-using Domain.Brand;
-using Domain.Category;
-
 namespace Domain.Product;
 
 public sealed record ProductFilterOptions(
@@ -10,7 +7,3 @@ public sealed record ProductFilterOptions(
     IEnumerable<BrandFilterItem> Brands,
     IEnumerable<BrandFilterItem> AvailableBrands
 );
-
-public sealed record CategoryFilterItem(CategoryId Id, CategoryName Name);
-
-public sealed record BrandFilterItem(BrandId Id, BrandName Name);

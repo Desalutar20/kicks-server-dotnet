@@ -3,6 +3,7 @@ using Domain.Brand;
 using Domain.Category;
 using Domain.Product;
 using Domain.Product.ProductSku;
+using Domain.Product.ProductSku.ProductSkuImage;
 using Domain.Shared;
 using Microsoft.AspNetCore.Http;
 using Presentation.Admin.Products.Endpoints;
@@ -192,7 +193,37 @@ public static class TestData
                         var color = ProductSkuColor.Create(faker.Internet.Color()).Value;
                         var sku = ProductSkuSku.Create(String(ProductSkuSku.MaxLength)).Value;
 
-                        return ProductSku.Create(price, quantity, color, sku, size, product.Id);
+                        var productSku = ProductSku.Create(
+                            price,
+                            quantity,
+                            color,
+                            sku,
+                            size,
+                            product.Id
+                        );
+
+                        var imageUrl = ProductSkuImageUrl.Create(faker.Image.PlaceImgUrl()).Value;
+                        var imageId = Guid.NewGuid();
+                        var imageName = ProductSkuImageName
+                            .Create(String(ProductSkuImageName.MaxLength))
+                            .Value;
+
+                        var images = Enumerable
+                            .Range(0, 2)
+                            .Select(
+                                (_) =>
+                                    ProductSkuImage.Create(
+                                        imageUrl,
+                                        imageId,
+                                        imageName,
+                                        productSku.Id
+                                    )
+                            )
+                            .ToList();
+
+                        productSku.AddImages(images);
+
+                        return productSku;
                     })
                 ),
         ];

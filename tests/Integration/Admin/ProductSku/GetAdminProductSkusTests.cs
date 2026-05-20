@@ -7,7 +7,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
 
-public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
+public class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
@@ -25,14 +25,14 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
         );
 
         body.Should().NotBeNull();
-        body.Data.Should().HaveCount(ProductSkusConstants.GetProductSkusDefaultLimit);
+        body.Data.Should().HaveCount(ProductSkusConstants.GetAdminProductSkusDefaultLimit);
     }
 
     [Theory]
     [MemberData(nameof(InvalidRequests))]
     public async ValueTask Should_ReturnBadRequest_When_RequestIsInvalid(
         string field,
-        GetProductSkusRequest invalidRequest
+        GetAdminProductSkusRequest invalidRequest
     )
     {
         var ct = TestContext.Current.CancellationToken;
@@ -40,7 +40,7 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await GetProductSkus(invalidRequest, sessionCookie, ct);
+        var response = await GetAdminProductSkus(invalidRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);
@@ -54,7 +54,7 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var response = await GetProducts(null, null, ct);
+        var response = await GetProductSkus(null, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -66,13 +66,13 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await GetCategories(null, sessionCookie, ct);
+        var response = await GetProductSkus(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    public static TheoryData<string, GetProductSkusRequest> InvalidRequests()
+    public static TheoryData<string, GetAdminProductSkusRequest> InvalidRequests()
     {
-        var request = new GetProductSkusRequest(
+        var request = new GetAdminProductSkusRequest(
             null,
             null,
             null,
@@ -104,7 +104,13 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
             ("sku", request with { Sku = TestData.String(ProductSkuSku.MaxLength + 1) }),
             ("limit", request with { Limit = 0 }),
             ("limit", request with { Limit = -1 }),
-            ("limit", request with { Limit = ProductSkusConstants.GetProductSkusMaxLimit + 1 }),
+            (
+                "limit",
+                request with
+                {
+                    Limit = ProductSkusConstants.GetAdminProductSkusMaxLimit + 1,
+                }
+            ),
             (
                 "prevCursor",
                 request with

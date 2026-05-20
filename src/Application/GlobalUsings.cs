@@ -8,6 +8,7 @@ global using Domain.Abstractions.Events;
 global using Domain.Brand;
 global using Domain.Category;
 global using Domain.Product;
+global using Domain.Product.ProductSku;
 global using Domain.Shared;
 global using Domain.Shared.Pagination;
 global using Domain.User;

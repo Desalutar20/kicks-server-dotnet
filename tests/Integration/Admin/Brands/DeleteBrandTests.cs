@@ -23,8 +23,8 @@ public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
         var deleteBrandResponse = await DeleteBrand(body.Data[0].Id, sessionCookie, ct);
         deleteBrandResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var dbUser = await GetBrandFromDbById(new BrandId(body.Data[0].Id), ct);
-        dbUser.Should().BeNull();
+        var dbBrand = await GetBrandFromDbById(new BrandId(body.Data[0].Id), ct);
+        dbBrand.Should().BeNull();
     }
 
     [Fact]

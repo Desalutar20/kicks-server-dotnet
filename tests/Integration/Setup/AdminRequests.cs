@@ -137,7 +137,7 @@ public partial class TestApp
     protected async Task<HttpResponseMessage> GetProductFilters(
         string? cookie,
         CancellationToken ct = default
-    ) => await Request("/api/v1/admin/products/filters", cookie, ct: ct);
+    ) => await Request("/api/v1/admin/products/filters", cookie, null, ct);
 
     protected async Task<HttpResponseMessage> GetProducts(
         GetProductsRequest? data,
@@ -188,8 +188,8 @@ public partial class TestApp
             ct
         );
 
-    protected async Task<HttpResponseMessage> GetProductSkus(
-        GetProductSkusRequest? data,
+    protected async Task<HttpResponseMessage> GetAdminProductSkus(
+        GetAdminProductSkusRequest? data,
         string? cookie,
         CancellationToken ct = default
     )
@@ -213,6 +213,12 @@ public partial class TestApp
 
         return await Request("/api/v1/admin/products/skus", cookie, query, ct);
     }
+
+    protected async Task<HttpResponseMessage> GetAdminProductSku(
+        Guid id,
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request($"/api/v1/admin/products/skus/{id}", cookie, null, ct);
 
     protected async Task<HttpResponseMessage> CreateProductSku(
         Guid productId,
@@ -313,6 +319,20 @@ public partial class TestApp
             null,
             HttpMethod.Delete,
             $"/api/v1/admin/products/skus/{productSkuId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> DeleteProductSkuImage(
+        Guid productSkuId,
+        Guid imageId,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request<object>(
+            null,
+            HttpMethod.Delete,
+            $"/api/v1/admin/products/skus/{productSkuId}/images/{imageId}",
             cookie,
             ct
         );

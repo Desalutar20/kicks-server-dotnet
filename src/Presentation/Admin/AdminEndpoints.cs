@@ -14,6 +14,6 @@ public static class AdminEndpoints
         group.MapAdminUsersV1();
         group.MapBrandsV1();
         group.MapCategoriesV1();
-        group.MapProductsV1();
+        group.MapAdminProductsV1();
     }
 }

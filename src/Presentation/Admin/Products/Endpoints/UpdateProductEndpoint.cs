@@ -32,7 +32,7 @@ public sealed class UpdateProductRequestValidator : AbstractValidator<UpdateProd
     }
 }
 
-internal static partial class AdminProductSkusEndpoints
+internal static partial class AdminProductsEndpoints
 {
     private static IEndpointRouteBuilder UpdateProductV1(this IEndpointRouteBuilder endpoint)
     {

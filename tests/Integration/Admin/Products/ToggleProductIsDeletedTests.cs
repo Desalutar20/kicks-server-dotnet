@@ -27,10 +27,10 @@ public class ToggleProductIsDeletedTests(ApiFactory factory) : TestApp(factory)
         );
         toggleBanUserResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var dbUser = await GetProductFromDbById(new ProductId(body.Data[0].Id), ct);
+        var dbProduct = await GetProductFromDbById(new ProductId(body.Data[0].Id), ct);
 
-        dbUser.Should().NotBeNull();
-        dbUser.IsDeleted.Should().BeTrue();
+        dbProduct.Should().NotBeNull();
+        dbProduct.IsDeleted.Should().BeTrue();
     }
 
     [Fact]

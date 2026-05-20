@@ -113,4 +113,34 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
 
         return await _httpClient.SendAsync(message, ct);
     }
+
+    private async Task<HttpResponseMessage> Request(
+        string path,
+        string? cookie,
+        IEnumerable<KeyValuePair<string, string?>>? query = null,
+        CancellationToken ct = default
+    )
+    {
+        var requestUri = path;
+        if (query is not null)
+        {
+            var queryString = string.Join(
+                "&",
+                query
+                    .Where(x => x.Value is not null)
+                    .Select(x => $"{Uri.EscapeDataString(x.Key)}={Uri.EscapeDataString(x.Value!)}")
+            );
+
+            if (!string.IsNullOrWhiteSpace(queryString))
+                requestUri += "?" + queryString;
+        }
+
+        var message = new HttpRequestMessage(HttpMethod.Get, requestUri);
+        if (cookie is not null)
+        {
+            message.Headers.Add("Cookie", cookie);
+        }
+
+        return await _httpClient.SendAsync(message, ct);
+    }
 }

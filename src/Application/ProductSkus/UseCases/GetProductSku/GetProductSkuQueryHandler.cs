@@ -1,0 +1,50 @@
+using Application.Admin.Products.ProductSkus.Errors;
+using Application.ProductSkus.Types;
+
+namespace Application.ProductSkus.UseCases.GetProductSku;
+
+public sealed record GetProductSkuQuery(ProductSkuId Id) : IQuery<ProductSkuWithVariants>;
+
+internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSkusRepository)
+    : IQueryHandler<GetProductSkuQuery, ProductSkuWithVariants>
+{
+    public async Task<Result<ProductSkuWithVariants>> Handle(
+        GetProductSkuQuery query,
+        CancellationToken ct = default
+    )
+    {
+        var data = await productSkusRepository.GetProductSkuByIdAsync(query.Id, false, ct);
+        if (data is null)
+        {
+            return Result<ProductSkuWithVariants>.Failure(
+                AdminProductSkuErrors.ProductSkuNotFound(query.Id)
+            );
+        }
+
+        var skus = await productSkusRepository.GetVariants(data.ProductId, false, ct);
+
+        var variants = skus.GroupBy(x => x.Size)
+            .Select(g =>
+            {
+                var matchingColor = g.FirstOrDefault(p =>
+                    p.Color == data.Color && p.Quantity.Value > 0
+                );
+
+                var selected =
+                    matchingColor ?? g.FirstOrDefault(p => p.Quantity.Value > 0) ?? g.First();
+
+                //  var sizeAvailable = g.Any(p => p.Quantity.Value > 0);
+
+                return new ProductSkuVariant(
+                    g.Key,
+                    selected.Id,
+                    selected.Quantity.Value > 0,
+                    g.Select(x => new ProductSkuVariantColor(x.Color, x.Id, x.Quantity.Value > 0))
+                        .ToList()
+                );
+            })
+            .ToList();
+
+        return Result<ProductSkuWithVariants>.Success(new ProductSkuWithVariants(data, variants));
+    }
+}

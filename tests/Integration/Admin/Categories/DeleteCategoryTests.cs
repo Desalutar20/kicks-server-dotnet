@@ -25,8 +25,8 @@ public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
         var deleteCategoryResponse = await DeleteCategory(body.Data[0].Id, sessionCookie, ct);
         deleteCategoryResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var dbUser = await GetCategoryFromDbById(new CategoryId(body.Data[0].Id), ct);
-        dbUser.Should().BeNull();
+        var dbCategory = await GetCategoryFromDbById(new CategoryId(body.Data[0].Id), ct);
+        dbCategory.Should().BeNull();
     }
 
     [Fact]

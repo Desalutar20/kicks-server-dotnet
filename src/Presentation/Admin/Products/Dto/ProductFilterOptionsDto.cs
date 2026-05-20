@@ -10,10 +10,6 @@ public sealed record ProductFilterOptionsDto(
     List<BrandItemDto> AvailableBrands
 );
 
-public sealed record CategoryItemDto(Guid Id, string Name);
-
-public sealed record BrandItemDto(Guid Id, string Name);
-
 internal static class ProductFilterOptionsDtoMapper
 {
     public static ProductFilterOptionsDto ToDto(this ProductFilterOptions model) =>

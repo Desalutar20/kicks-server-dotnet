@@ -5,7 +5,7 @@ using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
-internal static partial class AdminProductSkusEndpoints
+internal static partial class AdminProductsEndpoints
 {
     private static IEndpointRouteBuilder ToggleProductIsDeletedV1(
         this IEndpointRouteBuilder endpoint

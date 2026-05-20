@@ -1,15 +1,14 @@
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Product.ProductSku;
 
-namespace Application.Admin.Products.ProductSkus.UseCases.GetProductSku;
+namespace Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSku;
 
-public sealed record GetProductSkuQuery(ProductSkuId Id) : IQuery<ProductSku>;
+public sealed record GetAdminProductSkuQuery(ProductSkuId Id) : IQuery<ProductSku>;
 
-internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSkusRepository)
-    : IQueryHandler<GetProductSkuQuery, ProductSku>
+internal sealed class GetAdminProductSkuQueryHandler(IProductSkusRepository productSkusRepository)
+    : IQueryHandler<GetAdminProductSkuQuery, ProductSku>
 {
     public async Task<Result<ProductSku>> Handle(
-        GetProductSkuQuery query,
+        GetAdminProductSkuQuery query,
         CancellationToken ct = default
     )
     {

@@ -25,8 +25,8 @@ public class DeleteProductSkuTests(ApiFactory factory) : TestApp(factory)
         var deleteProductSkuResponse = await DeleteProductSku(body.Data[0].Id, sessionCookie, ct);
         deleteProductSkuResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var dbUser = await GetProductSkuFromDbById(new ProductSkuId(body.Data[0].Id), ct);
-        dbUser.Should().BeNull();
+        var dbProductSku = await GetProductSkuFromDbById(new ProductSkuId(body.Data[0].Id), ct);
+        dbProductSku.Should().BeNull();
     }
 
     [Fact]

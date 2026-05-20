@@ -43,7 +43,7 @@ public sealed class GetProductsRequestValidator : AbstractValidator<GetProductsR
     }
 }
 
-internal static partial class AdminProductSkusEndpoints
+internal static partial class AdminProductsEndpoints
 {
     private static IEndpointRouteBuilder GetProductsV1(this IEndpointRouteBuilder endpoint)
     {
