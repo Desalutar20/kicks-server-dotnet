@@ -1,16 +1,10 @@
-using Domain.Abstractions;
+namespace Domain.Product.ProductSku;
 
-namespace Domain.Product.ProductSku.ProductSkuImage;
-
-public sealed class ProductSkuImage : Entity<ProductSkuImageId>
+public sealed record ProductSkuImage
 {
-    private ProductSkuImage()
-        : base(new ProductSkuImageId(Guid.NewGuid())) { }
-
     public ProductSkuImageUrl ImageUrl { get; private set; } = null!;
     public Guid ImageId { get; private set; }
     public ProductSkuImageName ImageName { get; private set; } = null!;
-    public ProductSkuId ProductSkuId { get; private set; } = null!;
 
     public static ProductSkuImage Create(
         ProductSkuImageUrl imageUrl,
@@ -23,6 +17,5 @@ public sealed class ProductSkuImage : Entity<ProductSkuImageId>
             ImageUrl = imageUrl,
             ImageId = imageId,
             ImageName = imageName,
-            ProductSkuId = productSkuId,
         };
 }

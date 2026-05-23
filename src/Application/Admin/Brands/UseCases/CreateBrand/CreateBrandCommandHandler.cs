@@ -22,11 +22,11 @@ internal sealed class CreateBrandCommandHandler(
 
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<Brand>.Success(newBrand);
+            return newBrand;
         }
         catch (BrandAlreadyExistsException)
         {
-            return Result<Brand>.Failure(AdminBrandErrors.BrandAlreadyExists(command.Name));
+            return AdminBrandErrors.BrandAlreadyExists(command.Name);
         }
     }
 }

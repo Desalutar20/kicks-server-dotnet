@@ -14,8 +14,6 @@ internal sealed class GetAdminProductSkuQueryHandler(IProductSkusRepository prod
     {
         var data = await productSkusRepository.GetProductSkuByIdAsync(query.Id, false, ct);
 
-        return data is null
-            ? Result<ProductSku>.Failure(AdminProductSkuErrors.ProductSkuNotFound(query.Id))
-            : Result<ProductSku>.Success(data);
+        return data is null ? AdminProductSkuErrors.ProductSkuNotFound(query.Id) : data;
     }
 }

@@ -24,7 +24,7 @@ internal sealed class ForgotPasswordCommandHandler(
         var tokenResult = RandomTokenGenerator.Generate();
         if (tokenResult.IsFailure)
         {
-            return Result.Failure(Error.Internal("Something went wrong"));
+            return Error.Internal("Something went wrong");
         }
 
         var message = EmailService.BuildResetPasswordEmail(

@@ -38,7 +38,7 @@ public class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
 
         var productFromDb = await GetProductSkuFromDbById(new ProductSkuId(product!.Data), ct);
         productFromDb.Should().NotBeNull();
-        productFromDb.ProductSkuImages.Count.Should().Be(1);
+        productFromDb.Images.Images.Count.Should().Be(1);
     }
 
     [Theory]

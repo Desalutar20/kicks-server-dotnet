@@ -1,4 +1,4 @@
-namespace Domain.Product.ProductSku.ProductSkuImage;
+namespace Domain.Product.ProductSku;
 
 public sealed record ProductSkuImageId(Guid Value)
 {

@@ -27,7 +27,7 @@ internal sealed class UpdateBrandCommandHandler(
         }
         catch (BrandAlreadyExistsException)
         {
-            return Result.Failure(AdminBrandErrors.BrandAlreadyExists(command.Name));
+            return AdminBrandErrors.BrandAlreadyExists(command.Name);
         }
     }
 }

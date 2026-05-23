@@ -26,7 +26,7 @@ internal sealed class UpdateProductCommandHandler(
         var product = await productRepository.GetProductByIdAsync(command.Id, true, ct);
         if (product is null)
         {
-            return Result<Product>.Failure(AdminProductErrors.ProductNotFound(command.Id));
+            return AdminProductErrors.ProductNotFound(command.Id);
         }
 
         product.Update(
@@ -44,27 +44,23 @@ internal sealed class UpdateProductCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<Product>.Success(product);
+            return product;
         }
         catch (BrandDoesNotExistsException)
         {
-            return Result<Product>.Failure(AdminProductErrors.BrandDoesNotExist(command.BrandId!));
+            return AdminProductErrors.BrandDoesNotExist(command.BrandId!);
         }
         catch (CategoryDoesNotExistsException)
         {
-            return Result<Product>.Failure(
-                AdminProductErrors.CategoryDoesNotExist(command.CategoryId!)
-            );
+            return AdminProductErrors.CategoryDoesNotExist(command.CategoryId!);
         }
         catch (ProductAlreadyExistsException)
         {
-            return Result<Product>.Failure(
-                AdminProductErrors.ProductAlreadyExists(
-                    command.Title ?? product.Title,
-                    command.Gender ?? product.Gender,
-                    command.BrandId ?? product.BrandId,
-                    command.CategoryId ?? product.CategoryId
-                )
+            return AdminProductErrors.ProductAlreadyExists(
+                command.Title ?? product.Title,
+                command.Gender ?? product.Gender,
+                command.BrandId ?? product.BrandId,
+                command.CategoryId ?? product.CategoryId
             );
         }
     }

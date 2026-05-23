@@ -17,14 +17,14 @@ internal sealed class VerifyAccountCommandHandler(
         var userId = await authCache.GetUserIdByVerificationTokenAsync(command.Token, ct);
         if (userId is null)
         {
-            return Result.Failure(AuthErrors.InvalidOrExpiredToken);
+            return AuthErrors.InvalidOrExpiredToken;
         }
 
         var user = await userRepository.GetUserByIdAsync(userId, false, ct);
 
         if (user is null || user.Email != command.Email)
         {
-            return Result.Failure(AuthErrors.InvalidOrExpiredToken);
+            return AuthErrors.InvalidOrExpiredToken;
         }
 
         if (user.IsVerified)

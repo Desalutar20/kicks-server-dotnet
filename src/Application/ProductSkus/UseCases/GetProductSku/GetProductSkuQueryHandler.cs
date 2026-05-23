@@ -1,4 +1,3 @@
-using Application.Admin.Products.ProductSkus.Errors;
 using Application.ProductSkus.Types;
 
 namespace Application.ProductSkus.UseCases.GetProductSku;
@@ -16,9 +15,7 @@ internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSk
         var data = await productSkusRepository.GetProductSkuByIdAsync(query.Id, false, ct);
         if (data is null)
         {
-            return Result<ProductSkuWithVariants>.Failure(
-                AdminProductSkuErrors.ProductSkuNotFound(query.Id)
-            );
+            return Error.Failure($"Product sku with id '{query.Id}' doesn't exist");
         }
 
         var skus = await productSkusRepository.GetVariants(data.ProductId, false, ct);
@@ -45,6 +42,6 @@ internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSk
             })
             .ToList();
 
-        return Result<ProductSkuWithVariants>.Success(new ProductSkuWithVariants(data, variants));
+        return new ProductSkuWithVariants(data, variants);
     }
 }

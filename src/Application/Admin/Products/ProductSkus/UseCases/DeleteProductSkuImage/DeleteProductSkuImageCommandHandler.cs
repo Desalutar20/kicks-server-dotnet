@@ -1,8 +1,6 @@
 using System.Text.Json;
 using Application.Admin.Products.ProductSkus.Errors;
 using Domain.Outbox;
-using Domain.Product.ProductSku;
-using Domain.Product.ProductSku.ProductSkuImage;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.DeleteProductSkuImage;
 
@@ -23,13 +21,13 @@ internal sealed class DeleteProductSkuImageCommandHandler(
         var productSku = await productSkusRepository.GetProductSkuByIdAsync(command.Id, true, ct);
         if (productSku is null)
         {
-            return Result.Failure(AdminProductSkuErrors.ProductSkuNotFound(command.Id));
+            return AdminProductSkuErrors.ProductSkuNotFound(command.Id);
         }
 
         var removeImageResult = productSku.RemoveImage(command.ImageId);
         if (removeImageResult.IsFailure)
         {
-            return Result.Failure(removeImageResult.Error);
+            return removeImageResult.Error;
         }
 
         var outbox = Outbox.Create(

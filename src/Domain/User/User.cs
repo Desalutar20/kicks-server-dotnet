@@ -67,7 +67,7 @@ public sealed class User : Entity<UserId>
                 return Result.Success();
 
             default:
-                return Result.Failure(Error.Failure("Unsupported provider"));
+                return Error.Failure("Unsupported provider");
         }
     }
 }

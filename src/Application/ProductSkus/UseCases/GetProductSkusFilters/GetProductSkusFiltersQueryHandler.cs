@@ -1,5 +1,3 @@
-using Domain.Product.ProductSku;
-
 namespace Application.ProductSkus.UseCases.GetProductSkusFilters;
 
 public sealed record GetProductSkusFiltersQuery : IQuery<ProductSkusFilterOptions>;
@@ -15,6 +13,6 @@ internal sealed class GetProductSkusFiltersQueryHandler(
     {
         var filters = await productSkusRepository.GetProductSkusFilterOptions(false, ct);
 
-        return Result<ProductSkusFilterOptions>.Success(filters);
+        return filters;
     }
 }

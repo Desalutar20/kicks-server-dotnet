@@ -43,12 +43,6 @@ internal sealed class CategoryRepository(AppDbContext dbContext)
         );
     }
 
-    public async Task<Category?> GetCategoryByNameAsync(
-        CategoryName name,
-        bool trackChanges,
-        CancellationToken ct = default
-    ) => await FindByCondition(x => x.Name == name, trackChanges).FirstOrDefaultAsync(ct);
-
     public async Task<Category?> GetCategoryByIdAsync(
         CategoryId id,
         bool trackChanges,

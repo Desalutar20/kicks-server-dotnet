@@ -20,6 +20,6 @@ internal sealed class GetCategoriesQueryHandler(ICategoryRepository categoryRepo
             ct
         );
 
-        return Result<KeysetPaginated<Category, CategoryId>>.Success(data);
+        return data;
     }
 }

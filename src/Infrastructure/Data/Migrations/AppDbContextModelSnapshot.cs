@@ -231,6 +231,19 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Price", "Domain.Product.ProductSku.ProductSku.Price#ProductSkuPrice", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<int>("Price")
+                                .HasColumnType("integer")
+                                .HasColumnName("price");
+
+                            b1.Property<int?>("SalePrice")
+                                .HasColumnType("integer")
+                                .HasColumnName("sale_price");
+                        });
+
                     b.HasKey("Id")
                         .HasName("pk_product_sku");
 
@@ -246,47 +259,6 @@ namespace Infrastructure.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_product_sku_quantity_positive", "quantity >= 0");
                         });
-                });
-
-            modelBuilder.Entity("Domain.Product.ProductSku.ProductSkuImage.ProductSkuImage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("ImageId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("image_id");
-
-                    b.Property<string>("ImageName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("image_name");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("image_url");
-
-                    b.Property<Guid>("ProductSkuId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_sku_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamptz")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("Id")
-                        .HasName("pk_product_sku_image");
-
-                    b.HasIndex("ProductSkuId")
-                        .HasDatabaseName("ix_product_sku_image_product_sku_id");
-
-                    b.ToTable("product_sku_image", (string)null);
                 });
 
             modelBuilder.Entity("Domain.User.User", b =>
@@ -408,48 +380,56 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_product_sku_product_product_id");
 
-                    b.OwnsOne("Domain.Product.ProductSku.ProductSkuPrice", "Price", b1 =>
+                    b.OwnsOne("Domain.Product.ProductSku.ProductSkuImages", "Images", b1 =>
                         {
-                            b1.Property<Guid>("ProductSkuId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("id");
-
-                            b1.Property<int>("Price")
-                                .HasColumnType("integer")
-                                .HasColumnName("price");
-
-                            b1.Property<int?>("SalePrice")
-                                .HasColumnType("integer")
-                                .HasColumnName("sale_price");
+                            b1.Property<Guid>("ProductSkuId");
 
                             b1.HasKey("ProductSkuId");
 
                             b1.ToTable("product_sku");
 
+                            b1
+                                .ToJson("images")
+                                .HasColumnType("jsonb");
+
                             b1.WithOwner()
                                 .HasForeignKey("ProductSkuId")
                                 .HasConstraintName("fk_product_sku_product_sku_id");
+
+                            b1.OwnsMany("Domain.Product.ProductSku.ProductSkuImage", "Images", b2 =>
+                                {
+                                    b2.Property<Guid>("ProductSkuImagesProductSkuId");
+
+                                    b2.Property<int>("__synthesizedOrdinal")
+                                        .ValueGeneratedOnAdd();
+
+                                    b2.Property<Guid>("ImageId");
+
+                                    b2.Property<string>("ImageName")
+                                        .IsRequired()
+                                        .HasMaxLength(100);
+
+                                    b2.Property<string>("ImageUrl")
+                                        .IsRequired()
+                                        .HasMaxLength(200);
+
+                                    b2.HasKey("ProductSkuImagesProductSkuId", "__synthesizedOrdinal")
+                                        .HasName("pk_product_sku");
+
+                                    b2.ToTable("product_sku");
+
+                                    b2.WithOwner()
+                                        .HasForeignKey("ProductSkuImagesProductSkuId")
+                                        .HasConstraintName("fk_product_sku_product_sku_product_sku_images_product_sku_id");
+                                });
+
+                            b1.Navigation("Images");
                         });
 
-                    b.Navigation("Price")
+                    b.Navigation("Images")
                         .IsRequired();
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Domain.Product.ProductSku.ProductSkuImage.ProductSkuImage", b =>
-                {
-                    b.HasOne("Domain.Product.ProductSku.ProductSku", null)
-                        .WithMany("ProductSkuImages")
-                        .HasForeignKey("ProductSkuId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_product_sku_image_product_sku_product_sku_id");
-                });
-
-            modelBuilder.Entity("Domain.Product.ProductSku.ProductSku", b =>
-                {
-                    b.Navigation("ProductSkuImages");
                 });
 #pragma warning restore 612, 618
         }

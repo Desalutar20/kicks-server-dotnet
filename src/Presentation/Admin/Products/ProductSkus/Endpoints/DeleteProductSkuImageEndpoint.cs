@@ -1,8 +1,6 @@
-using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSku;
 using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSkuImage;
 using Application.Auth.Types;
 using Domain.Product.ProductSku;
-using Domain.Product.ProductSku.ProductSkuImage;
 using Presentation.Shared;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;

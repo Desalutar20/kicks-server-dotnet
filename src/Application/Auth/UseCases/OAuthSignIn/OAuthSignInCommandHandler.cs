@@ -32,7 +32,7 @@ internal sealed class OAuthSignInCommandHandler(
         var oauthUser = await client.GetUserAsync(command.Code, ct);
         if (oauthUser.IsFailure)
         {
-            return Result<Guid>.Failure(oauthUser.Error);
+            return oauthUser.Error;
         }
 
         var user = await userRepository.GetUserByEmailAsync(oauthUser.Value.Email, true, ct);
@@ -45,13 +45,11 @@ internal sealed class OAuthSignInCommandHandler(
         var result = user.LinkOAuthProvider(command.Provider, oauthUser.Value.ProviderId);
         if (result.IsFailure)
         {
-            return Result<Guid>.Failure(result.Error);
+            return result.Error;
         }
 
         await unitOfWork.SaveChangesAsync(ct);
 
-        return Result<Guid>.Success(
-            await AuthService.GenerateSession(user, authCache, config.Application, ct)
-        );
+        return await AuthService.GenerateSession(user, authCache, config.Application, ct);
     }
 }

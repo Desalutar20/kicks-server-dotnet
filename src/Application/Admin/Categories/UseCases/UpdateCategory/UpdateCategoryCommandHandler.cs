@@ -27,7 +27,7 @@ internal sealed class UpdateCategoryCommandHandler(
         }
         catch (CategoryAlreadyExistsException)
         {
-            return Result.Failure(AdminCategoryErrors.CategoryAlreadyExists(command.Name));
+            return AdminCategoryErrors.CategoryAlreadyExists(command.Name);
         }
     }
 }

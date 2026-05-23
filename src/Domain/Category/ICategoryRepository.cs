@@ -12,12 +12,6 @@ public interface ICategoryRepository
         CancellationToken ct = default
     );
 
-    Task<Category?> GetCategoryByNameAsync(
-        CategoryName name,
-        bool trackChanges,
-        CancellationToken ct = default
-    );
-
     Task<Category?> GetCategoryByIdAsync(
         CategoryId id,
         bool trackChanges,

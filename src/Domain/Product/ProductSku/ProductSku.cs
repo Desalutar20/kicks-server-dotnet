@@ -1,5 +1,4 @@
 using Domain.Abstractions;
-using Domain.Product.ProductSku.ProductSkuImage;
 using Domain.Shared;
 
 namespace Domain.Product.ProductSku;
@@ -20,7 +19,7 @@ public sealed class ProductSku : Entity<ProductSkuId>
     public ProductId ProductId { get; private set; } = null!;
     public Product Product { get; private set; } = null!;
 
-    public List<ProductSkuImage.ProductSkuImage> ProductSkuImages { get; private set; } = [];
+    public ProductSkuImages Images { get; private set; } = null!;
 
     public static ProductSku Create(
         ProductSkuPrice price,
@@ -38,59 +37,55 @@ public sealed class ProductSku : Entity<ProductSkuId>
             Sku = sku,
             Size = size,
             ProductId = productId,
+            Images = new ProductSkuImages([]),
         };
 
-    public Result SetImages(List<ProductSkuImage.ProductSkuImage> images)
+    public Result SetImages(List<ProductSkuImage> images)
     {
         if (images is null || images.Count == 0 || images.Count > MaxImages)
         {
-            return Result.Failure(
-                Error.Validation(
-                    "productSkuImages",
-                    [$"Product SKU must contain between 1 and {MaxImages} images."]
-                )
+            return Error.Validation(
+                "productSkuImages",
+                [$"Product SKU must contain between 1 and {MaxImages} images."]
             );
         }
 
-        ProductSkuImages = images;
+        Images = new ProductSkuImages(images);
 
         return Result.Success();
     }
 
-    public Result AddImages(List<ProductSkuImage.ProductSkuImage> images)
+    public Result AddImages(List<ProductSkuImage> images)
     {
-        if (
-            images is null
-            || images.Count == 0
-            || ProductSkuImages.Count + images.Count > MaxImages
-        )
+        if (images is null || images.Count == 0 || Images.Images.Count + images.Count > MaxImages)
         {
-            return Result.Failure(
-                Error.Validation("productSkuImages", [$"Cannot add more than {MaxImages} images."])
+            return Error.Validation(
+                "productSkuImages",
+                [$"Cannot add more than {MaxImages} images."]
             );
         }
 
-        ProductSkuImages.AddRange(images);
+        Images.AddRange(images);
 
         return Result.Success();
     }
 
-    public Result<Guid> RemoveImage(ProductSkuImageId imageId)
+    public Result<Guid> RemoveImage(Guid imageId)
     {
-        if (ProductSkuImages.Count == 1)
+        if (Images.Images.Count == 1)
         {
-            return Result<Guid>.Failure(Error.Failure("Product SKU must have at least one image."));
+            return Error.Failure("Product SKU must have at least one image.");
         }
 
-        var image = ProductSkuImages.SingleOrDefault(image => image.Id == imageId);
+        var image = Images.Images.SingleOrDefault(image => image.ImageId == imageId);
         if (image == null)
         {
-            return Result<Guid>.Failure(Error.Failure("Product SKU image was not found."));
+            return Error.Failure("Product SKU image was not found.");
         }
 
-        ProductSkuImages = ProductSkuImages.Where(image => image.Id != imageId).ToList();
+        Images.Remove(image.ImageId);
 
-        return Result<Guid>.Success(image.ImageId);
+        return image.ImageId;
     }
 
     public Result Update(
@@ -107,9 +102,7 @@ public sealed class ProductSku : Entity<ProductSkuId>
 
             if (salePrice is not null && price.Price < salePrice)
             {
-                return Result.Failure(
-                    Error.Validation("price", ["Sale price cannot exceed price"])
-                );
+                return Error.Validation("price", ["Sale price cannot exceed price"]);
             }
 
             Price = ProductSkuPrice.Create(price.Price, salePrice).Value;
@@ -119,20 +112,6 @@ public sealed class ProductSku : Entity<ProductSkuId>
         Size = size ?? Size;
         Color = color ?? Color;
         Sku = sku ?? Sku;
-
-        return Result.Success();
-    }
-
-    public Result UpdatePrice(ProductSkuPrice newPrice)
-    {
-        var salePrice = newPrice.SalePrice ?? Price.SalePrice;
-
-        if (salePrice is not null && newPrice.Price < salePrice)
-        {
-            return Result.Failure(Error.Validation("price", ["Sale price cannot exceed price"]));
-        }
-
-        Price = ProductSkuPrice.Create(newPrice.Price, salePrice).Value;
 
         return Result.Success();
     }

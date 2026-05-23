@@ -22,13 +22,11 @@ internal sealed class CreateCategoryCommandHandler(
 
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<Category>.Success(newCategory);
+            return newCategory;
         }
         catch (CategoryAlreadyExistsException)
         {
-            return Result<Category>.Failure(
-                AdminCategoryErrors.CategoryAlreadyExists(command.Name)
-            );
+            return AdminCategoryErrors.CategoryAlreadyExists(command.Name);
         }
     }
 }

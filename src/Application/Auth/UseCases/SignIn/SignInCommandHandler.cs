@@ -30,8 +30,6 @@ public class SignInCommandHandler(
 
         var sessionId = await AuthService.GenerateSession(user, authCache, config.Application, ct);
 
-        return Result<UserWithSessionId>.Success(
-            new UserWithSessionId(user.ToSessionUser(), sessionId)
-        );
+        return new UserWithSessionId(user.ToSessionUser(), sessionId);
     }
 }

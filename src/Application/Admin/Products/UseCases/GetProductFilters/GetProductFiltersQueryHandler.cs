@@ -12,6 +12,6 @@ internal sealed class GetProductFiltersQueryHandler(IProductRepository productRe
     {
         var filters = await productRepository.GetProductsFilterOptions(false, ct);
 
-        return Result<ProductFilterOptions>.Success(filters);
+        return filters;
     }
 }

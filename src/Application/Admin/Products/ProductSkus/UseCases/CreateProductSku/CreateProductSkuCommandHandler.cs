@@ -1,8 +1,6 @@
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Product.ProductSku;
 using Domain.Product.ProductSku.Exceptions;
-using Domain.Product.ProductSku.ProductSkuImage;
 using File = Application.Abstractions.FileUploader.File;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.CreateProductSku;
@@ -30,9 +28,7 @@ internal sealed class CreateProductSkuCommandHandler(
     {
         if (await productSkusRepository.ExistsBySkuAsync(command.Sku, ct))
         {
-            return Result<ProductSkuId>.Failure(
-                AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku)
-            );
+            return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
         }
 
         if (
@@ -44,12 +40,10 @@ internal sealed class CreateProductSkuCommandHandler(
             )
         )
         {
-            return Result<ProductSkuId>.Failure(
-                AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                    command.ProductId,
-                    command.Color,
-                    command.Size
-                )
+            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                command.ProductId,
+                command.Color,
+                command.Size
             );
         }
 
@@ -72,13 +66,13 @@ internal sealed class CreateProductSkuCommandHandler(
             var productSkuImageUrlResult = ProductSkuImageUrl.Create(uploadResult.Uri.ToString());
             if (productSkuImageUrlResult.IsFailure)
             {
-                return Result<ProductSkuId>.Failure(productSkuImageUrlResult.Error);
+                return productSkuImageUrlResult.Error;
             }
 
             var productSkuImageName = ProductSkuImageName.Create(uploadResult.FileName);
             if (productSkuImageName.IsFailure)
             {
-                return Result<ProductSkuId>.Failure(productSkuImageName.Error);
+                return productSkuImageName.Error;
             }
 
             images.Add(
@@ -94,7 +88,7 @@ internal sealed class CreateProductSkuCommandHandler(
         var result = productSku.SetImages(images);
         if (result.IsFailure)
         {
-            return Result<ProductSkuId>.Failure(result.Error);
+            return result.Error;
         }
 
         productSkusRepository.CreateProductSku(productSku);
@@ -103,25 +97,26 @@ internal sealed class CreateProductSkuCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<ProductSkuId>.Success(productSku.Id);
+            return productSku.Id;
         }
         catch (ProductSkuDuplicateCombinationException)
         {
             await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
-            return Result<ProductSkuId>.Failure(
-                AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                    command.ProductId,
-                    command.Color,
-                    command.Size
-                )
+            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                command.ProductId,
+                command.Color,
+                command.Size
             );
         }
         catch (ProductSkuSkuAlreadyExistsException)
         {
             await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
-            return Result<ProductSkuId>.Failure(
-                AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku)
-            );
+            return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
+        }
+        catch
+        {
+            await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
+            throw;
         }
     }
 }

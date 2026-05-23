@@ -20,6 +20,6 @@ internal sealed class GetAdminProductSkusQueryHandler(IProductSkusRepository pro
             ct
         );
 
-        return Result<KeysetPaginated<ProductSku, ProductSkuId>>.Success(data);
+        return data;
     }
 }

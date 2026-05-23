@@ -31,6 +31,6 @@ internal static class AdminProductSkuDtoMapper
             model.Color.Value,
             model.Sku.Value,
             model.Product.ToDto(),
-            [.. model.ProductSkuImages.Select(image => image.ToDto())]
+            [.. model.Images.Images.Select(image => image.ToDto())]
         );
 }

@@ -12,12 +12,6 @@ public interface IBrandRepository
         CancellationToken ct = default
     );
 
-    Task<Brand?> GetBrandByNameAsync(
-        BrandName name,
-        bool trackChanges,
-        CancellationToken ct = default
-    );
-
     Task<Brand?> GetBrandByIdAsync(BrandId id, bool trackChanges, CancellationToken ct = default);
 
     void CreateBrand(Brand brand);

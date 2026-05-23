@@ -18,8 +18,6 @@ internal sealed class GenerateOAuthUrlCommandHandler(IOAuthClientFactory clientF
         var client = clientFactory.Get(command.Provider);
         var state = new OAuthState(Guid.NewGuid(), command.AdditionalState);
 
-        return await Task.FromResult(
-            Result<(Uri, OAuthState)>.Success((client.GenerateRedirectUrl(state), state))
-        );
+        return await Task.FromResult((client.GenerateRedirectUrl(state), state));
     }
 }

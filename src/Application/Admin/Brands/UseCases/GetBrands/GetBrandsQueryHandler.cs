@@ -20,6 +20,6 @@ internal sealed class GetBrandsQueryHandler(IBrandRepository brandRepository)
             ct
         );
 
-        return Result<KeysetPaginated<Brand, BrandId>>.Success(data);
+        return data;
     }
 }

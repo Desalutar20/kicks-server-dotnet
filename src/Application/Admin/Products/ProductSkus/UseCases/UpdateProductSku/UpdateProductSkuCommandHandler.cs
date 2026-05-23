@@ -1,8 +1,6 @@
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Product.ProductSku;
 using Domain.Product.ProductSku.Exceptions;
-using Domain.Product.ProductSku.ProductSkuImage;
 using File = Application.Abstractions.FileUploader.File;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.UpdateProductSku;
@@ -32,13 +30,13 @@ internal sealed class UpdateProductSkuCommandHandler(
         var productSku = await productSkusRepository.GetProductSkuByIdAsync(command.Id, true, ct);
         if (productSku is null)
         {
-            return Result<ProductSku>.Failure(AdminProductSkuErrors.ProductSkuNotFound(command.Id));
+            return AdminProductSkuErrors.ProductSkuNotFound(command.Id);
         }
 
         var duplicateResult = await ValidateDuplicatesAsync(productSku, command, ct);
         if (duplicateResult.IsFailure)
         {
-            return Result<ProductSku>.Failure(duplicateResult.Error);
+            return duplicateResult.Error;
         }
 
         var price = ProductSkuPrice.Create(
@@ -47,7 +45,7 @@ internal sealed class UpdateProductSkuCommandHandler(
         );
         if (price.IsFailure)
         {
-            return Result<ProductSku>.Failure(price.Error);
+            return price.Error;
         }
 
         var updateResult = productSku.Update(
@@ -60,7 +58,7 @@ internal sealed class UpdateProductSkuCommandHandler(
 
         if (updateResult.IsFailure)
         {
-            return Result<ProductSku>.Failure(updateResult.Error);
+            return updateResult.Error;
         }
 
         FileUploadResult[] uploadedFiles = [];
@@ -70,7 +68,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             var imagesResult = await UploadImagesAsync(productSku, command.Images, ct);
             if (imagesResult.IsFailure)
             {
-                return Result<ProductSku>.Failure(imagesResult.Error);
+                return imagesResult.Error;
             }
 
             uploadedFiles = imagesResult.Value.uploadResults;
@@ -78,7 +76,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             var addImagesResult = productSku.AddImages(imagesResult.Value.images);
             if (addImagesResult.IsFailure)
             {
-                return Result<ProductSku>.Failure(addImagesResult.Error);
+                return addImagesResult.Error;
             }
         }
 
@@ -86,25 +84,21 @@ internal sealed class UpdateProductSkuCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<ProductSku>.Success(productSku);
+            return productSku;
         }
         catch (ProductSkuDuplicateCombinationException)
         {
             await CleanupFilesAsync(uploadedFiles);
-            return Result<ProductSku>.Failure(
-                AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                    productSku.ProductId,
-                    command.Color ?? productSku.Color,
-                    command.Size ?? productSku.Size
-                )
+            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                productSku.ProductId,
+                command.Color ?? productSku.Color,
+                command.Size ?? productSku.Size
             );
         }
         catch (ProductSkuSkuAlreadyExistsException)
         {
             await CleanupFilesAsync(uploadedFiles);
-            return Result<ProductSku>.Failure(
-                AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku ?? productSku.Sku)
-            );
+            return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku ?? productSku.Sku);
         }
         catch
         {
@@ -124,7 +118,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             var exists = await productSkusRepository.ExistsBySkuAsync(command.Sku, ct);
             if (exists)
             {
-                return Result.Failure(AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku));
+                return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
             }
         }
 
@@ -144,12 +138,10 @@ internal sealed class UpdateProductSkuCommandHandler(
 
             if (exists)
             {
-                return Result.Failure(
-                    AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                        productSku.ProductId,
-                        command.Color ?? productSku.Color,
-                        command.Size ?? productSku.Size
-                    )
+                return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                    productSku.ProductId,
+                    command.Color ?? productSku.Color,
+                    command.Size ?? productSku.Size
                 );
             }
         }
@@ -161,10 +153,10 @@ internal sealed class UpdateProductSkuCommandHandler(
         Result<(List<ProductSkuImage> images, FileUploadResult[] uploadResults)>
     > UploadImagesAsync(ProductSku productSku, List<File> files, CancellationToken ct)
     {
-        var availableSlots = ProductSku.MaxImages - productSku.ProductSkuImages.Count;
+        var availableSlots = ProductSku.MaxImages - productSku.Images.Images.Count;
         if (availableSlots <= 0)
         {
-            return Result<(List<ProductSkuImage>, FileUploadResult[])>.Success(([], []));
+            return ([], []);
         }
 
         var uploadTasks = files
@@ -180,16 +172,14 @@ internal sealed class UpdateProductSkuCommandHandler(
 
             if (urlResult.IsFailure)
             {
-                return Result<(List<ProductSkuImage>, FileUploadResult[])>.Failure(urlResult.Error);
+                return urlResult.Error;
             }
 
             var nameResult = ProductSkuImageName.Create(uploadResult.FileName);
 
             if (nameResult.IsFailure)
             {
-                return Result<(List<ProductSkuImage>, FileUploadResult[])>.Failure(
-                    nameResult.Error
-                );
+                return nameResult.Error;
             }
 
             images.Add(
@@ -202,7 +192,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             );
         }
 
-        return Result<(List<ProductSkuImage>, FileUploadResult[])>.Success((images, uploadResults));
+        return (images, uploadResults);
     }
 
     private async Task CleanupFilesAsync(FileUploadResult[] uploadedFiles) =>

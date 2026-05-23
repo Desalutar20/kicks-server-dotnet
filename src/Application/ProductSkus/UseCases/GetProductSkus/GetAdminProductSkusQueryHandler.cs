@@ -20,6 +20,6 @@ internal sealed class GetProductSkusQueryHandler(IProductSkusRepository productS
             ct
         );
 
-        return Result<KeysetPaginated<ProductSku, ProductSkuId>>.Success(data);
+        return data;
     }
 }

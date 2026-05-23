@@ -6,9 +6,7 @@ public record Result
 {
     protected Result(bool isSuccess, Error? error, string? sourceMember = null, int sourceLine = 0)
     {
-        if (isSuccess && error is not null)
-            throw new InvalidOperationException();
-        if (!isSuccess && error is null)
+        if ((isSuccess && error is not null) || (!isSuccess && error is null))
             throw new InvalidOperationException();
 
         IsSuccess = isSuccess;
@@ -36,6 +34,8 @@ public record Result
         [CallerMemberName] string member = "",
         [CallerLineNumber] int line = 0
     ) => new(false, error, member, line);
+
+    public static implicit operator Result(Error error) => new(false, error);
 }
 
 public record Result<T> : Result
@@ -57,15 +57,7 @@ public record Result<T> : Result
         [CallerLineNumber] int line = 0
     ) => new(default, false, error, member, line);
 
-    public Result<TOut> Map<TOut>(Func<T, TOut> func) =>
-        IsSuccess
-            ? Result<TOut>.Success(func(Value))
-            // ReSharper disable once ExplicitCallerInfoArgument
-            : Result<TOut>.Failure(Error, SourceMember ?? "", SourceLine);
+    public static implicit operator Result<T>(T value) => new(value, true, null);
 
-    public Result<TOut> Bind<TOut>(Func<T, Result<TOut>> func) =>
-        IsSuccess
-            ? func(Value)
-            // ReSharper disable once ExplicitCallerInfoArgument
-            : Result<TOut>.Failure(Error, SourceMember ?? "", SourceLine);
+    public static implicit operator Result<T>(Error error) => new(default, false, error);
 }

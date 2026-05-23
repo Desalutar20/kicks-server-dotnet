@@ -20,6 +20,6 @@ internal sealed class GetProductsQueryHandler(IProductRepository productReposito
             ct
         );
 
-        return Result<KeysetPaginated<Product, ProductId>>.Success(data);
+        return data;
     }
 }

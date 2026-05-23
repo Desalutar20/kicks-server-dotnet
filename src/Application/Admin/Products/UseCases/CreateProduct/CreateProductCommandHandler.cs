@@ -37,17 +37,15 @@ internal sealed class CreateProductCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result<Product>.Success(product);
+            return product;
         }
         catch (BrandDoesNotExistsException)
         {
-            return Result<Product>.Failure(AdminProductErrors.BrandDoesNotExist(command.BrandId));
+            return AdminProductErrors.BrandDoesNotExist(command.BrandId);
         }
         catch (CategoryDoesNotExistsException)
         {
-            return Result<Product>.Failure(
-                AdminProductErrors.CategoryDoesNotExist(command.CategoryId)
-            );
+            return AdminProductErrors.CategoryDoesNotExist(command.CategoryId);
         }
         catch (ProductAlreadyExistsException)
         {

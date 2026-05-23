@@ -43,12 +43,6 @@ internal sealed class BrandRepository(AppDbContext dbContext)
         );
     }
 
-    public async Task<Brand?> GetBrandByNameAsync(
-        BrandName name,
-        bool trackChanges,
-        CancellationToken ct = default
-    ) => await FindByCondition(x => x.Name == name, trackChanges).FirstOrDefaultAsync(ct);
-
     public async Task<Brand?> GetBrandByIdAsync(
         BrandId id,
         bool trackChanges,

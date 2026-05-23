@@ -35,7 +35,6 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
     ) =>
         await FindByCondition(x => x.Id == id, trackChanges)
             .Include(x => x.Product)
-            .Include(x => x.ProductSkuImages)
             .FirstOrDefaultAsync(ct);
 
     public async Task<IEnumerable<ProductSku>> GetVariants(
@@ -80,8 +79,7 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
             .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice)
             .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice)
             .ApplyKeysetPagination(keysetPagination)
-            .Include(p => p.Product)
-            .Include(p => p.ProductSkuImages);
+            .Include(p => p.Product);
 
         var result = await query.ToListAsync(ct);
 
@@ -130,8 +128,7 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
             .WhereNotNull(filters.Color, p => p.Color == filters.Color)
             .WhereNotNull(filters.Sku, p => p.Sku == filters.Sku)
             .ApplyKeysetPagination(keysetPagination)
-            .Include(p => p.Product)
-            .Include(p => p.ProductSkuImages);
+            .Include(p => p.Product);
 
         var result = await query.ToListAsync(ct);
 

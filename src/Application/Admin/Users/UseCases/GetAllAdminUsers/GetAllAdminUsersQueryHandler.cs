@@ -22,12 +22,10 @@ internal sealed class GetAllAdminUsersQueryHandler(IUserRepository userRepositor
             ct
         );
 
-        return Result<KeysetPaginated<AdminUser, UserId>>.Success(
-            new KeysetPaginated<AdminUser, UserId>(
-                [.. data.Data.Select(u => u.ToAdminUser())],
-                data.PrevCursor,
-                data.NextCursor
-            )
+        return new KeysetPaginated<AdminUser, UserId>(
+            [.. data.Data.Select(u => u.ToAdminUser())],
+            data.PrevCursor,
+            data.NextCursor
         );
     }
 }

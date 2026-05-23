@@ -192,15 +192,16 @@ namespace Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    price = table.Column<int>(type: "integer", nullable: false),
-                    sale_price = table.Column<int>(type: "integer", nullable: true),
                     quantity = table.Column<int>(type: "integer", nullable: false),
                     size = table.Column<int>(type: "integer", nullable: false),
                     color = table.Column<string>(type: "text", nullable: false),
                     sku = table.Column<string>(type: "text", nullable: false),
                     product_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    price = table.Column<int>(type: "integer", nullable: false),
+                    sale_price = table.Column<int>(type: "integer", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
+                    images = table.Column<string>(type: "jsonb", nullable: false),
                 },
                 constraints: table =>
                 {
@@ -210,32 +211,6 @@ namespace Infrastructure.Data.Migrations
                         name: "fk_product_sku_product_product_id",
                         column: x => x.product_id,
                         principalTable: "product",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade,
-                        onUpdate: ReferentialAction.Cascade
-                    );
-                }
-            );
-
-            migrationBuilder.CreateTable(
-                name: "product_sku_image",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    image_url = table.Column<string>(type: "text", nullable: false),
-                    image_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    image_name = table.Column<string>(type: "text", nullable: false),
-                    product_sku_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
-                    updated_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_product_sku_image", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_product_sku_image_product_sku_product_sku_id",
-                        column: x => x.product_sku_id,
-                        principalTable: "product_sku",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade,
                         onUpdate: ReferentialAction.Cascade
@@ -298,12 +273,6 @@ namespace Infrastructure.Data.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "ix_product_sku_image_product_sku_id",
-                table: "product_sku_image",
-                column: "product_sku_id"
-            );
-
-            migrationBuilder.CreateIndex(
                 name: "ix_users_email",
                 table: "users",
                 column: "email",
@@ -330,11 +299,9 @@ namespace Infrastructure.Data.Migrations
         {
             migrationBuilder.DropTable(name: "outbox");
 
-            migrationBuilder.DropTable(name: "product_sku_image");
+            migrationBuilder.DropTable(name: "product_sku");
 
             migrationBuilder.DropTable(name: "users");
-
-            migrationBuilder.DropTable(name: "product_sku");
 
             migrationBuilder.DropTable(name: "product");
 

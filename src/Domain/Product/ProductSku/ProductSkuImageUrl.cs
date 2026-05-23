@@ -1,7 +1,7 @@
 using Domain.Abstractions;
 using Domain.Shared;
 
-namespace Domain.Product.ProductSku.ProductSkuImage;
+namespace Domain.Product.ProductSku;
 
 public sealed record ProductSkuImageUrl
 {

@@ -17,7 +17,7 @@ internal sealed class ToggleProductIsDeletedCommandHandler(
         var product = await productRepository.GetProductByIdAsync(command.ProductId, true, ct);
         if (product is null)
         {
-            return Result.Failure(AdminProductErrors.ProductNotFound(command.ProductId));
+            return AdminProductErrors.ProductNotFound(command.ProductId);
         }
 
         product.ToggleIsDeleted();

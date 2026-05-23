@@ -42,9 +42,5 @@ public partial class TestApp
     protected async Task<ProductSku?> GetProductSkuFromDbById(
         ProductSkuId id,
         CancellationToken ct
-    ) =>
-        await _dbContext
-            .ProductSkus.AsNoTracking()
-            .Include(x => x.ProductSkuImages)
-            .SingleOrDefaultAsync(c => c.Id == id, ct);
+    ) => await _dbContext.ProductSkus.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
 }

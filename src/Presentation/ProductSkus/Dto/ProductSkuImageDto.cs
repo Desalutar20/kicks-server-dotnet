@@ -1,4 +1,4 @@
-using Domain.Product.ProductSku.ProductSkuImage;
+using Domain.Product.ProductSku;
 
 namespace Presentation.ProductSkus.Dto;
 

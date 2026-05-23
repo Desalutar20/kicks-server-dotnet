@@ -7,7 +7,7 @@ public static class Guard
     public static Result AgainstEmptyString(string value, string name = "Value") =>
         !string.IsNullOrWhiteSpace(value)
             ? Result.Success()
-            : Result.Failure(Error.Failure($"{name} cannot be null or empty."));
+            : Error.Failure($"{name} cannot be null or empty.");
 
     public static Result ForStringLength(
         string value,
@@ -17,8 +17,8 @@ public static class Guard
     )
     {
         if (value.Length < minLength || value.Length > maxLength)
-            return Result.Failure(
-                Error.Failure($"{name} must have between {minLength} and {maxLength} characters.")
+            return Error.Failure(
+                $"{name} must have between {minLength} and {maxLength} characters."
             );
 
         return Result.Success();
@@ -27,5 +27,5 @@ public static class Guard
     public static Result AgainstOutOfRange(int number, int min, int max, string name = "Value") =>
         number >= min && number <= max
             ? Result.Success()
-            : Result.Failure(Error.Failure($"{name} must be between {min} and {max}."));
+            : Error.Failure($"{name} must be between {min} and {max}.");
 }

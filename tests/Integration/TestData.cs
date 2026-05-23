@@ -3,7 +3,6 @@ using Domain.Brand;
 using Domain.Category;
 using Domain.Product;
 using Domain.Product.ProductSku;
-using Domain.Product.ProductSku.ProductSkuImage;
 using Domain.Shared;
 using Microsoft.AspNetCore.Http;
 using Presentation.Admin.Products.Endpoints;

@@ -22,7 +22,7 @@ internal sealed class EmailService(Config config) : IEmailSender, IAsyncDisposab
     {
         var mimeMessageResult = BuildMimeMessage(message);
         if (mimeMessageResult.IsFailure)
-            return Result.Failure(mimeMessageResult.Error);
+            return mimeMessageResult.Error;
 
         await _semaphore.WaitAsync(ct);
 
