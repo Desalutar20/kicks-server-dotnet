@@ -1,4 +1,4 @@
-using Domain.Category;
+using Domain.Categories;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Product;

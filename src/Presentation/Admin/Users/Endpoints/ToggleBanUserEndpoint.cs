@@ -1,6 +1,5 @@
 using Application.Admin.Users.UseCases.ToggleBanUser;
 using Application.Auth.Types;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Users.Endpoints;
 

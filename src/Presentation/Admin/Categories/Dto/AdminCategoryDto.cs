@@ -1,4 +1,4 @@
-using Domain.Category;
+using Domain.Categories;
 
 namespace Presentation.Admin.Categories.Dto;
 

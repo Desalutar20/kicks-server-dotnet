@@ -1,5 +1,5 @@
+using Application.Abstractions.Outbox;
 using Application.Auth.Errors;
-using Domain.Outbox;
 
 namespace Application.Auth.UseCases.ResetPassword;
 
@@ -35,7 +35,7 @@ internal sealed class ResetPasswordHandler(
         }
 
         var message = EmailService.BuildPasswordChangedEmail(user.Email);
-        var outbox = Outbox.Create(OutboxType.Email, EmailService.SerializeMessage(message));
+        var outbox = new Outbox(OutboxType.Email, EmailService.SerializeMessage(message));
 
         user.UpdatePassword(hashedPasswordResult.Value);
 

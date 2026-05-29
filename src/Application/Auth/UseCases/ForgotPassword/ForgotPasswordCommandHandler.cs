@@ -1,4 +1,4 @@
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 
 namespace Application.Auth.UseCases.ForgotPassword;
 
@@ -32,7 +32,7 @@ internal sealed class ForgotPasswordCommandHandler(
             command.Email,
             tokenResult.Value
         );
-        var outbox = Outbox.Create(OutboxType.Email, EmailService.SerializeMessage(message));
+        var outbox = new Outbox(OutboxType.Email, EmailService.SerializeMessage(message));
 
         await authCache.StorePasswordResetTokenAsync(
             user.Id,

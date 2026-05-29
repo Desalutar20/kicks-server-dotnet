@@ -1,4 +1,4 @@
-using Domain.Category;
+using Domain.Categories;
 using Presentation.Admin.Categories.Dto;
 using Presentation.Shared.Dto;
 

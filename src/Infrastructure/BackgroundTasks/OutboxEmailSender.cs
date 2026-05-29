@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Application.Abstractions.Email.JsonConverters;
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -90,7 +90,7 @@ internal sealed class OutboxEmailSender(
 
     private async Task<bool> TrySendWithRetry(
         IEmailSender emailSender,
-        DomainOutbox outbox,
+        Outbox outbox,
         CancellationToken ct
     )
     {

@@ -1,6 +1,4 @@
 using Application.Auth.UseCases.VerifyAccount;
-using Application.Config;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -10,8 +8,10 @@ public sealed class VerifyAccountRequestValidator : AbstractValidator<VerifyAcco
 {
     public VerifyAccountRequestValidator()
     {
-        RuleFor(x => x.Token).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
+        RuleFor(x => x.Token)
+            .ValidateValueObject(x => NonEmptyString.Create(x, "Token"))
+            .MaximumLength(100);
+        RuleFor(x => x.Email).ValidateValueObject(Email.Create);
     }
 }
 
@@ -23,10 +23,8 @@ internal static partial class AuthEndpoint
             .MapPost(
                 "/verify-account",
                 async (
-                    HttpContext ctx,
                     VerifyAccountRequest request,
                     ICommandHandler<VerifyAccountCommand> commandHandler,
-                    Config config,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct = default
                 ) =>
@@ -34,12 +32,7 @@ internal static partial class AuthEndpoint
                     var logger = loggerFactory.CreateLogger("Auth.VerifyAccount");
 
                     var command = request.ToCommand();
-                    if (command.IsFailure)
-                    {
-                        return ErrorHandler.Handle(command.Error, logger);
-                    }
-
-                    var result = await commandHandler.Handle(command.Value, ct);
+                    var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
@@ -63,22 +56,11 @@ internal static partial class AuthEndpoint
         return endpoint;
     }
 
-    private static Result<VerifyAccountCommand> ToCommand(this VerifyAccountRequest request)
+    private static VerifyAccountCommand ToCommand(this VerifyAccountRequest request)
     {
-        var token = NonEmptyString.Create(request.Token);
-        if (token.IsFailure)
-        {
-            return Result<VerifyAccountCommand>.Failure(token.Error);
-        }
+        var token = NonEmptyString.Create(request.Token).Value;
+        var email = Email.Create(request.Email).Value;
 
-        var email = Email.Create(request.Email);
-        if (email.IsFailure)
-        {
-            return Result<VerifyAccountCommand>.Failure(email.Error);
-        }
-
-        return Result<VerifyAccountCommand>.Success(
-            new VerifyAccountCommand(token.Value, email.Value)
-        );
+        return new VerifyAccountCommand(token, email);
     }
 }

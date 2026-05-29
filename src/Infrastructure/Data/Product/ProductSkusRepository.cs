@@ -1,5 +1,4 @@
-using Domain.Product;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus.ProductSkuReviews;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.Product;
@@ -35,6 +34,7 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
     ) =>
         await FindByCondition(x => x.Id == id, trackChanges)
             .Include(x => x.Product)
+            .Include(x => x.Reviews.Where(r => r.Status == ProductSkuReviewStatus.Approved))
             .FirstOrDefaultAsync(ct);
 
     public async Task<IEnumerable<ProductSku>> GetVariants(

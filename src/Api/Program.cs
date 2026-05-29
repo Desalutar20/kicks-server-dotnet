@@ -3,8 +3,12 @@ using Application;
 using Infrastructure;
 using Presentation;
 using Scalar.AspNetCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration));
+
 builder.Host.UseDefaultServiceProvider(config =>
 {
     config.ValidateOnBuild = true;
@@ -26,7 +30,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    await app.ApplyMigrations();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();

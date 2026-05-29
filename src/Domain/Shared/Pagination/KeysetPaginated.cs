@@ -2,9 +2,9 @@ namespace Domain.Shared.Pagination;
 
 public sealed record KeysetPaginated<T, TId>
 {
-    public IReadOnlyList<T> Data { get; private init; }
-    public KeysetCursor<TId>? PrevCursor { get; private init; }
-    public KeysetCursor<TId>? NextCursor { get; private init; }
+    public IReadOnlyList<T> Data { get; }
+    public KeysetCursor<TId>? PrevCursor { get; }
+    public KeysetCursor<TId>? NextCursor { get; }
 
     public KeysetPaginated(
         List<T> data,

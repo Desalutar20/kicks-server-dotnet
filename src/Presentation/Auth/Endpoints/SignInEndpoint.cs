@@ -2,7 +2,6 @@ using Application.Auth.Types;
 using Application.Auth.UseCases.SignIn;
 using Application.Config;
 using Presentation.Auth.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -12,11 +11,8 @@ public sealed class SignInRequestValidator : AbstractValidator<SignInRequest>
 {
     public SignInRequestValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(Password.MinLength)
-            .MaximumLength(Password.MaxLength);
+        RuleFor(x => x.Email).ValidateValueObject(Email.Create);
+        RuleFor(x => x.Password).ValidateValueObject(Password.Create);
     }
 }
 
@@ -38,13 +34,8 @@ internal static partial class AuthEndpoint
                 {
                     var logger = loggerFactory.CreateLogger("Auth.SignIn");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
-
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
                     if (result.IsFailure)
                     {
                         return ErrorHandler.Handle(result.Error, logger);
@@ -74,20 +65,11 @@ internal static partial class AuthEndpoint
         return endpoint;
     }
 
-    private static Result<SignInCommand> ToCommand(this SignInRequest request)
+    private static SignInCommand ToCommand(this SignInRequest request)
     {
-        var email = Email.Create(request.Email);
-        if (email.IsFailure)
-        {
-            return Result<SignInCommand>.Failure(email.Error);
-        }
+        var email = Email.Create(request.Email).Value;
+        var password = Password.Create(request.Password).Value;
 
-        var password = Password.Create(request.Password);
-        if (password.IsFailure)
-        {
-            return Result<SignInCommand>.Failure(password.Error);
-        }
-
-        return Result<SignInCommand>.Success(new SignInCommand(email.Value, password.Value));
+        return new SignInCommand(email, password);
     }
 }

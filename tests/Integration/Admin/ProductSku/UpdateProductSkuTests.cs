@@ -1,5 +1,5 @@
 using Application.Admin.Products.ProductSkus.Constants;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -172,7 +172,7 @@ public class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
                 request with
                 {
                     Images = TestData.CreateImages(
-                        Domain.Product.ProductSku.ProductSku.MaxImages + 1
+                        Domain.Products.ProductSkus.ProductSku.MaxImages + 1
                     ),
                 }
             ),

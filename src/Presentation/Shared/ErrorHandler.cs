@@ -6,7 +6,7 @@ public static class ErrorHandler
     {
         var title = "Error";
         var detail = error.Description;
-        Dictionary<string, IEnumerable<string>>? errors = null;
+        Dictionary<string, List<string>>? errors = null;
 
         var statusCode = error.ErrorType switch
         {
@@ -31,7 +31,7 @@ public static class ErrorHandler
         }
 
         if (error.ErrorType is ErrorType.Validation && error.Errors is not null)
-            errors = new Dictionary<string, IEnumerable<string>>
+            errors = new Dictionary<string, List<string>>
             {
                 { error.Errors.Value.Item1, error.Errors.Value.Item2 },
             };

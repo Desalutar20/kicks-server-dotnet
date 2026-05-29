@@ -1,5 +1,5 @@
-using Domain.Product;
-using Domain.Product.ProductSku;
+using Domain.Products;
+using Domain.Products.ProductSkus;
 
 namespace Presentation.ProductSkus.Dto;
 

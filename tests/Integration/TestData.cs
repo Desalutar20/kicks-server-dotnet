@@ -1,9 +1,10 @@
 using Application.Admin.Products.ProductSkus.Constants;
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product;
-using Domain.Product.ProductSku;
+using Domain.Brands;
+using Domain.Categories;
+using Domain.Products;
+using Domain.Products.ProductSkus;
 using Domain.Shared;
+using Domain.Shared.FileContent;
 using Microsoft.AspNetCore.Http;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -42,7 +43,7 @@ public static class TestData
         return new Faker<CreateProductSkuRequest>()
             .CustomInstantiator(f =>
             {
-                var request = new CreateProductSkuRequest()
+                var request = new CreateProductSkuRequest
                 {
                     Price = f.Random.Int(10, 1000),
                     SalePrice = f.Random.Bool() ? f.Random.Int(1, 9) : null,
@@ -96,7 +97,9 @@ public static class TestData
         );
 
         if (sizeBytes <= baseImage.Length)
+        {
             return baseImage;
+        }
 
         var result = new byte[sizeBytes];
 
@@ -115,10 +118,10 @@ public static class TestData
     {
         var faker = new Faker<User>().CustomInstantiator(f =>
         {
-            var email = Domain.User.Email.Create(f.Internet.Email()).Value;
+            var email = Domain.Users.Email.Create(f.Internet.Email()).Value;
             var hashedPassword = HashedPassword.Create(Password(HashedPassword.MinLength)).Value;
 
-            return User.Create(email, hashedPassword, null, null, null, null, null);
+            return new User(email, hashedPassword, null, null, null, null, null);
         });
 
         return faker.Generate(200);
@@ -127,13 +130,13 @@ public static class TestData
     public static List<Brand> SeedBrands() =>
         Enumerable
             .Range(0, 59)
-            .Select(_ => Brand.Create(BrandName.Create(String(BrandName.MaxLength)).Value))
+            .Select(_ => new Brand(BrandName.Create(String(BrandName.MaxLength)).Value))
             .ToList();
 
     public static List<Category> SeedCategories() =>
         Enumerable
             .Range(0, 50)
-            .Select(_ => Category.Create(CategoryName.Create(String(CategoryName.MaxLength)).Value))
+            .Select(_ => new Category(CategoryName.Create(String(CategoryName.MaxLength)).Value))
             .ToList();
 
     public static List<Product> SeedProducts(List<Brand> brands, List<Category> categories)
@@ -162,7 +165,7 @@ public static class TestData
                         ])
                         .Value;
 
-                    return Product.Create(title, description, gender, tags, brand.Id, category.Id);
+                    return new Product(title, description, gender, tags, brand.Id, category.Id);
                 })
             ),
         ];
@@ -182,8 +185,8 @@ public static class TestData
                     {
                         var price = ProductSkuPrice
                             .Create(
-                                PositiveInt.Create(250 + (s * 10)).Value,
-                                s % 2 == 0 ? PositiveInt.Create(150 + (s * 10)).Value : null
+                                PositiveInt.Create(250 + s * 10).Value,
+                                s % 2 == 0 ? PositiveInt.Create(150 + s * 10).Value : null
                             )
                             .Value;
 
@@ -192,37 +195,20 @@ public static class TestData
                         var color = ProductSkuColor.Create(faker.Internet.Color()).Value;
                         var sku = ProductSkuSku.Create(String(ProductSkuSku.MaxLength)).Value;
 
-                        var productSku = ProductSku.Create(
-                            price,
-                            quantity,
-                            color,
-                            sku,
-                            size,
-                            product.Id
-                        );
-
-                        var imageUrl = ProductSkuImageUrl.Create(faker.Image.PlaceImgUrl()).Value;
-                        var imageId = Guid.NewGuid();
-                        var imageName = ProductSkuImageName
-                            .Create(String(ProductSkuImageName.MaxLength))
-                            .Value;
-
                         var images = Enumerable
                             .Range(0, 2)
-                            .Select(
-                                (_) =>
-                                    ProductSkuImage.Create(
-                                        imageUrl,
-                                        imageId,
-                                        imageName,
-                                        productSku.Id
-                                    )
+                            .Select(_ =>
+                                ProductSkuImage.Create(
+                                    Guid.NewGuid(),
+                                    FileUrl.Create(faker.Image.PlaceImgUrl()).Value,
+                                    FileName.Create(String(FileName.MaxLength)).Value
+                                )
                             )
                             .ToList();
 
-                        productSku.AddImages(images);
-
-                        return productSku;
+                        return ProductSku
+                            .Create(price, quantity, color, sku, size, product.Id, images)
+                            .Value;
                     })
                 ),
         ];

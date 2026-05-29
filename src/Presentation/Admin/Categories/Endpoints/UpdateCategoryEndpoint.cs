@@ -1,17 +1,16 @@
 using Application.Admin.Categories.UseCases.UpdateCategory;
 using Application.Auth.Types;
-using Domain.Category;
-using Presentation.Shared;
+using Domain.Categories;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
 public sealed record UpdateCategoryRequest(string Name);
 
-public sealed class UpdateCategoryRequestValidator : AbstractValidator<UpdateCategoryRequest>
+public sealed class UpdateBrandRequestValidator : AbstractValidator<UpdateCategoryRequest>
 {
-    public UpdateCategoryRequestValidator()
+    public UpdateBrandRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(CategoryName.MaxLength);
+        RuleFor(x => x.Name).ValidateValueObject(CategoryName.Create);
     }
 }
 
@@ -41,13 +40,9 @@ internal static partial class AdminCategoriesEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.UpdateCategory");
 
-                    var commandResult = request.ToCommand(id);
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand(id);
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(new ApiResponse<string>("success"));
@@ -69,16 +64,10 @@ internal static partial class AdminCategoriesEndpoints
         return endpoint;
     }
 
-    private static Result<UpdateCategoryCommand> ToCommand(
-        this UpdateCategoryRequest request,
-        Guid id
-    )
+    private static UpdateCategoryCommand ToCommand(this UpdateCategoryRequest request, Guid id)
     {
-        var nameResult = CategoryName.Create(request.Name);
-        return nameResult.IsFailure
-            ? Result<UpdateCategoryCommand>.Failure(nameResult.Error)
-            : Result<UpdateCategoryCommand>.Success(
-                new UpdateCategoryCommand(new CategoryId(id), nameResult.Value)
-            );
+        var nameResult = CategoryName.Create(request.Name).Value;
+
+        return new UpdateCategoryCommand(new CategoryId(id), nameResult);
     }
 }

@@ -1,5 +1,5 @@
 using Application.Admin.Brands.Errors;
-using Domain.Brand.Exceptions;
+using Domain.Brands.Exceptions;
 
 namespace Application.Admin.Brands.UseCases.CreateBrand;
 
@@ -17,7 +17,7 @@ internal sealed class CreateBrandCommandHandler(
     {
         try
         {
-            var newBrand = Brand.Create(command.Name);
+            var newBrand = new Brand(command.Name);
             brandRepository.CreateBrand(newBrand);
 
             await unitOfWork.SaveChangesAsync(ct);

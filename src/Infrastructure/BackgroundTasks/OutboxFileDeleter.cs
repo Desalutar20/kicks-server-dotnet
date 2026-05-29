@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Application.Abstractions.FileUploader;
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 

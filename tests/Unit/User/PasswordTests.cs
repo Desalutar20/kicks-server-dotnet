@@ -1,4 +1,4 @@
-using Domain.User;
+using Domain.Users;
 
 namespace Unit.User;
 

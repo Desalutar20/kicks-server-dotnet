@@ -1,7 +1,6 @@
 using Application.Admin.Brands.UseCases.UpdateBrand;
 using Application.Auth.Types;
-using Domain.Brand;
-using Presentation.Shared;
+using Domain.Brands;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -11,7 +10,7 @@ public sealed class UpdateBrandRequestValidator : AbstractValidator<UpdateBrandR
 {
     public UpdateBrandRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(BrandName.MaxLength);
+        RuleFor(x => x.Name).ValidateValueObject(BrandName.Create);
     }
 }
 
@@ -41,13 +40,9 @@ internal static partial class AdminBrandsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.UpdateBrand");
 
-                    var commandResult = request.ToCommand(id);
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand(id);
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(new ApiResponse<string>("success"));
@@ -69,13 +64,10 @@ internal static partial class AdminBrandsEndpoints
         return endpoint;
     }
 
-    private static Result<UpdateBrandCommand> ToCommand(this UpdateBrandRequest request, Guid id)
+    private static UpdateBrandCommand ToCommand(this UpdateBrandRequest request, Guid id)
     {
-        var nameResult = BrandName.Create(request.Name);
-        return nameResult.IsFailure
-            ? Result<UpdateBrandCommand>.Failure(nameResult.Error)
-            : Result<UpdateBrandCommand>.Success(
-                new UpdateBrandCommand(new BrandId(id), nameResult.Value)
-            );
+        var nameResult = BrandName.Create(request.Name).Value;
+
+        return new UpdateBrandCommand(new BrandId(id), nameResult);
     }
 }

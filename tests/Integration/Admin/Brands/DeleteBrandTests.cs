@@ -1,4 +1,4 @@
-using Domain.Brand;
+using Domain.Brands;
 using Presentation.Admin.Brands.Dto;
 using Presentation.Shared.Dto;
 

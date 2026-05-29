@@ -1,4 +1,4 @@
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 

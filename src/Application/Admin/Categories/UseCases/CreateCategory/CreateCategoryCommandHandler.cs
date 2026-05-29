@@ -1,5 +1,5 @@
 using Application.Admin.Categories.Errors;
-using Domain.Category.Exceptions;
+using Domain.Categories.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.CreateCategory;
 
@@ -17,7 +17,7 @@ internal sealed class CreateCategoryCommandHandler(
     {
         try
         {
-            var newCategory = Category.Create(command.Name);
+            var newCategory = new Category(command.Name);
             categoryRepository.CreateCategory(newCategory);
 
             await unitOfWork.SaveChangesAsync(ct);

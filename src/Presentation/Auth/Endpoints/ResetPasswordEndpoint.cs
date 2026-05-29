@@ -1,5 +1,4 @@
 using Application.Auth.UseCases.ResetPassword;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -9,12 +8,11 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
 {
     public ResetPasswordRequestValidator()
     {
-        RuleFor(x => x.Token).NotEmpty().MaximumLength(100);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
-        RuleFor(x => x.NewPassword)
-            .NotEmpty()
-            .MinimumLength(Password.MinLength)
-            .MaximumLength(Password.MaxLength);
+        RuleFor(x => x.Token)
+            .ValidateValueObject(x => NonEmptyString.Create(x, "Token"))
+            .MaximumLength(100);
+        RuleFor(x => x.Email).ValidateValueObject(Email.Create);
+        RuleFor(x => x.NewPassword).ValidateValueObject(Password.Create);
     }
 }
 
@@ -34,13 +32,9 @@ internal static partial class AuthEndpoint
                 {
                     var logger = loggerFactory.CreateLogger("Auth.ResetPassword");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(new ApiResponse<string>(""));
@@ -61,28 +55,12 @@ internal static partial class AuthEndpoint
         return endpoint;
     }
 
-    private static Result<ResetPasswordCommand> ToCommand(this ResetPasswordRequest request)
+    private static ResetPasswordCommand ToCommand(this ResetPasswordRequest request)
     {
-        var token = NonEmptyString.Create(request.Token);
-        if (token.IsFailure)
-        {
-            return Result<ResetPasswordCommand>.Failure(token.Error);
-        }
+        var token = NonEmptyString.Create(request.Token).Value;
+        var email = Email.Create(request.Email).Value;
+        var newPassword = Password.Create(request.NewPassword).Value;
 
-        var email = Email.Create(request.Email);
-        if (email.IsFailure)
-        {
-            return Result<ResetPasswordCommand>.Failure(email.Error);
-        }
-
-        var newPassword = Password.Create(request.NewPassword);
-        if (newPassword.IsFailure)
-        {
-            return Result<ResetPasswordCommand>.Failure(newPassword.Error);
-        }
-
-        return Result<ResetPasswordCommand>.Success(
-            new ResetPasswordCommand(token.Value, email.Value, newPassword.Value)
-        );
+        return new ResetPasswordCommand(token, email, newPassword);
     }
 }

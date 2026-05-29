@@ -7,7 +7,7 @@ public static class Guard
     public static Result AgainstEmptyString(string value, string name = "Value") =>
         !string.IsNullOrWhiteSpace(value)
             ? Result.Success()
-            : Error.Failure($"{name} cannot be null or empty.");
+            : Error.Failure($"{name} cannot be empty.");
 
     public static Result ForStringLength(
         string value,

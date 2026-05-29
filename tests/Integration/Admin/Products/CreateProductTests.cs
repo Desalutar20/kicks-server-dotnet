@@ -1,4 +1,4 @@
-using Domain.Product;
+using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Brands.Dto;
 using Presentation.Admin.Categories.Dto;

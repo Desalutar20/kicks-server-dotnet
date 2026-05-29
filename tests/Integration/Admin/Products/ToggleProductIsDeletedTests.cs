@@ -1,4 +1,4 @@
-using Domain.Product;
+using Domain.Products;
 using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Dto;
 

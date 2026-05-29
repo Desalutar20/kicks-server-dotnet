@@ -1,5 +1,5 @@
 using Application.Admin.Categories.Errors;
-using Domain.Category.Exceptions;
+using Domain.Categories.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.UpdateCategory;
 

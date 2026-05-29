@@ -1,11 +1,12 @@
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Outbox;
 
-internal sealed class OutboxConfiguration : IEntityTypeConfiguration<DomainOutbox>
+internal sealed class OutboxConfiguration
+    : IEntityTypeConfiguration<Application.Abstractions.Outbox.Outbox>
 {
-    public void Configure(EntityTypeBuilder<DomainOutbox> builder)
+    public void Configure(EntityTypeBuilder<Application.Abstractions.Outbox.Outbox> builder)
     {
         var types = string.Join(", ", Enum.GetNames<OutboxType>().Select(r => $"'{r.ToLower()}'"));
 

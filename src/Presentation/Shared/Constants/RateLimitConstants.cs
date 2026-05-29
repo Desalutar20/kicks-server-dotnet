@@ -9,4 +9,8 @@ public static class RateLimitConstants
     public const string ForgotPassword = "ForgotPassword";
     public const string ResetPassword = "ResetPassword";
     public const string Logout = "Logout";
+
+    public const string GetProductSku = "GetProductSku";
+    public const string GetProductSkus = "GetProductSkus";
+    public const string GetProductSkusFilters = "GetProductSkusFilters";
 }

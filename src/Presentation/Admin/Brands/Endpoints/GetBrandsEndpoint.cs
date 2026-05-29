@@ -1,9 +1,8 @@
 using Application.Admin.Brands.Constants;
 using Application.Admin.Brands.UseCases.GetBrands;
 using Application.Auth.Types;
-using Domain.Brand;
+using Domain.Brands;
 using Presentation.Admin.Brands.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -18,7 +17,9 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
 {
     public GetBrandsRequestValidator()
     {
-        RuleFor(x => x.Search).MaximumLength(BrandsConstants.GetBrandsSearchMaxLength);
+        RuleFor(x => x.Search)
+            .ValidateNullableValueObject(x => NonEmptyString.Create(x, label: "Search"))
+            .MaximumLength(BrandsConstants.GetBrandsSearchMaxLength);
 
         RuleFor(x => x.Limit).InclusiveBetween(1, BrandsConstants.GetBrandsMaxLimit);
 
@@ -27,9 +28,29 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
-        RuleFor(x => x.PrevCursor).MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
+        RuleFor(x => x.PrevCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<BrandId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid brand id")
+                            : new BrandId(id)
+                )
+            )
+            .MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
 
-        RuleFor(x => x.NextCursor).MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
+        RuleFor(x => x.NextCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<BrandId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid brand id")
+                            : new BrandId(id)
+                )
+            )
+            .MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
     }
 }
 
@@ -58,13 +79,9 @@ internal static partial class AdminBrandsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.GetBrands");
 
-                    var queryResult = request.ToQuery();
-                    if (queryResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(queryResult.Error, logger);
-                    }
+                    var query = request.ToQuery();
+                    var result = await queryHandler.Handle(query, ct);
 
-                    var result = await queryHandler.Handle(queryResult.Value, ct);
                     if (result.IsFailure)
                     {
                         return ErrorHandler.Handle(result.Error, logger);
@@ -96,65 +113,40 @@ internal static partial class AdminBrandsEndpoints
         return endpoint;
     }
 
-    private static Result<GetBrandsQuery> ToQuery(this GetBrandsRequest request)
+    private static GetBrandsQuery ToQuery(this GetBrandsRequest request)
     {
         var limit = PositiveInt
             .Create(request.Limit ?? BrandsConstants.GetBrandsDefaultLimit)
             .Value;
 
-        NonEmptyString? search = null;
-        KeysetCursor<BrandId>? prev = null;
-        KeysetCursor<BrandId>? next = null;
-
-        if (request.Search is not null)
-        {
-            var searchResult = NonEmptyString.Create(request.Search);
-            if (searchResult.IsFailure)
-            {
-                return Result<GetBrandsQuery>.Failure(searchResult.Error);
-            }
-
-            search = searchResult.Value;
-        }
-
-        if (request.PrevCursor is not null)
-        {
-            var prevCursorResult = KeysetCursor<BrandId>.Create(
-                request.PrevCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<BrandId>.Failure(Error.Failure("Invalid brand id"))
-                        : Result<BrandId>.Success(new BrandId(id))
-            );
-
-            if (prevCursorResult.IsFailure)
-            {
-                return Result<GetBrandsQuery>.Failure(prevCursorResult.Error);
-            }
-
-            prev = prevCursorResult.Value;
-        }
-
-        if (request.NextCursor is not null)
-        {
-            var nextCursorResult = KeysetCursor<BrandId>.Create(
-                request.NextCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<BrandId>.Failure(Error.Failure("Invalid brand id"))
-                        : Result<BrandId>.Success(new BrandId(id))
-            );
-
-            if (nextCursorResult.IsFailure)
-            {
-                return Result<GetBrandsQuery>.Failure(nextCursorResult.Error);
-            }
-
-            next = nextCursorResult.Value;
-        }
+        NonEmptyString? search = request.Search is not null
+            ? NonEmptyString.Create(request.Search).Value
+            : null;
+        var prev = request.PrevCursor is not null
+            ? KeysetCursor<BrandId>
+                .Create(
+                    request.PrevCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid brand id")
+                            : new BrandId(id)
+                )
+                .Value
+            : null;
+        var next = request.NextCursor is not null
+            ? KeysetCursor<BrandId>
+                .Create(
+                    request.NextCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid brand id")
+                            : new BrandId(id)
+                )
+                .Value
+            : null;
 
         var pagination = new KeysetPagination<BrandId>(limit, prev, next);
 
-        return Result<GetBrandsQuery>.Success(new GetBrandsQuery(search, pagination));
+        return new GetBrandsQuery(search, pagination);
     }
 }

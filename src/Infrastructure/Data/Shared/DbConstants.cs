@@ -12,4 +12,10 @@ internal static class DbConstants
     public const string ProductSkuDuplicateCombinationUniqueIndex =
         "uq_product_sku_product_size_color";
     public const string ProductSkuSkuUniqueIndex = "uq_product_sku_sku";
+
+    public const string ProductSkuReviewUniqueUserPerSkuIndex =
+        "uq_product_sku_review_product_sku_user";
+
+    public const string ProductBrandForeignKey = "fk_product_brand_brand_id";
+    public const string ProductCategoryForeignKey = "fk_product_category_category_id";
 }

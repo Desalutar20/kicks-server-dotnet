@@ -1,4 +1,4 @@
-using Domain.Product;
+using Domain.Products;
 
 namespace Presentation.Admin.Products.Dto;
 

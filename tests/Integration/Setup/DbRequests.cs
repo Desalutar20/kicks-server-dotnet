@@ -1,7 +1,7 @@
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product;
-using Domain.Product.ProductSku;
+using Domain.Brands;
+using Domain.Categories;
+using Domain.Products;
+using Domain.Products.ProductSkus;
 using Microsoft.EntityFrameworkCore;
 
 namespace Integration.Setup;

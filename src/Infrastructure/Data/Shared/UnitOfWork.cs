@@ -1,7 +1,7 @@
-using Domain.Brand.Exceptions;
-using Domain.Category.Exceptions;
-using Domain.Product.Exceptions;
-using Domain.Product.ProductSku.Exceptions;
+using Domain.Brands.Exceptions;
+using Domain.Categories.Exceptions;
+using Domain.Products.Exceptions;
+using Domain.Products.ProductSkus.Exceptions;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -25,8 +25,8 @@ internal sealed class UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> log
     private static readonly Dictionary<string, Func<Exception, Exception>> ForeignKeyExceptions =
         new()
         {
-            ["fk_product_brand_brand_id"] = ex => new BrandDoesNotExistsException(ex),
-            ["fk_product_category_category_id"] = ex => new CategoryDoesNotExistsException(ex),
+            [DbConstants.ProductBrandForeignKey] = ex => new BrandDoesNotExistsException(ex),
+            [DbConstants.ProductCategoryForeignKey] = ex => new CategoryDoesNotExistsException(ex),
         };
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default)

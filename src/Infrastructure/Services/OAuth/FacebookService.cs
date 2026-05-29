@@ -62,18 +62,16 @@ internal sealed class FacebookService(HttpClient httpClient, Config config) : IO
             var providerIdResult = ProviderId.Create(user.Id);
             if (providerIdResult.IsFailure)
             {
-                return Result<OAuthUser>.Failure(providerIdResult.Error);
+                return providerIdResult.Error;
             }
 
             var emailResult = Email.Create(user.Email);
             if (emailResult.IsFailure)
             {
-                return Result<OAuthUser>.Failure(emailResult.Error);
+                return emailResult.Error;
             }
 
-            return Result<OAuthUser>.Success(
-                new OAuthUser(providerIdResult.Value, emailResult.Value)
-            );
+            return new OAuthUser(providerIdResult.Value, emailResult.Value);
         }
         catch (Exception ex)
         {

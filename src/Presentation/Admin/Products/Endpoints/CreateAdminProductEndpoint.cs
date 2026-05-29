@@ -1,10 +1,9 @@
 using Application.Admin.Products.UseCases.CreateProduct;
 using Application.Auth.Types;
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product;
+using Domain.Brands;
+using Domain.Categories;
+using Domain.Products;
 using Presentation.Admin.Products.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -21,18 +20,19 @@ public sealed class CreateProductRequestValidator : AbstractValidator<CreateProd
 {
     public CreateProductRequestValidator()
     {
-        RuleFor(x => x.Title).NotEmpty().MaximumLength(ProductTitle.MaxLength);
-        RuleFor(x => x.Description).NotEmpty().MaximumLength(ProductDescription.MaxLength);
+        RuleFor(x => x.Title).ValidateValueObject(ProductTitle.Create);
+        RuleFor(x => x.Description).ValidateValueObject(ProductDescription.Create);
         RuleFor(x => x.Gender)
             .NotEmpty()
             .Must(g => Enum.TryParse<ProductGender>(g, true, out _))
-            .WithMessage("'Gender' must be one of Men, Women, Unisex");
-        RuleFor(x => x.Tags)
-            .NotNull()
-            .Must(t => t is not null && t.Count <= ProductTags.MaxTags)
-            .WithMessage($"Tags cannot contain more than {ProductTags.MaxTags} items.");
-        RuleFor(x => x.CategoryId).NotEmpty();
-        RuleFor(x => x.BrandId).NotEmpty();
+            .WithMessage(
+                $"Gender must be one of: {string.Join(", ", Enum.GetNames<ProductGender>())}"
+            );
+        RuleFor(x => x.Tags).NotNull().ValidateValueObject(ProductTags.Create);
+        RuleFor(x => x.CategoryId)
+            .Must(x => Guid.TryParse(x, out _))
+            .WithMessage("Invalid category id");
+        RuleFor(x => x.BrandId).Must(x => Guid.TryParse(x, out _)).WithMessage("Invalid brand id");
     }
 }
 
@@ -61,13 +61,9 @@ internal static partial class AdminProductsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.CreateProduct");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Created(
@@ -94,56 +90,19 @@ internal static partial class AdminProductsEndpoints
         return endpoint;
     }
 
-    private static Result<CreateProductCommand> ToCommand(this CreateProductRequest request)
+    private static CreateProductCommand ToCommand(this CreateProductRequest request)
     {
-        var title = ProductTitle.Create(request.Title);
-        if (title.IsFailure)
-        {
-            return Result<CreateProductCommand>.Failure(title.Error);
-        }
+        var title = ProductTitle.Create(request.Title).Value;
+        var description = ProductDescription.Create(request.Description).Value;
+        var tags = ProductTags.Create(request.Tags).Value;
 
-        var description = ProductDescription.Create(request.Description);
-        if (description.IsFailure)
-        {
-            return Result<CreateProductCommand>.Failure(description.Error);
-        }
-
-        if (!Enum.TryParse<ProductGender>(request.Gender, true, out var productGender))
-        {
-            return Result<CreateProductCommand>.Failure(
-                Error.Validation("gender", ["Invalid gender"])
-            );
-        }
-
-        var tags = ProductTags.Create(request.Tags);
-        if (tags.IsFailure)
-        {
-            return Result<CreateProductCommand>.Failure(tags.Error);
-        }
-
-        if (!Guid.TryParse(request.BrandId, out var brandId))
-        {
-            return Result<CreateProductCommand>.Failure(
-                Error.Validation("brandId", ["Invalid brand id"])
-            );
-        }
-
-        if (!Guid.TryParse(request.CategoryId, out var categoryId))
-        {
-            return Result<CreateProductCommand>.Failure(
-                Error.Validation("categoryId", ["Invalid category id"])
-            );
-        }
-
-        return Result<CreateProductCommand>.Success(
-            new CreateProductCommand(
-                title.Value,
-                description.Value,
-                productGender,
-                tags.Value,
-                new BrandId(brandId),
-                new CategoryId(categoryId)
-            )
+        return new CreateProductCommand(
+            title,
+            description,
+            Enum.Parse<ProductGender>(request.Gender, true),
+            tags,
+            new BrandId(Guid.Parse(request.BrandId)),
+            new CategoryId(Guid.Parse(request.CategoryId))
         );
     }
 }

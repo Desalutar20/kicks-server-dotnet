@@ -1,5 +1,5 @@
 using Application.Admin.Products.ProductSkus.Constants;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -38,7 +38,7 @@ public class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
 
         var productFromDb = await GetProductSkuFromDbById(new ProductSkuId(product!.Data), ct);
         productFromDb.Should().NotBeNull();
-        productFromDb.Images.Images.Count.Should().Be(1);
+        productFromDb.Images.Count.Should().Be(1);
     }
 
     [Theory]
@@ -162,7 +162,7 @@ public class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
                 request with
                 {
                     Images = TestData.CreateImages(
-                        Domain.Product.ProductSku.ProductSku.MaxImages + 1
+                        Domain.Products.ProductSkus.ProductSku.MaxImages + 1
                     ),
                 }
             ),

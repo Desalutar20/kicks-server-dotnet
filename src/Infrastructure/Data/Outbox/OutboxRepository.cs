@@ -1,19 +1,21 @@
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 
 namespace Infrastructure.Data.Outbox;
 
 internal sealed class OutboxRepository(AppDbContext dbContext)
-    : RepositoryBase<DomainOutbox>(dbContext),
+    : RepositoryBase<Application.Abstractions.Outbox.Outbox>(dbContext),
         IOutboxRepository
 {
     private readonly AppDbContext _dbContext = dbContext;
 
-    public void CreateOutbox(DomainOutbox outbox)
+    public void CreateOutbox(Application.Abstractions.Outbox.Outbox outbox)
     {
         Create(outbox);
     }
 
-    public async Task<IEnumerable<DomainOutbox>> GetAndLockOutboxesForProcessingAsync(
+    public async Task<
+        IEnumerable<Application.Abstractions.Outbox.Outbox>
+    > GetAndLockOutboxesForProcessingAsync(
         OutboxType type,
         PositiveInt batchSize,
         bool trackChanges,

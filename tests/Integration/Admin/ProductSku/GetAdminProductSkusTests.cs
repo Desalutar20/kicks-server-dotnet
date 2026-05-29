@@ -1,5 +1,5 @@
 using Application.Admin.Products.ProductSkus.Constants;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -17,7 +17,7 @@ public class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await GetProductSkus(null, sessionCookie, ct);
+        var response = await GetAdminProductSkus(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
@@ -54,7 +54,7 @@ public class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var response = await GetProductSkus(null, null, ct);
+        var response = await GetAdminProductSkus(null, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -66,7 +66,7 @@ public class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await GetProductSkus(null, sessionCookie, ct);
+        var response = await GetAdminProductSkus(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 

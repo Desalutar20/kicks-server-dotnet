@@ -1,8 +1,7 @@
 using Application.Admin.Categories.UseCases.CreateCategory;
 using Application.Auth.Types;
-using Domain.Category;
+using Domain.Categories;
 using Presentation.Admin.Categories.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -12,7 +11,7 @@ public sealed class CreateCategoryRequestValidator : AbstractValidator<CreateCat
 {
     public CreateCategoryRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(CategoryName.MaxLength);
+        RuleFor(x => x.Name).ValidateValueObject(CategoryName.Create);
     }
 }
 
@@ -41,13 +40,9 @@ internal static partial class AdminCategoriesEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.CreateCategory");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Created(
@@ -72,11 +67,9 @@ internal static partial class AdminCategoriesEndpoints
         return endpoint;
     }
 
-    private static Result<CreateCategoryCommand> ToCommand(this CreateCategoryRequest request)
+    private static CreateCategoryCommand ToCommand(this CreateCategoryRequest request)
     {
-        var nameResult = CategoryName.Create(request.Name);
-        return nameResult.IsFailure
-            ? Result<CreateCategoryCommand>.Failure(nameResult.Error)
-            : Result<CreateCategoryCommand>.Success(new CreateCategoryCommand(nameResult.Value));
+        var nameResult = CategoryName.Create(request.Name).Value;
+        return new CreateCategoryCommand(nameResult);
     }
 }

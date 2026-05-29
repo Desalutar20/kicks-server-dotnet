@@ -1,5 +1,4 @@
 using Application.Auth.UseCases.ForgotPassword;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -9,7 +8,7 @@ public sealed class ForgotPasswordRequestValidator : AbstractValidator<ForgotPas
 {
     public ForgotPasswordRequestValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
+        RuleFor(x => x.Email).ValidateValueObject(Email.Create);
     }
 }
 
@@ -29,13 +28,9 @@ internal static partial class AuthEndpoint
                 {
                     var logger = loggerFactory.CreateLogger("Auth.ForgotPassword");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(
@@ -57,14 +52,10 @@ internal static partial class AuthEndpoint
         return endpoint;
     }
 
-    private static Result<ForgotPasswordCommand> ToCommand(this ForgotPasswordRequest request)
+    private static ForgotPasswordCommand ToCommand(this ForgotPasswordRequest request)
     {
-        var email = Email.Create(request.Email);
-        if (email.IsFailure)
-        {
-            return Result<ForgotPasswordCommand>.Failure(email.Error);
-        }
+        var email = Email.Create(request.Email).Value;
 
-        return Result<ForgotPasswordCommand>.Success(new ForgotPasswordCommand(email.Value));
+        return new ForgotPasswordCommand(email);
     }
 }

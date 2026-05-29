@@ -1,8 +1,7 @@
 using Application.Admin.Brands.UseCases.CreateBrand;
 using Application.Auth.Types;
-using Domain.Brand;
+using Domain.Brands;
 using Presentation.Admin.Brands.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -12,7 +11,7 @@ public sealed class CreateBrandRequestValidator : AbstractValidator<CreateBrandR
 {
     public CreateBrandRequestValidator()
     {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(BrandName.MaxLength);
+        RuleFor(x => x.Name).ValidateValueObject(BrandName.Create);
     }
 }
 
@@ -41,13 +40,8 @@ internal static partial class AdminBrandsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.CreateBrand");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
-
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Created(
@@ -72,11 +66,9 @@ internal static partial class AdminBrandsEndpoints
         return endpoint;
     }
 
-    private static Result<CreateBrandCommand> ToCommand(this CreateBrandRequest request)
+    private static CreateBrandCommand ToCommand(this CreateBrandRequest request)
     {
-        var nameResult = BrandName.Create(request.Name);
-        return nameResult.IsFailure
-            ? Result<CreateBrandCommand>.Failure(nameResult.Error)
-            : Result<CreateBrandCommand>.Success(new CreateBrandCommand(nameResult.Value));
+        var nameResult = BrandName.Create(request.Name).Value;
+        return new CreateBrandCommand(nameResult);
     }
 }

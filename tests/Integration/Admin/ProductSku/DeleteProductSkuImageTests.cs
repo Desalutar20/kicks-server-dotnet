@@ -1,4 +1,4 @@
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 
@@ -24,7 +24,7 @@ public class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(factory)
 
         var deleteProductSkuImageResponse = await DeleteProductSkuImage(
             body.Data[0].Id,
-            body.Data[0].Images[0].ImageId,
+            body.Data[0].Images[0].Id,
             sessionCookie,
             ct
         );
@@ -32,10 +32,8 @@ public class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(factory)
 
         var dbProductSku = await GetProductSkuFromDbById(new ProductSkuId(body.Data[0].Id), ct);
         dbProductSku.Should().NotBeNull();
-        dbProductSku
-            .Images.Images.Should()
-            .NotContain(image => image.ImageId == body.Data[0].Images[0].ImageId);
-        dbProductSku.Images.Images.Should().HaveCount(body.Data[0].Images.Count - 1);
+        dbProductSku.Images.Should().NotContain(image => image.Id == body.Data[0].Images[0].Id);
+        dbProductSku.Images.Should().HaveCount(body.Data[0].Images.Count - 1);
     }
 
     [Fact]
@@ -58,7 +56,7 @@ public class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(factory)
         {
             var deleteProductSkuImageResponse = await DeleteProductSkuImage(
                 body.Data[0].Id,
-                body.Data[0].Images[i].ImageId,
+                body.Data[0].Images[i].Id,
                 sessionCookie,
                 ct
             );

@@ -42,9 +42,7 @@ internal sealed class EmailService(Config config) : IEmailSender, IAsyncDisposab
     private Result<MimeMessage> BuildMimeMessage(Message message)
     {
         if (!MailboxAddress.TryParse(message.To.Value, out var to))
-            return Result<MimeMessage>.Failure(
-                Error.Failure($"invalid address {message.To.Value}")
-            );
+            return Error.Failure($"invalid address {message.To.Value}");
 
         var msg = new MimeMessage { Subject = message.Subject.Value };
         msg.From.Add(MailboxAddress.Parse(config.Smtp.From));
@@ -57,7 +55,7 @@ internal sealed class EmailService(Config config) : IEmailSender, IAsyncDisposab
 
         msg.Body = builder.ToMessageBody();
 
-        return Result<MimeMessage>.Success(msg);
+        return msg;
     }
 
     private async Task ConnectAsync(CancellationToken ct)

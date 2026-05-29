@@ -38,7 +38,7 @@ internal sealed class OAuthSignInCommandHandler(
         var user = await userRepository.GetUserByEmailAsync(oauthUser.Value.Email, true, ct);
         if (user is null)
         {
-            user = User.Create(oauthUser.Value.Email, null, null, null, null, null, null);
+            user = new User(oauthUser.Value.Email, null, null, null, null, null, null);
             userRepository.CreateUser(user);
         }
 

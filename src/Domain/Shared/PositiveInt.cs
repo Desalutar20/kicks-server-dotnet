@@ -11,18 +11,20 @@ public readonly record struct PositiveInt
 
     public int Value { get; }
 
-    public static Result<PositiveInt> Create(int value, string field = "value")
+    public static Result<PositiveInt> Create(
+        int value,
+        string field = "value",
+        string label = "Value"
+    )
     {
         var result = Guard.AgainstOutOfRange(value, 1, int.MaxValue);
 
         if (result.IsFailure)
         {
-            return Result<PositiveInt>.Failure(
-                Error.Validation(field, ["Value must be a positive integer."])
-            );
+            return Error.Validation(field, [$"{label} must be a positive integer."]);
         }
 
-        return Result<PositiveInt>.Success(new PositiveInt(value));
+        return new PositiveInt(value);
     }
 
     public static implicit operator int(PositiveInt positiveInt) => positiveInt.Value;

@@ -1,8 +1,7 @@
 using Application.Admin.Products.UseCases.GetProductFilters;
 using Application.Auth.Types;
-using Domain.Product;
+using Domain.Products;
 using Presentation.Admin.Products.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 

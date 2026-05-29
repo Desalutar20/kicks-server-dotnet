@@ -1,11 +1,10 @@
 using Application.Admin.Products.Constants;
 using Application.Admin.Products.UseCases.GetProducts;
 using Application.Auth.Types;
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product;
+using Domain.Brands;
+using Domain.Categories;
+using Domain.Products;
 using Presentation.Admin.Products.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -24,22 +23,54 @@ public sealed class GetProductsRequestValidator : AbstractValidator<GetProductsR
 {
     public GetProductsRequestValidator()
     {
-        RuleFor(x => x.Search).MaximumLength(ProductsConstants.GetProductsSearchMaxLength);
+        RuleFor(x => x.Search)
+            .ValidateNullableValueObject(x => NonEmptyString.Create(x, label: "Search"))
+            .MaximumLength(ProductsConstants.GetProductsSearchMaxLength);
 
         RuleFor(x => x.Limit).InclusiveBetween(1, ProductsConstants.GetProductsMaxLimit);
 
         RuleFor(x => x.Gender)
             .Must(g => g is null || Enum.TryParse<ProductGender>(g, true, out _))
-            .WithMessage("'Gender' must be one of Men, Women, Unisex");
+            .WithMessage(
+                $"Gender must be one of: {string.Join(", ", Enum.GetNames<ProductGender>())}"
+            );
+
+        RuleFor(x => x.CategoryId)
+            .Must(x => x is null || Guid.TryParse(x, out _))
+            .WithMessage("Invalid category id");
+
+        RuleFor(x => x.BrandId)
+            .Must(x => x is null || Guid.TryParse(x, out _))
+            .WithMessage("Invalid brand id");
 
         RuleFor(x => x)
             .Must(x => x.PrevCursor is null || x.NextCursor is null)
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
-        RuleFor(x => x.PrevCursor).MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
+        RuleFor(x => x.PrevCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<ProductId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product id")
+                            : new ProductId(id)
+                )
+            )
+            .MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
 
-        RuleFor(x => x.NextCursor).MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
+        RuleFor(x => x.NextCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<ProductId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product id")
+                            : new ProductId(id)
+                )
+            )
+            .MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
     }
 }
 
@@ -71,13 +102,9 @@ internal static partial class AdminProductsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.GetProducts");
 
-                    var queryResult = request.ToQuery();
-                    if (queryResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(queryResult.Error, logger);
-                    }
+                    var query = request.ToQuery();
+                    var result = await queryHandler.Handle(query, ct);
 
-                    var result = await queryHandler.Handle(queryResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(
@@ -107,101 +134,44 @@ internal static partial class AdminProductsEndpoints
         return endpoint;
     }
 
-    private static Result<GetProductsQuery> ToQuery(this GetProductsRequest request)
+    private static GetProductsQuery ToQuery(this GetProductsRequest request)
     {
         var limit = PositiveInt
             .Create(request.Limit ?? ProductsConstants.GetProductsDefaultLimit)
             .Value;
 
-        NonEmptyString? search = null;
-        ProductGender? productGender = null;
-        BrandId? brandId = null;
-        CategoryId? categoryId = null;
-        KeysetCursor<ProductId>? prev = null;
-        KeysetCursor<ProductId>? next = null;
-
-        if (request.Search is not null)
-        {
-            var searchResult = NonEmptyString.Create(request.Search);
-            if (searchResult.IsFailure)
-            {
-                return Result<GetProductsQuery>.Failure(searchResult.Error);
-            }
-
-            search = searchResult.Value;
-        }
-
-        if (request.Gender is not null)
-        {
-            if (!Enum.TryParse<ProductGender>(request.Gender, true, out var gender))
-            {
-                return Result<GetProductsQuery>.Failure(
-                    Error.Validation("gender", ["Invalid gender"])
-                );
-            }
-
-            productGender = gender;
-        }
-
-        if (request.BrandId is not null)
-        {
-            if (!Guid.TryParse(request.BrandId, out var id))
-            {
-                return Result<GetProductsQuery>.Failure(
-                    Error.Validation("brandId", ["Invalid brand id"])
-                );
-            }
-
-            brandId = new BrandId(id);
-        }
-
-        if (request.CategoryId is not null)
-        {
-            if (!Guid.TryParse(request.CategoryId, out var id))
-            {
-                return Result<GetProductsQuery>.Failure(
-                    Error.Validation("categoryId", ["Invalid category id"])
-                );
-            }
-
-            categoryId = new CategoryId(id);
-        }
-
-        if (request.PrevCursor is not null)
-        {
-            var prevCursorResult = KeysetCursor<ProductId>.Create(
-                request.PrevCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<ProductId>.Failure(Error.Failure("Invalid product id"))
-                        : Result<ProductId>.Success(new ProductId(id))
-            );
-
-            if (prevCursorResult.IsFailure)
-            {
-                return Result<GetProductsQuery>.Failure(prevCursorResult.Error);
-            }
-
-            prev = prevCursorResult.Value;
-        }
-
-        if (request.NextCursor is not null)
-        {
-            var nextCursorResult = KeysetCursor<ProductId>.Create(
-                request.NextCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<ProductId>.Failure(Error.Failure("Invalid product id"))
-                        : Result<ProductId>.Success(new ProductId(id))
-            );
-
-            if (nextCursorResult.IsFailure)
-            {
-                return Result<GetProductsQuery>.Failure(nextCursorResult.Error);
-            }
-
-            next = nextCursorResult.Value;
-        }
+        NonEmptyString? search = request.Search is not null
+            ? NonEmptyString.Create(request.Search).Value
+            : null;
+        ProductGender? productGender = request.Gender is not null
+            ? Enum.Parse<ProductGender>(request.Gender, true)
+            : null;
+        var brandId = request.BrandId is not null ? new BrandId(Guid.Parse(request.BrandId)) : null;
+        var categoryId = request.CategoryId is not null
+            ? new CategoryId(Guid.Parse(request.CategoryId))
+            : null;
+        var prev = request.PrevCursor is not null
+            ? KeysetCursor<ProductId>
+                .Create(
+                    request.PrevCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product id")
+                            : new ProductId(id)
+                )
+                .Value
+            : null;
+        var next = request.NextCursor is not null
+            ? KeysetCursor<ProductId>
+                .Create(
+                    request.NextCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product id")
+                            : new ProductId(id)
+                )
+                .Value
+            : null;
 
         var pagination = new KeysetPagination<ProductId>(limit, prev, next);
         var filters = new ProductFilters(
@@ -212,6 +182,6 @@ internal static partial class AdminProductsEndpoints
             request.IsDeleted
         );
 
-        return Result<GetProductsQuery>.Success(new GetProductsQuery(filters, pagination));
+        return new GetProductsQuery(filters, pagination);
     }
 }

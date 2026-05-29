@@ -1,7 +1,6 @@
 using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSkuImage;
 using Application.Auth.Types;
-using Domain.Product.ProductSku;
-using Presentation.Shared;
+using Domain.Products.ProductSkus;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
@@ -33,10 +32,7 @@ internal static partial class AdminProductSkusEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.DeleteProductSkuImage");
 
-                    var command = new DeleteProductSkuImageCommand(
-                        new ProductSkuId(id),
-                        new ProductSkuImageId(imageId)
-                    );
+                    var command = new DeleteProductSkuImageCommand(new ProductSkuId(id), imageId);
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure

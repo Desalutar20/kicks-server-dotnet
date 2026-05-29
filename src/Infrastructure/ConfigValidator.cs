@@ -60,6 +60,10 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.RateLimit.VerifyAccount).NotEmpty();
         RuleFor(x => x.RateLimit.GetProfile).NotEmpty();
         RuleFor(x => x.RateLimit.ForgotPassword).NotEmpty();
+        RuleFor(x => x.RateLimit.ResetPassword).NotEmpty();
         RuleFor(x => x.RateLimit.Logout).NotEmpty();
+        RuleFor(x => x.RateLimit.GetProductSku).NotEmpty();
+        RuleFor(x => x.RateLimit.GetProductSkus).NotEmpty();
+        RuleFor(x => x.RateLimit.GetProductSkusFilters).NotEmpty();
     }
 }

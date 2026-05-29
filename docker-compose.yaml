@@ -1,20 +1,32 @@
 ﻿services:
   api:
     image: api
+    container_name: kicks-api
     build:
       context: .
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "4000:8080"
     environment:
+      ASPNETCORE_ENVIRONMENT: Development
+
       Application__ClientUrl: ${CLIENT_URL}
       Application__SessionCookieName: ${SESSION_COOKIE_NAME}
+      Application__OAuthStateCookieName: ${OAUTH_STATE_COOKIE_NAME}
       Application__CookieSecure: ${COOKIE_SECURE}
       Application__AccountVerificationPath: ${ACCOUNT_VERIFICATION_PATH}
       Application__ResetPasswordPath: ${RESET_PASSWORD_PATH}
       Application__AccountVerificationTtlMinutes: ${ACCOUNT_VERIFICATION_TTL_MINUTES}
       Application__SessionTtlMinutes: ${SESSION_TTL_MINUTES}
+      Application__OAUthStateTtlMinutes: ${OAUTH_STATE_TTL_MINUTES}
       Application__ResetPasswordTtlMinutes: ${RESET_PASSWORD_TTL_MINUTES}
+
+      OAuth__Google__ClientId: ${OAUTH_GOOGLE_CLIENT_ID}
+      OAuth__Google__ClientSecret: ${OAUTH_GOOGLE_CLIENT_SECRET}
+      OAuth__Google__RedirectUrl: ${OAUTH_GOOGLE_REDIRECT_URL}
+      OAuth__Facebook__ClientId: ${OAUTH_FACEBOOK_CLIENT_ID}
+      OAuth__Facebook__ClientSecret: ${OAUTH_FACEBOOK_CLIENT_SECRET}
+      OAuth__Facebook__RedirectUrl: ${OAUTH_FACEBOOK_REDIRECT_URL}
 
       Database__Host: postgres
       Database__Port: ${DATABASE_PORT}
@@ -35,19 +47,29 @@
       Smtp__Password: ${SMTP_PASSWORD}
       Smtp__From: ${SMTP_FROM}
 
-      RateLimit__SignUp: ${RATELIMIT_SIGNUP}
-      RateLimit__SignIn: ${RATELIMIT_SIGNIN}
-      RateLimit__VerifyAccount: ${RATELIMIT_VERIFYACCOUNT}
-      RateLimit__GetProfile: ${RATELIMIT_GETPROFILE}
-      RateLimit__ForgotPassword: ${RATELIMIT_FORGOTPASSWORD}
-      RateLimit__ResetPassword: ${RATELIMIT_RESETPASSWORD}
+      Cloudinary__ApiKey: ${CLOUDINARY_API_KEY}
+      Cloudinary__Secret: ${CLOUDINARY_SECRET}
+      Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME}
+      Cloudinary__Folder: ${CLOUDINARY_FOLDER}
+
+      RateLimit__SignUp: ${RATELIMIT_SIGN_UP}
+      RateLimit__SignIn: ${RATELIMIT_SIGN_IN}
+      RateLimit__VerifyAccount: ${RATELIMIT_VERIFY_ACCOUNT}
+      RateLimit__GetProfile: ${RATELIMIT_GET_PROFILE}
+      RateLimit__ForgotPassword: ${RATELIMIT_FORGOT_PASSWORD}
+      RateLimit__ResetPassword: ${RATELIMIT_RESET_PASSWORD}
       RateLimit__Logout: ${RATELIMIT_LOGOUT}
+      RateLimit__GetProductSku: ${RATELIMIT_GET_PRODUCT_SKU}
+      RateLimit__GetProductSkus: ${RATELIMIT_GET_PRODUCT_SKUS}
+      RateLimit__GetProductSkusFilters: ${RATELIMIT_GET_PRODUCT_SKUS_FILTERS}
 
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      seq:
+        condition: service_started
 
   postgres:
     image: postgres:18-alpine
@@ -57,7 +79,7 @@
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     volumes:
-      - kicks-postgres-data:/var/lib/postgresql/data
+      - kicks-postgres-data:/var/lib/postgresql
     ports:
       - "5433:5432"
     healthcheck:
@@ -82,6 +104,18 @@
     ports:
       - "6380:6379"
 
+  seq:
+    image: datalust/seq:latest
+    container_name: kicks-seq
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORD: "password"
+    ports:
+      - "8081:80"
+    volumes:
+      - kicks-seq-data:/data
+
   mailpit:
     image: axllent/mailpit:v1.27.4
     container_name: kicks-mailpit
@@ -100,3 +134,4 @@
 volumes:
   kicks-postgres-data:
   kicks-redis-data:
+  kicks-seq-data:

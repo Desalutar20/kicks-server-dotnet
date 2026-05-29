@@ -77,26 +77,22 @@ internal sealed class GoogleService(HttpClient httpClient, Config config) : IOAu
 
             if (!user.EmailVerified)
             {
-                return Result<OAuthUser>.Failure(
-                    Error.Conflict("Google user email is not verified")
-                );
+                return Error.Conflict("Google user email is not verified");
             }
 
             var providerIdResult = ProviderId.Create(user.Sub);
             if (providerIdResult.IsFailure)
             {
-                return Result<OAuthUser>.Failure(providerIdResult.Error);
+                return providerIdResult.Error;
             }
 
             var emailResult = Email.Create(user.Email);
             if (emailResult.IsFailure)
             {
-                return Result<OAuthUser>.Failure(emailResult.Error);
+                return emailResult.Error;
             }
 
-            return Result<OAuthUser>.Success(
-                new OAuthUser(providerIdResult.Value, emailResult.Value)
-            );
+            return new OAuthUser(providerIdResult.Value, emailResult.Value);
         }
         catch (Exception ex)
         {

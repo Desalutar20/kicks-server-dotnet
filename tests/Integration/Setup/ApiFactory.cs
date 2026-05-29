@@ -78,7 +78,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
             var scope = serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            dbContext.Database.EnsureCreated();
+            // dbContext.Database.EnsureCreated();
         });
 
         base.ConfigureWebHost(builder);

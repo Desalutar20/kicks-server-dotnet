@@ -1,4 +1,4 @@
-using Domain.Brand;
+using Domain.Brands;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.Product;

@@ -10,11 +10,21 @@ public sealed record KeysetCursor<T>(DateTimeOffset CreatedAt, T Id)
     {
         var errors = new List<string>();
 
-        var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(value));
+        string decoded;
+
+        try
+        {
+            decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(value));
+        }
+        catch (Exception)
+        {
+            return Error.Validation("cursor", ["Invalid cursor"]);
+        }
+
         var parts = decoded.Split(CursorSeparator);
         if (parts.Length != 2)
         {
-            return Result<KeysetCursor<T>>.Failure(Error.Validation("cursor", ["Invalid cursor"]));
+            return Error.Validation("cursor", ["Invalid cursor"]);
         }
 
         if (
@@ -37,8 +47,8 @@ public sealed record KeysetCursor<T>(DateTimeOffset CreatedAt, T Id)
         }
 
         return errors.Count == 0
-            ? Result<KeysetCursor<T>>.Success(new KeysetCursor<T>(date, parsedResult.Value))
-            : Result<KeysetCursor<T>>.Failure(Error.Validation("cursor", errors));
+            ? new KeysetCursor<T>(date, parsedResult.Value)
+            : Error.Validation("cursor", errors);
     }
 
     public override string ToString()

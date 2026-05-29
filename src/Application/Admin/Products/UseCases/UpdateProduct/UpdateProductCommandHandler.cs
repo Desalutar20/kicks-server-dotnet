@@ -1,5 +1,5 @@
 using Application.Admin.Products.Errors;
-using Domain.Product.Exceptions;
+using Domain.Products.Exceptions;
 
 namespace Application.Admin.Products.UseCases.UpdateProduct;
 

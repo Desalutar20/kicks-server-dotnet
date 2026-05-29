@@ -1,11 +1,10 @@
 using System.Text.Json;
+using Application.Abstractions.Outbox;
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Outbox;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.DeleteProductSkuImage;
 
-public sealed record DeleteProductSkuImageCommand(ProductSkuId Id, ProductSkuImageId ImageId)
-    : ICommand;
+public sealed record DeleteProductSkuImageCommand(ProductSkuId Id, Guid ImageId) : ICommand;
 
 internal sealed class DeleteProductSkuImageCommandHandler(
     IUnitOfWork unitOfWork,
@@ -30,7 +29,7 @@ internal sealed class DeleteProductSkuImageCommandHandler(
             return removeImageResult.Error;
         }
 
-        var outbox = Outbox.Create(
+        var outbox = new Outbox(
             OutboxType.File,
             NonEmptyString
                 .Create(JsonSerializer.Serialize(new List<Guid>() { removeImageResult.Value }))

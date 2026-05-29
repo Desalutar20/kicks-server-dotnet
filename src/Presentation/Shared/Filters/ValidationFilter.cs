@@ -38,12 +38,29 @@ internal sealed class ValidationFilter(IServiceProvider services) : IEndpointFil
             if (result.IsValid)
                 continue;
 
-            var errors = result
-                .Errors.GroupBy(e => e.PropertyName)
-                .ToDictionary(
-                    g => char.ToLowerInvariant(g.Key[0]) + g.Key[1..],
-                    g => g.Select(e => e.ErrorMessage).ToArray()
-                );
+            var errors = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var error in result.Errors)
+            {
+                var key = error.PropertyName;
+
+                if (string.IsNullOrWhiteSpace(key))
+                    continue;
+
+                key = char.ToLowerInvariant(key[0]) + key[1..];
+
+                if (!errors.TryGetValue(key, out var list))
+                {
+                    errors[key] = [error.ErrorMessage];
+                    continue;
+                }
+
+                var newArray = new string[list.Length + 1];
+                Array.Copy(list, newArray, list.Length);
+                newArray[^1] = error.ErrorMessage;
+
+                errors[key] = newArray;
+            }
 
             return TypedResults.ValidationProblem(errors);
         }

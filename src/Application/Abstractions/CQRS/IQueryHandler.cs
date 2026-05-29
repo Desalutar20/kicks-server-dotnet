@@ -6,9 +6,3 @@ public interface IQueryHandler<in TQuery, TResponse>
 {
     Task<Result<TResponse>> Handle(TQuery query, CancellationToken ct = default);
 }
-
-public interface IQueryHandler<in TQuery>
-    where TQuery : IQuery
-{
-    Task<Result> Handle(TQuery query, CancellationToken ct = default);
-}

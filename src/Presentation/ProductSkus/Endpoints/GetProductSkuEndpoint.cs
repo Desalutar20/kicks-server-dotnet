@@ -1,9 +1,7 @@
-using Application.Auth.Types;
 using Application.ProductSkus.Types;
 using Application.ProductSkus.UseCases.GetProductSku;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.ProductSkus.Dto;
-using Presentation.Shared;
 
 namespace Presentation.ProductSkus.Endpoints;
 
@@ -25,6 +23,7 @@ internal static partial class ProductSkusEndpoints
 
                     var query = new GetProductSkuQuery(new ProductSkuId(id));
                     var result = await queryHandler.Handle(query, ct);
+
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(
@@ -37,7 +36,8 @@ internal static partial class ProductSkusEndpoints
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithName("GetProductSku")
             .WithSummary("Get product SKU and it's variants by ID")
-            .WithDescription("Fetches a single product SKU including with variants.");
+            .WithDescription("Fetches a single product SKU including with variants.")
+            .RequireRateLimiting(RateLimitConstants.GetProductSku);
 
         return endpoint;
     }

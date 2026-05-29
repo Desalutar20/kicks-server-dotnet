@@ -1,7 +1,6 @@
 using Application.ProductSkus.UseCases.GetProductSkusFilters;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.ProductSkus.Dto;
-using Presentation.Shared;
 
 namespace Presentation.ProductSkus.Endpoints;
 
@@ -42,7 +41,8 @@ internal static partial class ProductSkusEndpoints
             .WithSummary("Retrieves available product skus filter options.")
             .WithDescription(
                 "Returns all available filter options for product skus, including categories, brands, sizes, colors, minPrice and maxPrice."
-            );
+            )
+            .RequireRateLimiting(RateLimitConstants.GetProductSkusFilters);
 
         return endpoint;
     }

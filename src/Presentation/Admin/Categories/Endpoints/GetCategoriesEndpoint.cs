@@ -1,9 +1,8 @@
 using Application.Admin.Categories.Constants;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Auth.Types;
-using Domain.Category;
+using Domain.Categories;
 using Presentation.Admin.Categories.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -18,7 +17,9 @@ public sealed class GetCategoriesRequestValidator : AbstractValidator<GetCategor
 {
     public GetCategoriesRequestValidator()
     {
-        RuleFor(x => x.Search).MaximumLength(CategoriesConstants.GetCategoriesSearchMaxLength);
+        RuleFor(x => x.Search)
+            .ValidateNullableValueObject(x => NonEmptyString.Create(x, label: "Search"))
+            .MaximumLength(CategoriesConstants.GetCategoriesSearchMaxLength);
 
         RuleFor(x => x.Limit).InclusiveBetween(1, CategoriesConstants.GetCategoriesMaxLimit);
 
@@ -27,9 +28,29 @@ public sealed class GetCategoriesRequestValidator : AbstractValidator<GetCategor
             .WithMessage("Only one cursor can be specified: PrevCursor or NextCursor.")
             .WithName("prevCursor");
 
-        RuleFor(x => x.PrevCursor).MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
+        RuleFor(x => x.PrevCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<CategoryId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid category id")
+                            : new CategoryId(id)
+                )
+            )
+            .MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
 
-        RuleFor(x => x.NextCursor).MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
+        RuleFor(x => x.NextCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<CategoryId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid category id")
+                            : new CategoryId(id)
+                )
+            )
+            .MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
     }
 }
 
@@ -61,13 +82,9 @@ internal static partial class AdminCategoriesEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.GetCategories");
 
-                    var queryResult = request.ToQuery();
-                    if (queryResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(queryResult.Error, logger);
-                    }
+                    var query = request.ToQuery();
+                    var result = await queryHandler.Handle(query, ct);
 
-                    var result = await queryHandler.Handle(queryResult.Value, ct);
                     if (result.IsFailure)
                     {
                         return ErrorHandler.Handle(result.Error, logger);
@@ -99,65 +116,40 @@ internal static partial class AdminCategoriesEndpoints
         return endpoint;
     }
 
-    private static Result<GetCategoriesQuery> ToQuery(this GetCategoriesRequest request)
+    private static GetCategoriesQuery ToQuery(this GetCategoriesRequest request)
     {
         var limit = PositiveInt
             .Create(request.Limit ?? CategoriesConstants.GetCategoriesDefaultLimit)
             .Value;
 
-        NonEmptyString? search = null;
-        KeysetCursor<CategoryId>? prev = null;
-        KeysetCursor<CategoryId>? next = null;
-
-        if (request.Search is not null)
-        {
-            var searchResult = NonEmptyString.Create(request.Search);
-            if (searchResult.IsFailure)
-            {
-                return Result<GetCategoriesQuery>.Failure(searchResult.Error);
-            }
-
-            search = searchResult.Value;
-        }
-
-        if (request.PrevCursor is not null)
-        {
-            var prevCursorResult = KeysetCursor<CategoryId>.Create(
-                request.PrevCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<CategoryId>.Failure(Error.Failure("Invalid category id"))
-                        : Result<CategoryId>.Success(new CategoryId(id))
-            );
-
-            if (prevCursorResult.IsFailure)
-            {
-                return Result<GetCategoriesQuery>.Failure(prevCursorResult.Error);
-            }
-
-            prev = prevCursorResult.Value;
-        }
-
-        if (request.NextCursor is not null)
-        {
-            var nextCursorResult = KeysetCursor<CategoryId>.Create(
-                request.NextCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<CategoryId>.Failure(Error.Failure("Invalid category id"))
-                        : Result<CategoryId>.Success(new CategoryId(id))
-            );
-
-            if (nextCursorResult.IsFailure)
-            {
-                return Result<GetCategoriesQuery>.Failure(nextCursorResult.Error);
-            }
-
-            next = nextCursorResult.Value;
-        }
+        NonEmptyString? search = request.Search is not null
+            ? NonEmptyString.Create(request.Search).Value
+            : null;
+        var prev = request.PrevCursor is not null
+            ? KeysetCursor<CategoryId>
+                .Create(
+                    request.PrevCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid category id")
+                            : new CategoryId(id)
+                )
+                .Value
+            : null;
+        var next = request.NextCursor is not null
+            ? KeysetCursor<CategoryId>
+                .Create(
+                    request.NextCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid category id")
+                            : new CategoryId(id)
+                )
+                .Value
+            : null;
 
         var pagination = new KeysetPagination<CategoryId>(limit, prev, next);
 
-        return Result<GetCategoriesQuery>.Success(new GetCategoriesQuery(search, pagination));
+        return new GetCategoriesQuery(search, pagination);
     }
 }

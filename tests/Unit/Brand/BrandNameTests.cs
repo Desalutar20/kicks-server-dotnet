@@ -1,4 +1,4 @@
-using Domain.Brand;
+using Domain.Brands;
 
 namespace Unit.Brand;
 

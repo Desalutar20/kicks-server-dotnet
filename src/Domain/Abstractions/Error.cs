@@ -2,7 +2,7 @@ namespace Domain.Abstractions;
 
 public sealed record Error
 {
-    private Error(string message, ErrorType errorType, (string, IEnumerable<string>)? errors = null)
+    private Error(string message, ErrorType errorType, (string, List<string>)? errors = null)
     {
         Description = message;
         ErrorType = errorType;
@@ -11,13 +11,13 @@ public sealed record Error
 
     public string Description { get; }
     public ErrorType ErrorType { get; }
-    public (string, IEnumerable<string>)? Errors { get; }
+    public (string, List<string>)? Errors { get; }
 
     public static Error Failure(string message) => new(message, ErrorType.Failure);
 
     public static Error NotFound(string message) => new(message, ErrorType.NotFound);
 
-    public static Error Validation(string field, IEnumerable<string> errors) =>
+    public static Error Validation(string field, List<string> errors) =>
         new("Validation error", ErrorType.Validation, (field, errors));
 
     public static Error Conflict(string message) => new(message, ErrorType.Conflict);

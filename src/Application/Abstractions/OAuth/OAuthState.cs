@@ -9,14 +9,14 @@ public sealed record OAuthState(Guid StateId, NonEmptyString? AdditionalState)
         var emptyResult = Guard.AgainstEmptyString(value);
         if (emptyResult.IsFailure)
         {
-            return Result<OAuthState>.Failure(emptyResult.Error);
+            return emptyResult.Error;
         }
 
         var parts = value.Split(Delimiter);
 
         if (!Guid.TryParse(parts[0], out var stateId))
         {
-            return Result<OAuthState>.Failure(Error.Failure("Invalid oauth state"));
+            return Error.Failure("Invalid oauth state");
         }
 
         NonEmptyString? additionalState = null;
@@ -30,7 +30,7 @@ public sealed record OAuthState(Guid StateId, NonEmptyString? AdditionalState)
             }
         }
 
-        return Result<OAuthState>.Success(new OAuthState(stateId, additionalState));
+        return new OAuthState(stateId, additionalState);
     }
 
     public override string ToString() =>

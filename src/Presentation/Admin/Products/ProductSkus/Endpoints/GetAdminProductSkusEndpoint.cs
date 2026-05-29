@@ -1,9 +1,8 @@
 using Application.Admin.Products.ProductSkus.Constants;
 using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSkus;
 using Application.Auth.Types;
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.Admin.Products.ProductSkus.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
@@ -27,26 +26,36 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetAdminP
     {
         RuleFor(x => x.Limit).InclusiveBetween(1, ProductSkusConstants.GetAdminProductSkusMaxLimit);
 
-        RuleFor(x => x.MinPrice).GreaterThan(0);
-        RuleFor(x => x.MaxPrice).GreaterThan(0);
-        RuleFor(x => x.MinSalePrice).GreaterThan(0);
-        RuleFor(x => x.MaxSalePrice).GreaterThan(0);
+        RuleFor(x => x.MinPrice)
+            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Min price"));
+        RuleFor(x => x.MaxPrice)
+            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Max price"));
+        RuleFor(x => x.MinSalePrice)
+            .ValidateNullableValueObject(x =>
+                PositiveInt.Create(x!.Value, label: "Min sale price")
+            );
+        RuleFor(x => x.MaxSalePrice)
+            .ValidateNullableValueObject(x =>
+                PositiveInt.Create(x!.Value, label: "Max sale price")
+            );
 
         RuleFor(x => x)
             .Must(x => x.MinPrice is null || x.MaxPrice is null || x.MinPrice <= x.MaxPrice)
-            .WithMessage("MinPrice must be less than or equal to MaxPrice.")
+            .WithMessage("Min price must be less than or equal to max price.")
             .WithName("minPrice");
 
         RuleFor(x => x)
             .Must(x =>
                 x.MinSalePrice is null || x.MaxSalePrice is null || x.MinSalePrice <= x.MaxSalePrice
             )
-            .WithMessage("MinSalePrice must be less than or equal to MaxSalePrice.")
+            .WithMessage("Min sale price must be less than or equal to max sale price.")
             .WithName("minSalePrice");
 
-        RuleFor(x => x.Sku).MaximumLength(ProductSkuSku.MaxLength);
+        RuleFor(x => x.Sku).ValidateNullableValueObject(ProductSkuSku.Create);
+        RuleFor(x => x.Color).ValidateNullableValueObject(ProductSkuColor.Create);
 
-        RuleFor(x => x.Size).GreaterThan(0);
+        RuleFor(x => x.Size)
+            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Size"));
 
         RuleFor(x => x)
             .Must(x => x.PrevCursor is null || x.NextCursor is null)
@@ -54,9 +63,27 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetAdminP
             .WithName("prevCursor");
 
         RuleFor(x => x.PrevCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<ProductSkuId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product sku id")
+                            : new ProductSkuId(id)
+                )
+            )
             .MaximumLength(ProductSkusConstants.GetProductSkusCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
+            .ValidateNullableValueObject(x =>
+                KeysetCursor<ProductSkuId>.Create(
+                    x,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product sku id")
+                            : new ProductSkuId(id)
+                )
+            )
             .MaximumLength(ProductSkusConstants.GetProductSkusCursorMaxLength);
     }
 }
@@ -89,13 +116,9 @@ internal static partial class AdminProductSkusEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.GetAdminProductSkus");
 
-                    var queryResult = request.ToQuery();
-                    if (queryResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(queryResult.Error, logger);
-                    }
+                    var query = request.ToQuery();
+                    var result = await queryHandler.Handle(query, ct);
 
-                    var result = await queryHandler.Handle(queryResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(
@@ -123,134 +146,58 @@ internal static partial class AdminProductSkusEndpoints
         return endpoint;
     }
 
-    private static Result<GetAdminProductSkusQuery> ToQuery(this GetAdminProductSkusRequest request)
+    private static GetAdminProductSkusQuery ToQuery(this GetAdminProductSkusRequest request)
     {
         var limit = PositiveInt
             .Create(request.Limit ?? ProductSkusConstants.GetAdminProductSkusDefaultLimit)
             .Value;
 
-        PositiveInt? minPrice = null;
-        PositiveInt? maxPrice = null;
-        PositiveInt? minSalePrice = null;
-        PositiveInt? maxSalePrice = null;
-        PositiveInt? size = null;
-        ProductSkuColor? color = null;
-        ProductSkuSku? sku = null;
-        KeysetCursor<ProductSkuId>? prev = null;
-        KeysetCursor<ProductSkuId>? next = null;
+        PositiveInt? minPrice = request.MinPrice is not null
+            ? PositiveInt.Create(request.MinPrice.Value).Value
+            : null;
+        PositiveInt? maxPrice = request.MaxPrice is not null
+            ? PositiveInt.Create(request.MaxPrice.Value).Value
+            : null;
+        PositiveInt? minSalePrice = request.MinSalePrice is not null
+            ? PositiveInt.Create(request.MinSalePrice.Value).Value
+            : null;
+        PositiveInt? maxSalePrice = request.MaxSalePrice is not null
+            ? PositiveInt.Create(request.MaxSalePrice.Value).Value
+            : null;
 
-        if (request.MinPrice is not null)
-        {
-            var minPriceResult = PositiveInt.Create(request.MinPrice.Value, "minPrice");
-            if (minPriceResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(minPriceResult.Error);
-            }
+        PositiveInt? size = request.Size is not null
+            ? PositiveInt.Create(request.Size.Value).Value
+            : null;
 
-            minPrice = minPriceResult.Value;
-        }
+        ProductSkuColor? color = request.Color is not null
+            ? ProductSkuColor.Create(request.Color).Value
+            : null;
+        ProductSkuSku? sku = request.Sku is not null
+            ? ProductSkuSku.Create(request.Sku).Value
+            : null;
 
-        if (request.MaxPrice is not null)
-        {
-            var maxPriceResult = PositiveInt.Create(request.MaxPrice.Value, "maxPrice");
-            if (maxPriceResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(maxPriceResult.Error);
-            }
-
-            maxPrice = maxPriceResult.Value;
-        }
-
-        if (request.MinSalePrice is not null)
-        {
-            var minSalePriceResult = PositiveInt.Create(request.MinSalePrice.Value, "minSalePrice");
-            if (minSalePriceResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(minSalePriceResult.Error);
-            }
-
-            minSalePrice = minSalePriceResult.Value;
-        }
-
-        if (request.MaxSalePrice is not null)
-        {
-            var maxSalePriceResult = PositiveInt.Create(request.MaxSalePrice.Value, "maxSalePrice");
-            if (maxSalePriceResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(maxSalePriceResult.Error);
-            }
-
-            maxSalePrice = maxSalePriceResult.Value;
-        }
-
-        if (request.Size is not null)
-        {
-            var sizeResult = PositiveInt.Create(request.Size.Value, "size");
-            if (sizeResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(sizeResult.Error);
-            }
-
-            size = sizeResult.Value;
-        }
-
-        if (request.Color is not null)
-        {
-            var colorResult = ProductSkuColor.Create(request.Color);
-            if (colorResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(colorResult.Error);
-            }
-
-            color = colorResult.Value;
-        }
-
-        if (request.Sku is not null)
-        {
-            var skuResult = ProductSkuSku.Create(request.Sku);
-            if (skuResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(skuResult.Error);
-            }
-
-            sku = skuResult.Value;
-        }
-
-        if (request.PrevCursor is not null)
-        {
-            var prevCursorResult = KeysetCursor<ProductSkuId>.Create(
-                request.PrevCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<ProductSkuId>.Failure(Error.Failure("Invalid product id"))
-                        : Result<ProductSkuId>.Success(new ProductSkuId(id))
-            );
-
-            if (prevCursorResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(prevCursorResult.Error);
-            }
-
-            prev = prevCursorResult.Value;
-        }
-
-        if (request.NextCursor is not null)
-        {
-            var nextCursorResult = KeysetCursor<ProductSkuId>.Create(
-                request.NextCursor,
-                s =>
-                    !Guid.TryParse(s, out var id)
-                        ? Result<ProductSkuId>.Failure(Error.Failure("Invalid product id"))
-                        : Result<ProductSkuId>.Success(new ProductSkuId(id))
-            );
-
-            if (nextCursorResult.IsFailure)
-            {
-                return Result<GetAdminProductSkusQuery>.Failure(nextCursorResult.Error);
-            }
-
-            next = nextCursorResult.Value;
-        }
+        var prev = request.PrevCursor is not null
+            ? KeysetCursor<ProductSkuId>
+                .Create(
+                    request.PrevCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product sku id")
+                            : new ProductSkuId(id)
+                )
+                .Value
+            : null;
+        var next = request.NextCursor is not null
+            ? KeysetCursor<ProductSkuId>
+                .Create(
+                    request.NextCursor,
+                    s =>
+                        !Guid.TryParse(s, out var id)
+                            ? Error.Failure("Invalid product sku id")
+                            : new ProductSkuId(id)
+                )
+                .Value
+            : null;
 
         var pagination = new KeysetPagination<ProductSkuId>(limit, prev, next);
         var filters = new AdminProductSkusFilters(
@@ -264,8 +211,6 @@ internal static partial class AdminProductSkusEndpoints
             sku
         );
 
-        return Result<GetAdminProductSkusQuery>.Success(
-            new GetAdminProductSkusQuery(filters, pagination)
-        );
+        return new GetAdminProductSkusQuery(filters, pagination);
     }
 }

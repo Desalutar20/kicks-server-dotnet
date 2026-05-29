@@ -1,5 +1,4 @@
-using Domain.Product;
-using Domain.Product.ProductSku;
+using Domain.Shared.FileContent;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Product;
@@ -59,24 +58,6 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
                     .HasColumnName("sale_price");
             }
         );
-        // builder.OwnsOne(
-        //     x => x.Price,
-        //     price =>
-        //     {
-        //         price
-        //             .Property(x => x.Price)
-        //             .HasConversion(p => p.Value, value => PositiveInt.Create(value).Value)
-        //             .HasColumnName("price")
-        //             .IsRequired();
-        //         price
-        //             .Property(x => x.SalePrice)
-        //             .HasConversion<int?>(
-        //                 p => p == null ? null : p.Value.Value,
-        //                 value => value == null ? null : PositiveInt.Create(value.Value).Value
-        //             )
-        //             .HasColumnName("sale_price");
-        //     }
-        // );
 
         builder
             .Property(x => x.Quantity)
@@ -98,37 +79,25 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
             .HasConversion(c => c.Value, value => ProductSkuSku.Create(value).Value)
             .IsRequired();
 
-        builder.OwnsOne(
+        builder.OwnsMany(
             x => x.Images,
             x =>
             {
-                x.ToJson();
+                x.ToJson("images");
 
-                x.OwnsMany(
-                    images => images.Images,
-                    image =>
-                    {
-                        image
-                            .Property(x => x.ImageUrl)
-                            .HasConversion(
-                                q => q.Value,
-                                value => ProductSkuImageUrl.Create(value).Value
-                            )
-                            .IsRequired()
-                            .HasMaxLength(ProductSkuImageUrl.MaxLength);
+                x.WithOwner().HasForeignKey("ProductSkuId");
 
-                        image.Property(x => x.ImageId).IsRequired();
+                x.Property(x => x.Url)
+                    .HasConversion(q => q.Value, value => FileUrl.Create(value).Value)
+                    .IsRequired()
+                    .HasMaxLength(FileUrl.MaxLength);
 
-                        image
-                            .Property(x => x.ImageName)
-                            .HasConversion(
-                                q => q.Value,
-                                value => ProductSkuImageName.Create(value).Value
-                            )
-                            .IsRequired()
-                            .HasMaxLength(ProductSkuImageName.MaxLength);
-                    }
-                );
+                x.Property(x => x.Id).IsRequired();
+
+                x.Property(x => x.Name)
+                    .HasConversion(q => q.Value, value => FileName.Create(value).Value)
+                    .IsRequired()
+                    .HasMaxLength(FileName.MaxLength);
             }
         );
 

@@ -2,7 +2,7 @@ namespace Application.Abstractions.Email;
 
 public record struct Message(
     NonEmptyString Subject,
-    Domain.User.Email To,
+    Domain.Users.Email To,
     NonEmptyString PlainText,
     NonEmptyString? HtmlText
 );

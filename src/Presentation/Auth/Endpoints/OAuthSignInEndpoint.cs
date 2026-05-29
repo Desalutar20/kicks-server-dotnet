@@ -1,7 +1,6 @@
 using Application.Abstractions.OAuth;
 using Application.Auth.UseCases.OAuthSignIn;
 using Application.Config;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -82,36 +81,32 @@ internal static partial class AuthEndpoint
     {
         if (!Enum.TryParse<OAuthProvider>(provider, true, out var parsedProvider))
         {
-            return Result<OAuthSignInCommand>.Failure(
-                Error.Validation("provider", ["Invalid oauth provider"])
-            );
+            return Error.Validation("provider", ["Invalid oauth provider"]);
         }
 
         var codeResult = NonEmptyString.Create(code);
         if (codeResult.IsFailure)
         {
-            return Result<OAuthSignInCommand>.Failure(codeResult.Error);
+            return codeResult.Error;
         }
 
         var receivedStateResult = OAuthState.Create(state);
         if (receivedStateResult.IsFailure)
         {
-            return Result<OAuthSignInCommand>.Failure(receivedStateResult.Error);
+            return receivedStateResult.Error;
         }
 
         var expectedStateResult = OAuthState.Create(expectedState);
         if (expectedStateResult.IsFailure)
         {
-            return Result<OAuthSignInCommand>.Failure(expectedStateResult.Error);
+            return expectedStateResult.Error;
         }
 
-        return Result<OAuthSignInCommand>.Success(
-            new OAuthSignInCommand(
-                parsedProvider,
-                codeResult.Value,
-                receivedStateResult.Value,
-                expectedStateResult.Value
-            )
+        return new OAuthSignInCommand(
+            parsedProvider,
+            codeResult.Value,
+            receivedStateResult.Value,
+            expectedStateResult.Value
         );
     }
 }

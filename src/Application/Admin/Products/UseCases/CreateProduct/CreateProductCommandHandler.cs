@@ -1,5 +1,5 @@
 using Application.Admin.Products.Errors;
-using Domain.Product.Exceptions;
+using Domain.Products.Exceptions;
 
 namespace Application.Admin.Products.UseCases.CreateProduct;
 
@@ -22,7 +22,7 @@ internal sealed class CreateProductCommandHandler(
         CancellationToken ct = default
     )
     {
-        var product = Product.Create(
+        var product = new Product(
             command.Title,
             command.Description,
             command.Gender,
@@ -49,13 +49,11 @@ internal sealed class CreateProductCommandHandler(
         }
         catch (ProductAlreadyExistsException)
         {
-            return Result<Product>.Failure(
-                AdminProductErrors.ProductAlreadyExists(
-                    command.Title,
-                    command.Gender,
-                    command.BrandId,
-                    command.CategoryId
-                )
+            return AdminProductErrors.ProductAlreadyExists(
+                command.Title,
+                command.Gender,
+                command.BrandId,
+                command.CategoryId
             );
         }
     }

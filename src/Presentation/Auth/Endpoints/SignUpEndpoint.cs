@@ -1,5 +1,4 @@
 using Application.Auth.UseCases.SignUp;
-using Presentation.Shared;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -16,17 +15,14 @@ public sealed class SignUpRequestValidator : AbstractValidator<SignUpRequest>
 {
     public SignUpRequestValidator()
     {
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(Email.MaxLength);
-        RuleFor(x => x.Password)
-            .NotEmpty()
-            .MinimumLength(Password.MinLength)
-            .MaximumLength(Password.MaxLength);
-        RuleFor(x => x.FirstName).NotEmpty().MaximumLength(FirstName.MaxLength);
-        RuleFor(x => x.LastName).NotEmpty().MaximumLength(LastName.MaxLength);
+        RuleFor(x => x.Email).ValidateValueObject(Email.Create);
+        RuleFor(x => x.Password).ValidateValueObject(Password.Create);
+        RuleFor(x => x.FirstName).ValidateValueObject(FirstName.Create);
+        RuleFor(x => x.LastName).ValidateValueObject(LastName.Create);
         RuleFor(x => x.Gender)
             .NotEmpty()
             .Must(g => Enum.TryParse<Gender>(g, true, out _))
-            .WithMessage("'Gender' must be one of Male, Female, Other");
+            .WithMessage($"Gender must be one of: {string.Join(", ", Enum.GetNames<Gender>())}");
     }
 }
 
@@ -46,13 +42,8 @@ internal static partial class AuthEndpoint
                 {
                     var logger = loggerFactory.CreateLogger("Auth.SignUp");
 
-                    var commandResult = request.ToCommand();
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
-
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
+                    var command = request.ToCommand();
+                    var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
@@ -79,39 +70,19 @@ internal static partial class AuthEndpoint
         return endpoint;
     }
 
-    private static Result<SignUpCommand> ToCommand(this SignUpRequest request)
+    private static SignUpCommand ToCommand(this SignUpRequest request)
     {
-        var email = Email.Create(request.Email);
-        if (email.IsFailure)
-        {
-            return Result<SignUpCommand>.Failure(email.Error);
-        }
+        var email = Email.Create(request.Email).Value;
+        var password = Password.Create(request.Password).Value;
+        var firstName = FirstName.Create(request.FirstName).Value;
+        var lastName = LastName.Create(request.LastName).Value;
 
-        var password = Password.Create(request.Password);
-        if (password.IsFailure)
-        {
-            return Result<SignUpCommand>.Failure(password.Error);
-        }
-
-        var firstName = FirstName.Create(request.FirstName);
-        if (firstName.IsFailure)
-        {
-            return Result<SignUpCommand>.Failure(firstName.Error);
-        }
-
-        var lastName = LastName.Create(request.LastName);
-        if (lastName.IsFailure)
-        {
-            return Result<SignUpCommand>.Failure(lastName.Error);
-        }
-
-        if (!Enum.TryParse<Gender>(request.Gender, true, out var gender))
-        {
-            return Result<SignUpCommand>.Failure(Error.Validation("gender", ["Invalid gender"]));
-        }
-
-        return Result<SignUpCommand>.Success(
-            new SignUpCommand(email.Value, password.Value, firstName.Value, lastName.Value, gender)
+        return new SignUpCommand(
+            email,
+            password,
+            firstName,
+            lastName,
+            Enum.Parse<Gender>(request.Gender, true)
         );
     }
 }

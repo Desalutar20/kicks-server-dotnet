@@ -1,4 +1,4 @@
-using Domain.Outbox;
+using Application.Abstractions.Outbox;
 
 namespace Application.Auth.UseCases.SignUp;
 
@@ -40,7 +40,7 @@ internal sealed class SignUpCommandHandler(
             return tokenResult;
         }
 
-        var user = User.Create(
+        var user = new User(
             command.Email,
             hashedPasswordResult.Value,
             command.FirstName,
@@ -55,7 +55,7 @@ internal sealed class SignUpCommandHandler(
             command.Email,
             tokenResult.Value
         );
-        var outbox = Outbox.Create(OutboxType.Email, EmailService.SerializeMessage(message));
+        var outbox = new Outbox(OutboxType.Email, EmailService.SerializeMessage(message));
 
         await authCache.StoreVerificationTokenAsync(
             user.Id,

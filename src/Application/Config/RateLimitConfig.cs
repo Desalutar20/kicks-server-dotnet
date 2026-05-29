@@ -9,4 +9,8 @@ public sealed record RateLimitConfig
     public required int ResetPassword { get; init; }
     public required int GetProfile { get; init; }
     public required int Logout { get; init; }
+
+    public required int GetProductSku { get; init; }
+    public required int GetProductSkus { get; init; }
+    public required int GetProductSkusFilters { get; init; }
 }

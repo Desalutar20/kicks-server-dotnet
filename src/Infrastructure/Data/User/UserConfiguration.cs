@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Role = Domain.User.Role;
+using Role = Domain.Users.Role;
 
 namespace Infrastructure.Data.User;
 

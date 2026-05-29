@@ -1,4 +1,4 @@
-using Domain.Product.ProductSku;
+using Domain.Products.ProductSkus;
 using Presentation.Admin.Products.Dto;
 
 namespace Presentation.Admin.Products.ProductSkus.Dto;
@@ -14,7 +14,7 @@ public sealed record AdminProductSkuDto(
     string Color,
     string Sku,
     AdminProductDto Product,
-    List<AdminProductSkuImageDto> Images
+    List<FileDto> Images
 );
 
 internal static class AdminProductSkuDtoMapper
@@ -31,6 +31,6 @@ internal static class AdminProductSkuDtoMapper
             model.Color.Value,
             model.Sku.Value,
             model.Product.ToDto(),
-            [.. model.Images.Images.Select(image => image.ToDto())]
+            [.. model.Images.Select(image => image.ToDto())]
         );
 }

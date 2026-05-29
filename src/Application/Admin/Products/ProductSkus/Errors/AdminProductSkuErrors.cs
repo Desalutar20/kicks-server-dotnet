@@ -1,5 +1,3 @@
-using Domain.Product.ProductSku;
-
 namespace Application.Admin.Products.ProductSkus.Errors;
 
 public static class AdminProductSkuErrors

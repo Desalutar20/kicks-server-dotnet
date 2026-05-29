@@ -1,4 +1,4 @@
-using Domain.Product;
+using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.Endpoints;
@@ -30,6 +30,7 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
             sessionCookie,
             ct
         );
+
         updateProductResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var product = await GetProductFromDbById(new ProductId(body.Data[0].Id), ct);
@@ -142,20 +143,8 @@ public class UpdateProductTests(ApiFactory factory) : TestApp(factory)
             ("title", request with { Title = "" }),
             ("title", request with { Title = "  " }),
             ("title", request with { Title = TestData.String(ProductTitle.MaxLength + 1) }),
-            (
-                "description",
-                request with
-                {
-                    Description = TestData.String(ProductDescription.MaxLength + 1),
-                }
-            ),
-            (
-                "description",
-                request with
-                {
-                    Description = TestData.String(ProductDescription.MaxLength + 1),
-                }
-            ),
+            ("description", request with { Description = "" }),
+            ("description", request with { Description = "   " }),
             (
                 "description",
                 request with

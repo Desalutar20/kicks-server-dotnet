@@ -1,10 +1,9 @@
 using Application.Admin.Products.UseCases.UpdateProduct;
 using Application.Auth.Types;
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product;
+using Domain.Brands;
+using Domain.Categories;
+using Domain.Products;
 using Presentation.Admin.Products.Dto;
-using Presentation.Shared;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -21,14 +20,24 @@ public sealed class UpdateProductRequestValidator : AbstractValidator<UpdateProd
 {
     public UpdateProductRequestValidator()
     {
-        RuleFor(x => x.Title).MaximumLength(ProductTitle.MaxLength);
-        RuleFor(x => x.Description).MaximumLength(ProductDescription.MaxLength);
+        RuleFor(x => x.Title).ValidateNullableValueObject(ProductTitle.Create);
+        RuleFor(x => x.Description).ValidateNullableValueObject(ProductDescription.Create);
+
         RuleFor(x => x.Gender)
             .Must(g => g is null || Enum.TryParse<ProductGender>(g, true, out _))
-            .WithMessage("'Gender' must be one of Men, Women, Unisex");
-        RuleFor(x => x.Tags)
-            .Must(t => t is null || t.Count <= ProductTags.MaxTags)
-            .WithMessage($"Tags cannot contain more than {ProductTags.MaxTags} items.");
+            .WithMessage(
+                $"Gender must be one of: {string.Join(", ", Enum.GetNames<ProductGender>())}"
+            );
+
+        RuleFor(x => x.Tags).ValidateNullableValueObject(ProductTags.Create);
+
+        RuleFor(x => x.CategoryId)
+            .Must(x => x is null || Guid.TryParse(x, out _))
+            .WithMessage("Invalid category id");
+
+        RuleFor(x => x.BrandId)
+            .Must(x => x is null || Guid.TryParse(x, out _))
+            .WithMessage("Invalid brand id");
     }
 }
 
@@ -58,13 +67,9 @@ internal static partial class AdminProductsEndpoints
 
                     var logger = loggerFactory.CreateLogger("Admin.UpdateProduct");
 
-                    var commandResult = request.ToCommand(id);
-                    if (commandResult.IsFailure)
-                    {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
-                    }
+                    var command = request.ToCommand(id);
+                    var result = await commandHandler.Handle(command, ct);
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
                     return result.IsFailure
                         ? ErrorHandler.Handle(result.Error, logger)
                         : Results.Ok(new ApiResponse<AdminProductDto>(result.Value.ToDto()));
@@ -88,97 +93,30 @@ internal static partial class AdminProductsEndpoints
         return endpoint;
     }
 
-    private static Result<UpdateProductCommand> ToCommand(
-        this UpdateProductRequest request,
-        Guid productId
-    )
+    private static UpdateProductCommand ToCommand(this UpdateProductRequest request, Guid productId)
     {
-        ProductTitle? title = null;
-        ProductDescription? description = null;
-        ProductGender? productGender = null;
-        ProductTags? tags = null;
-        BrandId? brandId = null;
-        CategoryId? categoryId = null;
+        var title = request.Title is not null ? ProductTitle.Create(request.Title).Value : null;
+        var description = request.Description is not null
+            ? ProductDescription.Create(request.Description).Value
+            : null;
+        ProductGender? productGender = request.Gender is not null
+            ? Enum.Parse<ProductGender>(request.Gender, true)
+            : null;
 
-        if (request.Title is not null)
-        {
-            var titleResult = ProductTitle.Create(request.Title);
-            if (titleResult.IsFailure)
-            {
-                return Result<UpdateProductCommand>.Failure(titleResult.Error);
-            }
+        var tags = request.Tags is not null ? ProductTags.Create(request.Tags).Value : null;
+        var brandId = request.BrandId is not null ? new BrandId(Guid.Parse(request.BrandId)) : null;
+        var categoryId = request.CategoryId is not null
+            ? new CategoryId(Guid.Parse(request.CategoryId))
+            : null;
 
-            title = titleResult.Value;
-        }
-
-        if (request.Description is not null)
-        {
-            var descriptionResult = ProductDescription.Create(request.Description);
-            if (descriptionResult.IsFailure)
-            {
-                return Result<UpdateProductCommand>.Failure(descriptionResult.Error);
-            }
-
-            description = descriptionResult.Value;
-        }
-
-        if (request.Gender is not null)
-        {
-            if (!Enum.TryParse<ProductGender>(request.Gender, true, out var gender))
-            {
-                return Result<UpdateProductCommand>.Failure(
-                    Error.Validation("gender", ["Invalid gender"])
-                );
-            }
-
-            productGender = gender;
-        }
-
-        if (request.Tags is not null)
-        {
-            var tagsResult = ProductTags.Create(request.Tags);
-            if (tagsResult.IsFailure)
-            {
-                return Result<UpdateProductCommand>.Failure(tagsResult.Error);
-            }
-
-            tags = tagsResult.Value;
-        }
-
-        if (request.BrandId is not null)
-        {
-            if (!Guid.TryParse(request.BrandId, out var id))
-            {
-                return Result<UpdateProductCommand>.Failure(
-                    Error.Validation("brandId", ["Invalid brand id"])
-                );
-            }
-
-            brandId = new BrandId(id);
-        }
-
-        if (request.CategoryId is not null)
-        {
-            if (!Guid.TryParse(request.CategoryId, out var id))
-            {
-                return Result<UpdateProductCommand>.Failure(
-                    Error.Validation("categoryId", ["Invalid category id"])
-                );
-            }
-
-            categoryId = new CategoryId(id);
-        }
-
-        return Result<UpdateProductCommand>.Success(
-            new UpdateProductCommand(
-                new ProductId(productId),
-                title,
-                description,
-                productGender,
-                tags,
-                brandId,
-                categoryId
-            )
+        return new UpdateProductCommand(
+            new ProductId(productId),
+            title,
+            description,
+            productGender,
+            tags,
+            brandId,
+            categoryId
         );
     }
 }

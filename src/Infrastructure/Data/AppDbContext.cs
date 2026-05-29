@@ -1,6 +1,5 @@
-using Domain.Brand;
-using Domain.Category;
-using Domain.Product.ProductSku;
+using Domain.Brands;
+using Domain.Categories;
 
 namespace Infrastructure.Data;
 
@@ -11,7 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Category> Categories { get; set; }
     public DbSet<DomainProduct> Products { get; set; }
     public DbSet<ProductSku> ProductSkus { get; set; }
-    public DbSet<DomainOutbox> Outboxes { get; set; }
+    public DbSet<Application.Abstractions.Outbox.Outbox> Outboxes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

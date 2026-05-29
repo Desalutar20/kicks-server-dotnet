@@ -1,7 +1,7 @@
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Product.ProductSku.Exceptions;
-using File = Application.Abstractions.FileUploader.File;
+using Domain.Products.ProductSkus.Exceptions;
+using Domain.Shared.FileContent;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.UpdateProductSku;
 
@@ -13,7 +13,7 @@ public sealed record UpdateProductSkuCommand(
     PositiveInt? Size,
     ProductSkuColor? Color,
     ProductSkuSku? Sku,
-    List<File>? Images
+    List<FileData>? Images
 ) : ICommand<ProductSku>;
 
 internal sealed class UpdateProductSkuCommandHandler(
@@ -61,7 +61,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             return updateResult.Error;
         }
 
-        FileUploadResult[] uploadedFiles = [];
+        List<FileUploadResult> uploadedFiles = [];
 
         if (command.Images is not null && command.Images.Count > 0)
         {
@@ -76,6 +76,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             var addImagesResult = productSku.AddImages(imagesResult.Value.images);
             if (addImagesResult.IsFailure)
             {
+                await CleanupFilesAsync(uploadedFiles);
                 return addImagesResult.Error;
             }
         }
@@ -115,8 +116,8 @@ internal sealed class UpdateProductSkuCommandHandler(
     {
         if (command.Sku is not null && command.Sku != productSku.Sku)
         {
-            var exists = await productSkusRepository.ExistsBySkuAsync(command.Sku, ct);
-            if (exists)
+            var existsBySku = await productSkusRepository.ExistsBySkuAsync(command.Sku, ct);
+            if (existsBySku)
             {
                 return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
             }
@@ -128,73 +129,48 @@ internal sealed class UpdateProductSkuCommandHandler(
         if (!colorChanged && !sizeChanged)
             return Result.Success();
 
-        {
-            var exists = await productSkusRepository.ExistsByProductSizeColorAsync(
-                productSku.ProductId,
-                command.Size ?? productSku.Size,
-                command.Color ?? productSku.Color,
-                ct
-            );
+        var existsBySizeOrColor = await productSkusRepository.ExistsByProductSizeColorAsync(
+            productSku.ProductId,
+            command.Size ?? productSku.Size,
+            command.Color ?? productSku.Color,
+            ct
+        );
 
-            if (exists)
-            {
-                return AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                    productSku.ProductId,
-                    command.Color ?? productSku.Color,
-                    command.Size ?? productSku.Size
-                );
-            }
+        if (existsBySizeOrColor)
+        {
+            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                productSku.ProductId,
+                command.Color ?? productSku.Color,
+                command.Size ?? productSku.Size
+            );
         }
 
         return Result.Success();
     }
 
     private async Task<
-        Result<(List<ProductSkuImage> images, FileUploadResult[] uploadResults)>
-    > UploadImagesAsync(ProductSku productSku, List<File> files, CancellationToken ct)
+        Result<(List<ProductSkuImage> images, List<FileUploadResult> uploadResults)>
+    > UploadImagesAsync(ProductSku productSku, List<FileData> files, CancellationToken ct)
     {
-        var availableSlots = ProductSku.MaxImages - productSku.Images.Images.Count;
-        if (availableSlots <= 0)
+        if (productSku.RemainingImageSlots <= 0)
         {
             return ([], []);
         }
 
-        var uploadTasks = files
-            .Take(availableSlots)
-            .Select(file => fileUploader.UploadAsync(file, ct));
-        var uploadResults = await Task.WhenAll(uploadTasks);
+        var uploadResults = await fileUploader.UploadFilesAsync(
+            files.Take(productSku.RemainingImageSlots),
+            ct
+        );
+        if (uploadResults.IsFailure)
+            return uploadResults.Error;
 
-        List<ProductSkuImage> images = [];
+        var images = uploadResults.Value.Select(result =>
+            ProductSkuImage.Create(result.Id, result.Uri, result.FileName)
+        );
 
-        foreach (var uploadResult in uploadResults)
-        {
-            var urlResult = ProductSkuImageUrl.Create(uploadResult.Uri.ToString());
-
-            if (urlResult.IsFailure)
-            {
-                return urlResult.Error;
-            }
-
-            var nameResult = ProductSkuImageName.Create(uploadResult.FileName);
-
-            if (nameResult.IsFailure)
-            {
-                return nameResult.Error;
-            }
-
-            images.Add(
-                ProductSkuImage.Create(
-                    urlResult.Value,
-                    uploadResult.Id,
-                    nameResult.Value,
-                    productSku.Id
-                )
-            );
-        }
-
-        return (images, uploadResults);
+        return (images.ToList(), uploadResults.Value.ToList());
     }
 
-    private async Task CleanupFilesAsync(FileUploadResult[] uploadedFiles) =>
-        await Task.WhenAll(uploadedFiles.Select(x => fileUploader.DeleteFileAsync(x.Id)));
+    private async Task CleanupFilesAsync(IEnumerable<FileUploadResult> uploadResults) =>
+        await fileUploader.DeleteFilesAsync(uploadResults.Select(image => image.Id));
 }

@@ -1,10 +1,10 @@
+using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Constants;
 using Application.Admin.Products.ProductSkus.UseCases.CreateProductSku;
 using Application.Auth.Types;
-using Domain.Product;
-using Domain.Product.ProductSku;
-using Presentation.Shared;
-using File = Application.Abstractions.FileUploader.File;
+using Domain.Products;
+using Domain.Products.ProductSkus;
+using Domain.Shared.FileContent;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
@@ -36,17 +36,19 @@ public sealed class CreateProductSkuRequestValidator : AbstractValidator<CreateP
 {
     public CreateProductSkuRequestValidator()
     {
-        RuleFor(x => x.Price).NotEmpty().GreaterThan(0);
+        RuleFor(x => x.Price).ValidateValueObject(x => PositiveInt.Create(x, label: "Price"));
+        RuleFor(x => x.SalePrice)
+            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Sale price"));
         RuleFor(x => x)
             .Must(x => x.SalePrice == null || x.SalePrice < x.Price)
             .WithMessage("Sale price must be less than price.")
             .WithName("salePrice");
 
-        RuleFor(x => x.Quantity).NotEmpty().GreaterThan(0);
-        RuleFor(x => x.Size).NotEmpty().GreaterThan(0);
+        RuleFor(x => x.Quantity).ValidateValueObject(x => PositiveInt.Create(x, label: "Quantity"));
+        RuleFor(x => x.Size).ValidateValueObject(x => PositiveInt.Create(x, label: "Size"));
 
-        RuleFor(x => x.Color).NotEmpty();
-        RuleFor(x => x.Sku).NotEmpty();
+        RuleFor(x => x.Color).ValidateValueObject(ProductSkuColor.Create);
+        RuleFor(x => x.Sku).ValidateValueObject(ProductSkuSku.Create);
 
         RuleFor(x => x.Images)
             .NotNull()
@@ -56,9 +58,16 @@ public sealed class CreateProductSkuRequestValidator : AbstractValidator<CreateP
 
         RuleFor(x => x.Images)
             .Must(x =>
-                x.All(file => ProductSkusConstants.AllowedContentTypes.Contains(file.ContentType))
+                x.All(file =>
+                    !string.IsNullOrWhiteSpace(file.ContentType)
+                    && ProductSkusConstants.AllowedContentTypes.Contains(file.ContentType)
+                )
             )
             .WithMessage("Only JPEG, PNG, and WEBP images are allowed.");
+
+        RuleFor(x => x.Images)
+            .Must(x => x is null || x.All(file => file.FileName.Length <= FileName.MaxLength))
+            .WithMessage($"File name must not exceed {FileName.MaxLength} characters.");
 
         RuleFor(x => x.Images)
             .Must(x =>
@@ -104,10 +113,19 @@ internal static partial class AdminProductSkusEndpoints
                         return ErrorHandler.Handle(commandResult.Error, logger);
                     }
 
-                    var result = await commandHandler.Handle(commandResult.Value, ct);
-                    return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
-                        : Results.Created("/", new ApiResponse<Guid>(result.Value.Value));
+                    var (command, files) = commandResult.Value;
+
+                    try
+                    {
+                        var result = await commandHandler.Handle(command, ct);
+                        return result.IsFailure
+                            ? ErrorHandler.Handle(result.Error, logger)
+                            : Results.Created("/", new ApiResponse<Guid>(result.Value.Value));
+                    }
+                    finally
+                    {
+                        await Task.WhenAll(files.Select(async f => await f.Content.DisposeAsync()));
+                    }
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
@@ -129,90 +147,51 @@ internal static partial class AdminProductSkusEndpoints
         return endpoint;
     }
 
-    private static Result<CreateProductSkuCommand> ToCommand(
+    private static Result<(CreateProductSkuCommand command, List<FileData> streams)> ToCommand(
         this CreateProductSkuRequest request,
         Guid productId
     )
     {
-        var positivePrice = PositiveInt.Create(request.Price, "price");
-        if (positivePrice.IsFailure)
-        {
-            return Result<CreateProductSkuCommand>.Failure(positivePrice.Error);
-        }
+        var positivePrice = PositiveInt.Create(request.Price, "price").Value;
 
-        PositiveInt? positiveSalePrice = null;
-        if (request.SalePrice is not null)
-        {
-            var positiveSalePriceResult = PositiveInt.Create(request.SalePrice.Value, "salePrice");
-            if (positiveSalePriceResult.IsFailure)
-            {
-                return Result<CreateProductSkuCommand>.Failure(positiveSalePriceResult.Error);
-            }
+        PositiveInt? positiveSalePrice = request.SalePrice is not null
+            ? PositiveInt.Create(request.SalePrice.Value).Value
+            : null;
 
-            positiveSalePrice = positiveSalePriceResult.Value;
-        }
-
-        var price = ProductSkuPrice.Create(positivePrice.Value, positiveSalePrice);
+        var price = ProductSkuPrice.Create(positivePrice, positiveSalePrice);
         if (price.IsFailure)
         {
-            return Result<CreateProductSkuCommand>.Failure(price.Error);
+            return price.Error;
         }
 
-        var quantity = PositiveInt.Create(request.Quantity);
-        if (quantity.IsFailure)
-        {
-            return Result<CreateProductSkuCommand>.Failure(quantity.Error);
-        }
+        var quantity = PositiveInt.Create(request.Quantity).Value;
+        var size = PositiveInt.Create(request.Size).Value;
+        var color = ProductSkuColor.Create(request.Color).Value;
+        var sku = ProductSkuSku.Create(request.Sku).Value;
 
-        var size = PositiveInt.Create(request.Size);
-        if (size.IsFailure)
-        {
-            return Result<CreateProductSkuCommand>.Failure(size.Error);
-        }
-
-        var color = ProductSkuColor.Create(request.Color);
-        if (color.IsFailure)
-        {
-            return Result<CreateProductSkuCommand>.Failure(color.Error);
-        }
-
-        var sku = ProductSkuSku.Create(request.Sku);
-        if (sku.IsFailure)
-        {
-            return Result<CreateProductSkuCommand>.Failure(sku.Error);
-        }
-
-        List<File> files = [];
+        List<FileData> files = [];
 
         foreach (var image in request.Images)
         {
-            var fileName = NonEmptyString.Create(image.FileName);
-            if (fileName.IsFailure)
-            {
-                return Result<CreateProductSkuCommand>.Failure(fileName.Error);
-            }
-
-            var contentType = NonEmptyString.Create(image.ContentType);
-            if (contentType.IsFailure)
-            {
-                return Result<CreateProductSkuCommand>.Failure(contentType.Error);
-            }
+            var fileName = FileName.Create(image.FileName).Value;
+            var contentType = NonEmptyString.Create(image.ContentType).Value;
 
             var stream = image.OpenReadStream();
 
-            files.Add(new File(stream, fileName.Value, contentType.Value));
+            files.Add(new FileData(stream, fileName, contentType));
         }
 
-        return Result<CreateProductSkuCommand>.Success(
+        return (
             new CreateProductSkuCommand(
                 price.Value,
-                quantity.Value,
-                size.Value,
-                color.Value,
-                sku.Value,
+                quantity,
+                size,
+                color,
+                sku,
                 new ProductId(productId),
                 files
-            )
+            ),
+            files
         );
     }
 }

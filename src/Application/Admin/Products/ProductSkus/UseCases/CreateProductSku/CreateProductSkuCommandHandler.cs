@@ -1,7 +1,6 @@
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
-using Domain.Product.ProductSku.Exceptions;
-using File = Application.Abstractions.FileUploader.File;
+using Domain.Products.ProductSkus.Exceptions;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.CreateProductSku;
 
@@ -12,7 +11,7 @@ public sealed record CreateProductSkuCommand(
     ProductSkuColor Color,
     ProductSkuSku Sku,
     ProductId ProductId,
-    List<File> Images
+    List<FileData> Images
 ) : ICommand<ProductSkuId>;
 
 internal sealed class CreateProductSkuCommandHandler(
@@ -24,6 +23,72 @@ internal sealed class CreateProductSkuCommandHandler(
     public async Task<Result<ProductSkuId>> Handle(
         CreateProductSkuCommand command,
         CancellationToken ct = default
+    )
+    {
+        var duplicateResult = await ValidateDuplicateAsync(command, ct);
+        if (duplicateResult.IsFailure)
+        {
+            return duplicateResult.Error;
+        }
+
+        var uploadResult = await UploadImagesAsync(command.Images, ct);
+        if (uploadResult.IsFailure)
+        {
+            return uploadResult.Error;
+        }
+
+        var (images, uploadResults) = uploadResult.Value;
+
+        var result = ProductSku.Create(
+            command.Price,
+            command.Quantity,
+            command.Color,
+            command.Sku,
+            command.Size,
+            command.ProductId,
+            images
+        );
+
+        if (result.IsFailure)
+        {
+            await CleanupFilesAsync(uploadResults);
+            return result.Error;
+        }
+
+        productSkusRepository.CreateProductSku(result.Value);
+
+        try
+        {
+            await unitOfWork.SaveChangesAsync(ct);
+
+            return result.Value.Id;
+        }
+        catch (ProductSkuDuplicateCombinationException)
+        {
+            await CleanupFilesAsync(uploadResults);
+
+            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
+                command.ProductId,
+                command.Color,
+                command.Size
+            );
+        }
+        catch (ProductSkuSkuAlreadyExistsException)
+        {
+            await CleanupFilesAsync(uploadResults);
+
+            return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
+        }
+        catch
+        {
+            await CleanupFilesAsync(uploadResults);
+            throw;
+        }
+    }
+
+    private async Task<Result> ValidateDuplicateAsync(
+        CreateProductSkuCommand command,
+        CancellationToken ct
     )
     {
         if (await productSkusRepository.ExistsBySkuAsync(command.Sku, ct))
@@ -47,76 +112,26 @@ internal sealed class CreateProductSkuCommandHandler(
             );
         }
 
-        var productSku = ProductSku.Create(
-            command.Price,
-            command.Quantity,
-            command.Color,
-            command.Sku,
-            command.Size,
-            command.ProductId
+        return Result.Success();
+    }
+
+    private async Task<
+        Result<(List<ProductSkuImage> images, List<FileUploadResult> uploadResults)>
+    > UploadImagesAsync(List<FileData> files, CancellationToken ct)
+    {
+        var uploadResults = await fileUploader.UploadFilesAsync(files, ct);
+        if (uploadResults.IsFailure)
+        {
+            return uploadResults.Error;
+        }
+
+        var images = uploadResults.Value.Select(result =>
+            ProductSkuImage.Create(result.Id, result.Uri, result.FileName)
         );
 
-        var tasks = command.Images.Select(file => fileUploader.UploadAsync(file, ct));
-        var results = await Task.WhenAll(tasks);
-
-        List<ProductSkuImage> images = [];
-
-        foreach (var uploadResult in results)
-        {
-            var productSkuImageUrlResult = ProductSkuImageUrl.Create(uploadResult.Uri.ToString());
-            if (productSkuImageUrlResult.IsFailure)
-            {
-                return productSkuImageUrlResult.Error;
-            }
-
-            var productSkuImageName = ProductSkuImageName.Create(uploadResult.FileName);
-            if (productSkuImageName.IsFailure)
-            {
-                return productSkuImageName.Error;
-            }
-
-            images.Add(
-                ProductSkuImage.Create(
-                    productSkuImageUrlResult.Value,
-                    uploadResult.Id,
-                    productSkuImageName.Value,
-                    productSku.Id
-                )
-            );
-        }
-
-        var result = productSku.SetImages(images);
-        if (result.IsFailure)
-        {
-            return result.Error;
-        }
-
-        productSkusRepository.CreateProductSku(productSku);
-
-        try
-        {
-            await unitOfWork.SaveChangesAsync(ct);
-
-            return productSku.Id;
-        }
-        catch (ProductSkuDuplicateCombinationException)
-        {
-            await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
-            return AdminProductSkuErrors.ProductSkuDuplicateCombination(
-                command.ProductId,
-                command.Color,
-                command.Size
-            );
-        }
-        catch (ProductSkuSkuAlreadyExistsException)
-        {
-            await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
-            return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
-        }
-        catch
-        {
-            await Task.WhenAll(results.Select(image => fileUploader.DeleteFileAsync(image.Id)));
-            throw;
-        }
+        return (images.ToList(), uploadResults.Value.ToList());
     }
+
+    private async Task CleanupFilesAsync(IEnumerable<FileUploadResult> uploadResults) =>
+        await fileUploader.DeleteFilesAsync(uploadResults.Select(image => image.Id));
 }
