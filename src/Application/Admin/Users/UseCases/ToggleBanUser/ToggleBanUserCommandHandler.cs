@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Admin.Users.Errors;
 
 namespace Application.Admin.Users.UseCases.ToggleBanUser;

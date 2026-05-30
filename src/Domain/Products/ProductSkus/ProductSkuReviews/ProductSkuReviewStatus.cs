@@ -5,7 +5,7 @@ namespace Domain.Products.ProductSkus.ProductSkuReviews;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ProductSkuReviewStatus
 {
-    Rejected,
     Pending,
+    Rejected,
     Approved,
 }

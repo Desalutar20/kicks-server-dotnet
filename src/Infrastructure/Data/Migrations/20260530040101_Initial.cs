@@ -129,7 +129,7 @@ namespace Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("pk_users", x => x.id);
                     table.CheckConstraint("CK_gender", "gender IN ('male', 'female', 'other')");
-                    table.CheckConstraint("CK_role", "role IN ('admin', 'regular')");
+                    table.CheckConstraint("CK_role", "role IN ('regular', 'admin')");
                 }
             );
 
@@ -241,7 +241,7 @@ namespace Infrastructure.Data.Migrations
                     table.PrimaryKey("pk_product_sku_review", x => x.id);
                     table.CheckConstraint(
                         "CK_status",
-                        "status IN ('rejected', 'pending', 'approved')"
+                        "status IN ('pending', 'rejected', 'approved')"
                     );
                     table.ForeignKey(
                         name: "fk_product_sku_review_product_sku_product_sku_id",

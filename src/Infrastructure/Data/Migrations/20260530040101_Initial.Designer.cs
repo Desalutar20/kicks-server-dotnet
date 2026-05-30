@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260526172822_Initial")]
+    [Migration("20260530040101_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -314,7 +314,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.ToTable("product_sku_review", null, t =>
                         {
-                            t.HasCheckConstraint("CK_status", "status IN ('rejected', 'pending', 'approved')");
+                            t.HasCheckConstraint("CK_status", "status IN ('pending', 'rejected', 'approved')");
                         });
                 });
 
@@ -405,7 +405,7 @@ namespace Infrastructure.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_gender", "gender IN ('male', 'female', 'other')");
 
-                            t.HasCheckConstraint("CK_role", "role IN ('admin', 'regular')");
+                            t.HasCheckConstraint("CK_role", "role IN ('regular', 'admin')");
                         });
                 });
 

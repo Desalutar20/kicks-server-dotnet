@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Abstractions.OAuth;
 using Application.Auth.Errors;
 

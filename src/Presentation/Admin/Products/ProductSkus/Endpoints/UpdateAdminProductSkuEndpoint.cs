@@ -119,12 +119,11 @@ internal static partial class AdminProductSkusEndpoints
 
                     var (command, files) = commandResult.Value;
 
+                    Result<ProductSku> result;
+
                     try
                     {
-                        var result = await commandHandler.Handle(command, ct);
-                        return result.IsFailure
-                            ? ErrorHandler.Handle(result.Error, logger)
-                            : Results.Ok(new ApiResponse<AdminProductSkuDto>(result.Value.ToDto()));
+                        result = await commandHandler.Handle(command, ct);
                     }
                     finally
                     {
@@ -133,6 +132,10 @@ internal static partial class AdminProductSkusEndpoints
                                 files.Select(async f => await f.Content.DisposeAsync())
                             );
                     }
+
+                    return result.IsFailure
+                        ? ErrorHandler.Handle(result.Error, logger)
+                        : Results.Ok(new ApiResponse<AdminProductSkuDto>(result.Value.ToDto()));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()

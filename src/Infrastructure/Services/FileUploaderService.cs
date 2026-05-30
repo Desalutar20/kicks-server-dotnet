@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Application.Abstractions.FileUploader;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -15,17 +16,41 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
         new Account(config.Cloudinary.CloudName, config.Cloudinary.ApiKey, config.Cloudinary.Secret)
     );
 
-    public async Task DeleteFileAsync(Guid id) =>
-        await _cloudinary.DestroyAsync(new DeletionParams($"{config.Cloudinary.Folder}/{id}"));
+    public async Task DeleteFileAsync(Guid id)
+    {
+        var result = await _cloudinary.DestroyAsync(
+            new DeletionParams($"{config.Cloudinary.Folder}/{id}")
+        );
 
-    public async Task DeleteFilesAsync(IEnumerable<Guid> ids, CancellationToken ct = default) =>
-        await _cloudinary.DeleteResourcesAsync(
+        if (result.Error is not null)
+        {
+            logger.LogWarning(
+                "Cloudinary delete failed. FileId: {FileId}, Error: {Error}",
+                id,
+                result.Error.Message
+            );
+        }
+    }
+
+    public async Task DeleteFilesAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    {
+        var result = await _cloudinary.DeleteResourcesAsync(
             new DelResParams()
             {
                 PublicIds = ids.Select(id => $"{config.Cloudinary.Folder}/{id}").ToList(),
             },
             ct
         );
+
+        if (result.Error is not null)
+        {
+            logger.LogError(
+                "Cloudinary delete failed. Ids: {Ids}, Error: {Error}",
+                ids,
+                result.Error.Message
+            );
+        }
+    }
 
     public async Task<Result<FileUploadResult>> UploadFileAsync(
         FileData file,
@@ -36,44 +61,34 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
 
         var uploadParams = new AutoUploadParams()
         {
-            File = new FileDescription(file.FileName.Value, file.Content),
+            File = new FileDescription(file.FileName.FullName, file.Content),
             Folder = config.Cloudinary.Folder,
             UseFilename = true,
             PublicId = publicId.ToString(),
-            FilenameOverride = file.FileName.Value,
-            Format = Path.GetExtension(file.FileName.Value)[1..],
+            FilenameOverride = file.FileName.FullName,
+            Format = file.FileName.Extension[1..],
         };
 
         var uploadResult = await _cloudinary.UploadAsync(uploadParams, ct);
+        if (uploadResult.Error is not null)
+        {
+            return Domain.Abstractions.Error.Internal(
+                $"Cloudinary upload failed: {uploadResult.Error.Message}"
+            );
+        }
 
-        var fileUrlResult = FileUrl.Create(uploadResult.SecureUrl.ToString());
+        var fileUrlResult = FileUrl.Create(uploadResult.SecureUrl?.ToString() ?? "");
         if (fileUrlResult.IsFailure)
         {
             return fileUrlResult.Error;
         }
 
-        var fileNameResult = FileName.Create(uploadResult.OriginalFilename);
-        if (fileNameResult.IsFailure)
-        {
-            return fileNameResult.Error;
-        }
-
-        var contentTypeResult = NonEmptyString.Create(
-            uploadResult.Type,
-            "contentType",
-            "Content type"
-        );
-        if (contentTypeResult.IsFailure)
-        {
-            return contentTypeResult.Error;
-        }
-
         return new FileUploadResult(
             publicId,
             fileUrlResult.Value,
-            fileNameResult.Value,
+            file.FileName,
             uploadResult.Bytes,
-            contentTypeResult.Value
+            file.ContentType
         );
     }
 
@@ -82,57 +97,56 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
         CancellationToken ct = default
     )
     {
-        using var semaphore = new SemaphoreSlim(MaxParallelUploadsCount);
-
-        var tasks = files
-            .Select(async file =>
-            {
-                await semaphore.WaitAsync(ct);
-
-                try
-                {
-                    return await UploadFileAsync(file, ct);
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            })
-            .ToList();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var results = new ConcurrentBag<Result<FileUploadResult>>();
 
         try
         {
-            var results = await Task.WhenAll(tasks);
+            await Parallel.ForEachAsync(
+                files,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = MaxParallelUploadsCount,
+                    CancellationToken = cts.Token,
+                },
+                async (file, token) =>
+                {
+                    if (cts.IsCancellationRequested)
+                        return;
 
-            var failedResult = results.FirstOrDefault(r => r.IsFailure);
-            if (failedResult is null)
-                return results.Select(r => r.Value).ToList();
+                    var result = await UploadFileAsync(file, token);
 
-            var uploadedFiles = results.Where(r => r.IsSuccess).Select(r => r.Value).ToList();
-            if (uploadedFiles.Count != 0)
-            {
-                await DeleteFilesAsync(uploadedFiles.Select(f => f.Id), ct);
-            }
+                    results.Add(result);
 
-            return failedResult.Error;
+                    if (result.IsFailure)
+                    {
+                        logger.LogError(
+                            "File upload failed. File: {FileName}, Error: {Error}",
+                            file.FileName.FullName,
+                            result.Error.Description
+                        );
+
+                        cts.Cancel();
+                    }
+                }
+            );
+
+            return results.Where(r => r.IsSuccess).Select(r => r.Value).ToList();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while uploading files");
-
-            var uploadedFiles = tasks
-                .Where(t => t.IsCompletedSuccessfully)
-                .Select(t => t.Result)
-                .Where(r => r.IsSuccess)
-                .Select(r => r.Value)
-                .ToList();
-
+            var uploadedFiles = results.Where(r => r.IsSuccess).Select(r => r.Value).ToList();
             if (uploadedFiles.Count != 0)
             {
-                await DeleteFilesAsync(uploadedFiles.Select(f => f.Id), ct);
+                await DeleteFilesAsync(uploadedFiles.Select(f => f.Id).ToList(), ct);
             }
 
-            return Domain.Abstractions.Error.Internal("Failed to upload files");
+            if (ex is not TaskCanceledException)
+            {
+                logger.LogError(ex, "Error while uploading files");
+            }
+
+            return Domain.Abstractions.Error.Failure("Failed to upload files");
         }
     }
 }

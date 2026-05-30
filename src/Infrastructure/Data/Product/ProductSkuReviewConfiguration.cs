@@ -71,7 +71,7 @@ public class ProductSkuReviewConfiguration : IEntityTypeConfiguration<ProductSku
                 x.Property(x => x.Id).IsRequired();
 
                 x.Property(x => x.Name)
-                    .HasConversion(x => x.Value, value => FileName.Create(value).Value)
+                    .HasConversion(x => x.FullName, value => FileName.Create(value).Value)
                     .IsRequired()
                     .HasMaxLength(FileName.MaxLength);
             }

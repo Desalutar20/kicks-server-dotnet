@@ -30,5 +30,6 @@
     <PackageVersion Include="CloudinaryDotNet" Version="1.29.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
+    <PackageVersion Include="Scrutor" Version="7.0.0" />
   </ItemGroup>
 </Project>

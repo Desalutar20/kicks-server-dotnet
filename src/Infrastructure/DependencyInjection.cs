@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Cache;
+using Application.Abstractions.Database;
 using Application.Abstractions.Events;
 using Application.Abstractions.FileUploader;
 using Application.Abstractions.OAuth;
@@ -80,6 +81,8 @@ public static class DependencyInjection
                 }
             );
 
+            services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+
             return services;
         }
 
@@ -126,7 +129,6 @@ public static class DependencyInjection
 
         private IServiceCollection AddRepositories()
         {
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();

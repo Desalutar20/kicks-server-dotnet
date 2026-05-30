@@ -206,9 +206,13 @@ public static class TestData
                             )
                             .ToList();
 
-                        return ProductSku
-                            .Create(price, quantity, color, sku, size, product.Id, images)
+                        var productSku = ProductSku
+                            .Create(price, quantity, color, sku, size, product.Id)
                             .Value;
+
+                        productSku.AddImages(images);
+
+                        return productSku;
                     })
                 ),
         ];

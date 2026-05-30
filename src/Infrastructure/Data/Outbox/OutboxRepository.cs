@@ -18,25 +18,23 @@ internal sealed class OutboxRepository(AppDbContext dbContext)
     > GetAndLockOutboxesForProcessingAsync(
         OutboxType type,
         PositiveInt batchSize,
-        bool trackChanges,
         CancellationToken ct = default
     )
     {
-        var query = _dbContext.Outboxes.FromSqlInterpolated(
-            $"""
-                SELECT * FROM outbox
-                WHERE processed_at IS NULL
-                  AND type = {type.ToString().ToLower()}
-                FOR UPDATE SKIP LOCKED
-            """
-        );
-
-        if (!trackChanges)
-            query = query.AsNoTracking();
-
-        var result = await query.OrderBy(x => x.CreatedAt).Take(batchSize.Value).ToListAsync(ct);
-
-        return result;
+        return await _dbContext
+            .Outboxes.FromSqlInterpolated(
+                $"""
+                    SELECT *
+                    FROM outbox
+                    WHERE processed_at IS NULL
+                      AND type = {type.ToString().ToLower()}
+                    ORDER BY created_at
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT {batchSize.Value}
+                """
+            )
+            .AsNoTracking()
+            .ToListAsync(ct);
     }
 
     public async Task MarkAsProcessedAsync(

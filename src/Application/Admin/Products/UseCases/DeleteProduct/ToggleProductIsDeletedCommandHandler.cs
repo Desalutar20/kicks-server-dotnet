@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Admin.Products.Errors;
 
 namespace Application.Admin.Products.UseCases.DeleteProduct;

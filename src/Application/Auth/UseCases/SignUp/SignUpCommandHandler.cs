@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
 
 namespace Application.Auth.UseCases.SignUp;

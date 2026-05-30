@@ -27,11 +27,12 @@ public class ProductSkuTests
             color,
             sku,
             size,
-            new ProductId(Guid.NewGuid()),
-            images
+            new ProductId(Guid.NewGuid())
         );
 
         Assert.True(result.IsSuccess);
+
+        result.Value.AddImages(images);
 
         var productSku = result.Value;
 
@@ -54,8 +55,7 @@ public class ProductSkuTests
             ProductSkuColor.Create("#000000").Value,
             ProductSkuSku.Create("SKU-1").Value,
             PositiveInt.Create(42).Value,
-            new ProductId(Guid.NewGuid()),
-            []
+            new ProductId(Guid.NewGuid())
         );
 
         Assert.True(result.IsFailure);
@@ -163,7 +163,7 @@ public class ProductSkuTests
     {
         var images = Enumerable.Range(1, imageCount).Select(CreateImage).ToList();
 
-        return Domain
+        var productSku = Domain
             .Products.ProductSkus.ProductSku.Create(
                 ProductSkuPrice
                     .Create(PositiveInt.Create(100).Value, PositiveInt.Create(80).Value)
@@ -172,10 +172,13 @@ public class ProductSkuTests
                 ProductSkuColor.Create("#ffffff").Value,
                 ProductSkuSku.Create("SKU-1").Value,
                 PositiveInt.Create(42).Value,
-                new ProductId(Guid.NewGuid()),
-                images
+                new ProductId(Guid.NewGuid())
             )
             .Value;
+
+        productSku.AddImages(images);
+
+        return productSku;
     }
 
     private static ProductSkuImage CreateImage(int index)

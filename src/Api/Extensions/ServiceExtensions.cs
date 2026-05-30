@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Api.ExceptionHandler;
 using Application.Config;
@@ -14,6 +15,9 @@ public static class ServiceExtensions
     )
     {
         services.AddOpenApi();
+        services.ConfigureHttpJsonOptions(options =>
+            options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict
+        );
         services.AddHttpLogging();
         services.AddProblemDetails(options =>
             options.CustomizeProblemDetails = ctx =>

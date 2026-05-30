@@ -7,7 +7,6 @@ public interface IOutboxRepository
     Task<IEnumerable<Outbox>> GetAndLockOutboxesForProcessingAsync(
         OutboxType type,
         PositiveInt batchSize,
-        bool trackChanges,
         CancellationToken ct = default
     );
 

@@ -311,7 +311,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.ToTable("product_sku_review", null, t =>
                         {
-                            t.HasCheckConstraint("CK_status", "status IN ('rejected', 'pending', 'approved')");
+                            t.HasCheckConstraint("CK_status", "status IN ('pending', 'rejected', 'approved')");
                         });
                 });
 
@@ -402,7 +402,7 @@ namespace Infrastructure.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_gender", "gender IN ('male', 'female', 'other')");
 
-                            t.HasCheckConstraint("CK_role", "role IN ('admin', 'regular')");
+                            t.HasCheckConstraint("CK_role", "role IN ('regular', 'admin')");
                         });
                 });
 

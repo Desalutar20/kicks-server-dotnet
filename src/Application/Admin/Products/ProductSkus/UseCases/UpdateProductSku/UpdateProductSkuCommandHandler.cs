@@ -1,7 +1,7 @@
+using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
 using Domain.Products.ProductSkus.Exceptions;
-using Domain.Shared.FileContent;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.UpdateProductSku;
 
@@ -33,6 +33,8 @@ internal sealed class UpdateProductSkuCommandHandler(
             return AdminProductSkuErrors.ProductSkuNotFound(command.Id);
         }
 
+        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+
         var duplicateResult = await ValidateDuplicatesAsync(productSku, command, ct);
         if (duplicateResult.IsFailure)
         {
@@ -63,27 +65,29 @@ internal sealed class UpdateProductSkuCommandHandler(
 
         List<FileUploadResult> uploadedFiles = [];
 
-        if (command.Images is not null && command.Images.Count > 0)
-        {
-            var imagesResult = await UploadImagesAsync(productSku, command.Images, ct);
-            if (imagesResult.IsFailure)
-            {
-                return imagesResult.Error;
-            }
-
-            uploadedFiles = imagesResult.Value.uploadResults;
-
-            var addImagesResult = productSku.AddImages(imagesResult.Value.images);
-            if (addImagesResult.IsFailure)
-            {
-                await CleanupFilesAsync(uploadedFiles);
-                return addImagesResult.Error;
-            }
-        }
-
         try
         {
             await unitOfWork.SaveChangesAsync(ct);
+
+            if (command.Images is not null && command.Images.Count > 0)
+            {
+                var imagesResult = await UploadImagesAsync(productSku, command.Images, ct);
+                if (imagesResult.IsFailure)
+                {
+                    return imagesResult.Error;
+                }
+
+                uploadedFiles = imagesResult.Value.uploadResults;
+
+                var addImagesResult = productSku.AddImages(imagesResult.Value.images);
+                if (addImagesResult.IsFailure)
+                {
+                    await CleanupFilesAsync(uploadedFiles);
+                    return addImagesResult.Error;
+                }
+            }
+
+            await transaction.CommitAsync(ct);
 
             return productSku;
         }

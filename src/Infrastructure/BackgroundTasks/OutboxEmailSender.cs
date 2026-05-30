@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Application.Abstractions.Database;
 using Application.Abstractions.Email.JsonConverters;
 using Application.Abstractions.Outbox;
 using Microsoft.Extensions.Hosting;
@@ -31,60 +32,46 @@ internal sealed class OutboxEmailSender(
             var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
             var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
-            await unitOfWork.BeginTransactionAsync(
-                async () =>
-                {
+            await using var transaction = await unitOfWork.BeginTransactionAsync(stoppingToken);
+
+            try
+            {
+                var outboxes = await outboxRepository.GetAndLockOutboxesForProcessingAsync(
+                    OutboxType.Email,
+                    PositiveInt.Create(BatchSize).Value,
+                    stoppingToken
+                );
+
+                var processedIds = new List<OutboxId>(BatchSize);
+
+                foreach (var outbox in outboxes)
                     try
                     {
-                        var outboxes = await outboxRepository.GetAndLockOutboxesForProcessingAsync(
-                            OutboxType.Email,
-                            PositiveInt.Create(BatchSize).Value,
-                            false,
-                            stoppingToken
-                        );
-
-                        var processedIds = new List<OutboxId>(BatchSize);
-
-                        foreach (var outbox in outboxes)
-                            try
-                            {
-                                var success = await TrySendWithRetry(
-                                    emailSender,
-                                    outbox,
-                                    stoppingToken
-                                );
-                                if (success)
-                                    processedIds.Add(outbox.Id);
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.LogError(
-                                    ex,
-                                    "Unexpected error while processing Outbox {OutboxId}",
-                                    outbox.Id
-                                );
-                            }
-
-                        if (processedIds.Count > 0)
-                        {
-                            var now = DateTimeOffset.UtcNow;
-
-                            await outboxRepository.MarkAsProcessedAsync(
-                                processedIds,
-                                now,
-                                stoppingToken
-                            );
-                        }
+                        var success = await TrySendWithRetry(emailSender, outbox, stoppingToken);
+                        if (success)
+                            processedIds.Add(outbox.Id);
                     }
                     catch (Exception ex)
                     {
-                        logger.LogWarning(ex, "Error while processing email outbox");
+                        logger.LogError(
+                            ex,
+                            "Unexpected error while processing Outbox {OutboxId}",
+                            outbox.Id
+                        );
                     }
 
-                    await Task.CompletedTask;
-                },
-                stoppingToken
-            );
+                if (processedIds.Count > 0)
+                {
+                    var now = DateTimeOffset.UtcNow;
+
+                    await outboxRepository.MarkAsProcessedAsync(processedIds, now, stoppingToken);
+                    await transaction.CommitAsync(stoppingToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error while processing email outbox");
+            }
         } while (await timer.WaitForNextTickAsync(stoppingToken));
     }
 

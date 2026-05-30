@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Admin.Categories.Errors;
 
 namespace Application.Admin.Categories.UseCases.DeleteCategory;

@@ -1,3 +1,4 @@
+using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
 using Application.Admin.Products.ProductSkus.Errors;
 using Domain.Products.ProductSkus.Exceptions;
@@ -25,19 +26,13 @@ internal sealed class CreateProductSkuCommandHandler(
         CancellationToken ct = default
     )
     {
+        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+
         var duplicateResult = await ValidateDuplicateAsync(command, ct);
         if (duplicateResult.IsFailure)
         {
             return duplicateResult.Error;
         }
-
-        var uploadResult = await UploadImagesAsync(command.Images, ct);
-        if (uploadResult.IsFailure)
-        {
-            return uploadResult.Error;
-        }
-
-        var (images, uploadResults) = uploadResult.Value;
 
         var result = ProductSku.Create(
             command.Price,
@@ -45,21 +40,40 @@ internal sealed class CreateProductSkuCommandHandler(
             command.Color,
             command.Sku,
             command.Size,
-            command.ProductId,
-            images
+            command.ProductId
         );
 
         if (result.IsFailure)
         {
-            await CleanupFilesAsync(uploadResults);
             return result.Error;
         }
 
         productSkusRepository.CreateProductSku(result.Value);
 
+        List<FileUploadResult> uploadResults = [];
+
         try
         {
             await unitOfWork.SaveChangesAsync(ct);
+
+            var uploadResult = await UploadImagesAsync(command.Images, ct);
+            if (uploadResult.IsFailure)
+            {
+                return uploadResult.Error;
+            }
+
+            var (images, results) = uploadResult.Value;
+            uploadResults = results;
+
+            var addImagesResult = result.Value.AddImages(images);
+            if (addImagesResult.IsFailure)
+            {
+                await CleanupFilesAsync(uploadResults);
+                return addImagesResult.Error;
+            }
+
+            await unitOfWork.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
 
             return result.Value.Id;
         }

@@ -33,17 +33,16 @@ public sealed class ProductSku : Entity<ProductSkuId>
         ProductSkuColor color,
         ProductSkuSku sku,
         PositiveInt size,
-        ProductId productId,
-        List<ProductSkuImage> images
+        ProductId productId
     )
     {
-        if (images is null || images.Count == 0 || images.Count > MaxImages)
-        {
-            return Error.Validation(
-                "productSkuImages",
-                [$"Product SKU must contain between 1 and {MaxImages} images."]
-            );
-        }
+        // if (images is null || images.Count == 0 || images.Count > MaxImages)
+        // {
+        //     return Error.Validation(
+        //         "productSkuImages",
+        //         [$"Product SKU must contain between 1 and {MaxImages} images."]
+        //     );
+        // }
 
         var productSku = new ProductSku()
         {
@@ -54,8 +53,6 @@ public sealed class ProductSku : Entity<ProductSkuId>
             Size = size,
             ProductId = productId,
         };
-
-        productSku._images.AddRange(images);
 
         return productSku;
     }
