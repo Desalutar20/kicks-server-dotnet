@@ -162,24 +162,18 @@ internal static partial class AdminProductSkusEndpoints
         Guid productSkuId
     )
     {
-        PositiveInt? price = request.Price is not null
+        var price = request.Price is not null
             ? PositiveInt.Create(request.Price.Value).Value
             : null;
-        PositiveInt? salePrice = request.SalePrice is not null
+        var salePrice = request.SalePrice is not null
             ? PositiveInt.Create(request.SalePrice.Value).Value
             : null;
-        PositiveInt? quantity = request.Quantity is not null
+        var quantity = request.Quantity is not null
             ? PositiveInt.Create(request.Quantity.Value).Value
             : null;
-        PositiveInt? size = request.Size is not null
-            ? PositiveInt.Create(request.Size.Value).Value
-            : null;
-        ProductSkuColor? color = request.Color is not null
-            ? ProductSkuColor.Create(request.Color).Value
-            : null;
-        ProductSkuSku? sku = request.Sku is not null
-            ? ProductSkuSku.Create(request.Sku).Value
-            : null;
+        var size = request.Size is not null ? PositiveInt.Create(request.Size.Value).Value : null;
+        var color = request.Color is not null ? ProductSkuColor.Create(request.Color).Value : null;
+        var sku = request.Sku is not null ? ProductSkuSku.Create(request.Sku).Value : null;
 
         List<FileData>? files = null;
 

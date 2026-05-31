@@ -6,10 +6,12 @@ using Application.Abstractions.OAuth;
 using Application.Abstractions.Outbox;
 using Domain.Brands;
 using Domain.Categories;
+using Domain.Promocodes;
 using Infrastructure.BackgroundTasks;
 using Infrastructure.Cache;
 using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Product;
+using Infrastructure.Data.Promocode;
 using Infrastructure.Data.User;
 using Infrastructure.Events;
 using Infrastructure.Services;
@@ -134,6 +136,8 @@ public static class DependencyInjection
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductSkusRepository, ProductSkusRepository>();
+            services.AddScoped<IPromocodeRepository, PromocodeRepository>();
+
             services.AddScoped<IOutboxRepository, OutboxRepository>();
 
             return services;

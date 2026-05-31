@@ -152,29 +152,23 @@ internal static partial class AdminProductSkusEndpoints
             .Create(request.Limit ?? ProductSkusConstants.GetAdminProductSkusDefaultLimit)
             .Value;
 
-        PositiveInt? minPrice = request.MinPrice is not null
+        var minPrice = request.MinPrice is not null
             ? PositiveInt.Create(request.MinPrice.Value).Value
             : null;
-        PositiveInt? maxPrice = request.MaxPrice is not null
+        var maxPrice = request.MaxPrice is not null
             ? PositiveInt.Create(request.MaxPrice.Value).Value
             : null;
-        PositiveInt? minSalePrice = request.MinSalePrice is not null
+        var minSalePrice = request.MinSalePrice is not null
             ? PositiveInt.Create(request.MinSalePrice.Value).Value
             : null;
-        PositiveInt? maxSalePrice = request.MaxSalePrice is not null
+        var maxSalePrice = request.MaxSalePrice is not null
             ? PositiveInt.Create(request.MaxSalePrice.Value).Value
             : null;
 
-        PositiveInt? size = request.Size is not null
-            ? PositiveInt.Create(request.Size.Value).Value
-            : null;
+        var size = request.Size is not null ? PositiveInt.Create(request.Size.Value).Value : null;
 
-        ProductSkuColor? color = request.Color is not null
-            ? ProductSkuColor.Create(request.Color).Value
-            : null;
-        ProductSkuSku? sku = request.Sku is not null
-            ? ProductSkuSku.Create(request.Sku).Value
-            : null;
+        var color = request.Color is not null ? ProductSkuColor.Create(request.Color).Value : null;
+        var sku = request.Sku is not null ? ProductSkuSku.Create(request.Sku).Value : null;
 
         var prev = request.PrevCursor is not null
             ? KeysetCursor<ProductSkuId>

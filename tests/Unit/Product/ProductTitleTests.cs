@@ -1,4 +1,5 @@
 using Domain.Products;
+using FluentAssertions;
 
 namespace Unit.Product;
 
@@ -14,8 +15,8 @@ public class ProductTitleTests
     {
         var result = ProductTitle.Create(productTitle);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(productTitle.Trim(), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(productTitle.Trim());
     }
 
     [Theory]
@@ -25,7 +26,7 @@ public class ProductTitleTests
     {
         var result = ProductTitle.Create(productTitle);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -34,6 +35,6 @@ public class ProductTitleTests
         var value = new string('a', ProductTitle.MaxLength + 1);
 
         var result = ProductTitle.Create(value);
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

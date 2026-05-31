@@ -12,8 +12,8 @@ public sealed class ProductSku : Entity<ProductSkuId>
         : base(new ProductSkuId(Guid.NewGuid())) { }
 
     public ProductSkuPrice Price { get; private set; } = null!;
-    public PositiveInt Quantity { get; private set; }
-    public PositiveInt Size { get; private set; }
+    public PositiveInt Quantity { get; private set; } = null!;
+    public PositiveInt Size { get; private set; } = null!;
     public ProductSkuColor Color { get; private set; } = null!;
     public ProductSkuSku Sku { get; private set; } = null!;
 
@@ -36,14 +36,6 @@ public sealed class ProductSku : Entity<ProductSkuId>
         ProductId productId
     )
     {
-        // if (images is null || images.Count == 0 || images.Count > MaxImages)
-        // {
-        //     return Error.Validation(
-        //         "productSkuImages",
-        //         [$"Product SKU must contain between 1 and {MaxImages} images."]
-        //     );
-        // }
-
         var productSku = new ProductSku()
         {
             Price = price,
@@ -90,31 +82,18 @@ public sealed class ProductSku : Entity<ProductSkuId>
         return image.Id;
     }
 
-    public Result Update(
-        ProductSkuPrice? price,
-        PositiveInt? quantity,
-        PositiveInt? size,
-        ProductSkuColor? color,
-        ProductSkuSku? sku
+    public void Update(
+        ProductSkuPrice price,
+        PositiveInt quantity,
+        PositiveInt size,
+        ProductSkuColor color,
+        ProductSkuSku sku
     )
     {
-        if (price is not null)
-        {
-            var salePrice = price.SalePrice ?? Price.SalePrice;
-
-            if (salePrice is not null && price.Price < salePrice)
-            {
-                return Error.Validation("price", ["Sale price cannot exceed price"]);
-            }
-
-            Price = ProductSkuPrice.Create(price.Price, salePrice).Value;
-        }
-
-        Quantity = quantity ?? Quantity;
-        Size = size ?? Size;
-        Color = color ?? Color;
-        Sku = sku ?? Sku;
-
-        return Result.Success();
+        Price = price;
+        Quantity = quantity;
+        Size = size;
+        Color = color;
+        Sku = sku;
     }
 }

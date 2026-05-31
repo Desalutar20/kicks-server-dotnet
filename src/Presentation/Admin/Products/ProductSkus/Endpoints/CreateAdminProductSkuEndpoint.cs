@@ -155,8 +155,7 @@ internal static partial class AdminProductSkusEndpoints
     )
     {
         var positivePrice = PositiveInt.Create(request.Price, "price").Value;
-
-        PositiveInt? positiveSalePrice = request.SalePrice is not null
+        var positiveSalePrice = request.SalePrice is not null
             ? PositiveInt.Create(request.SalePrice.Value).Value
             : null;
 

@@ -10,6 +10,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<DomainUser>
         var roles = string.Join(", ", Enum.GetNames<Role>().Select(r => $"'{r.ToLower()}'"));
         var genders = string.Join(", ", Enum.GetNames<Gender>().Select(g => $"'{g.ToLower()}'"));
 
+        builder.Ignore(x => x.IsValid);
+
         builder.ToTable(
             "users",
             table =>
@@ -21,7 +23,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<DomainUser>
 
         builder.HasKey(x => x.Id);
 
-        builder.HasIndex(x => x.Email).IsUnique();
+        builder.HasIndex(x => x.Email).IsUnique().HasDatabaseName(DbConstants.UserUniqueIndex);
         builder.HasIndex(x => x.GoogleId).IsUnique();
         builder.HasIndex(x => x.FacebookId).IsUnique();
 

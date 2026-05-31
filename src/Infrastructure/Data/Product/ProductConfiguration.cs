@@ -45,13 +45,16 @@ public class ProductConfiguration : IEntityTypeConfiguration<DomainProduct>
 
         builder
             .Property(x => x.Title)
-            .HasConversion(name => name.Value, value => ProductTitle.Create(value).Value)
+            .HasConversion(title => title.Value, value => ProductTitle.Create(value).Value)
             .HasMaxLength(ProductTitle.MaxLength)
             .IsRequired();
 
         builder
             .Property(x => x.Description)
-            .HasConversion(name => name.Value, value => ProductDescription.Create(value).Value)
+            .HasConversion(
+                description => description.Value,
+                value => ProductDescription.Create(value).Value
+            )
             .HasMaxLength(ProductDescription.MaxLength)
             .IsRequired();
 

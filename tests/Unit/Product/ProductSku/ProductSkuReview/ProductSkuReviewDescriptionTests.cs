@@ -1,4 +1,5 @@
 using Domain.Products.ProductSkus.ProductSkuReviews;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku.ProductSkuReview;
 
@@ -15,8 +16,8 @@ public class ProductSkuReviewDescriptionTests
     {
         var result = ProductSkuReviewDescription.Create(description);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(description.Trim(), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(description.Trim());
     }
 
     [Theory]
@@ -26,7 +27,7 @@ public class ProductSkuReviewDescriptionTests
     {
         var result = ProductSkuReviewDescription.Create(description);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -35,6 +36,7 @@ public class ProductSkuReviewDescriptionTests
         var value = new string('a', ProductSkuReviewDescription.MaxLength + 1);
 
         var result = ProductSkuReviewDescription.Create(value);
-        Assert.True(result.IsFailure);
+
+        result.IsFailure.Should().BeTrue();
     }
 }

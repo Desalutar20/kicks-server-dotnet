@@ -31,12 +31,12 @@ internal sealed class UpdateProductCommandHandler(
         }
 
         product.Update(
-            command.Title,
-            command.Description,
-            command.Gender,
-            command.Tags,
-            command.BrandId,
-            command.CategoryId
+            command.Title ?? product.Title,
+            command.Description ?? product.Description,
+            command.Gender ?? product.Gender,
+            command.Tags ?? product.Tags,
+            command.BrandId ?? product.BrandId,
+            command.CategoryId ?? product.CategoryId
         );
 
         productRepository.UpdateProduct(product);

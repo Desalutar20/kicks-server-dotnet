@@ -1,4 +1,5 @@
 using Domain.Products;
+using FluentAssertions;
 
 namespace Unit.Product;
 
@@ -11,8 +12,8 @@ public class ProductTagsTests
 
         var result = ProductTags.Create(tags);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(3, result.Value.Value.Count);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Count.Should().Be(3);
     }
 
     [Fact]
@@ -20,8 +21,8 @@ public class ProductTagsTests
     {
         var result = ProductTags.Create([]);
 
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().BeEmpty();
     }
 
     [Fact]
@@ -31,7 +32,7 @@ public class ProductTagsTests
 
         var result = ProductTags.Create(tags);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -41,8 +42,9 @@ public class ProductTagsTests
 
         var result = ProductTags.Create(tags);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Value.Count);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Count.Should().Be(2);
+        result.Value.Value.Should().Contain(["nike", "running"]);
     }
 
     [Fact]
@@ -52,10 +54,9 @@ public class ProductTagsTests
 
         var result = ProductTags.Create(tags);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, result.Value.Value.Count);
-        Assert.Contains("nike", result.Value.Value);
-        Assert.Contains("running", result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Count.Should().Be(2);
+        result.Value.Value.Should().Contain(["nike", "running"]);
     }
 
     [Fact]
@@ -63,6 +64,6 @@ public class ProductTagsTests
     {
         var result = ProductTags.Empty();
 
-        Assert.Empty(result.Value);
+        result.Value.Should().BeEmpty();
     }
 }

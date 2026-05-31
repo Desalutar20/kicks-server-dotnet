@@ -1,4 +1,5 @@
 using Domain.Brands;
+using FluentAssertions;
 
 namespace Unit.Brand;
 
@@ -14,8 +15,8 @@ public class BrandNameTests
     {
         var result = BrandName.Create(brandName);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(brandName.Trim(), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(brandName.Trim());
     }
 
     [Theory]
@@ -25,7 +26,7 @@ public class BrandNameTests
     {
         var result = BrandName.Create(brandName);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -35,6 +36,6 @@ public class BrandNameTests
 
         var result = BrandName.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

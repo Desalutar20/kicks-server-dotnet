@@ -1,10 +1,10 @@
 using Domain.Users;
+using FluentAssertions;
 
 namespace Unit.User;
 
 public class PasswordTests
 {
-    
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
@@ -12,25 +12,27 @@ public class PasswordTests
     {
         var result = Password.Create(password);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
     public void Create_PasswordShorterThanMinLength_ReturnsFailure()
     {
         var value = new string('a', Password.MinLength - 1);
+
         var result = Password.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
     public void Create_PasswordExceedingMaxLength_ReturnsFailure()
     {
         var value = new string('a', Password.MaxLength + 1);
+
         var result = Password.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -42,9 +44,10 @@ public class PasswordTests
         var minResult = Password.Create(minPassword);
         var maxResult = Password.Create(maxPassword);
 
-        Assert.True(minResult.IsSuccess);
-        Assert.True(maxResult.IsSuccess);
-        Assert.Equal(minPassword, minResult.Value.Value);
-        Assert.Equal(maxPassword, maxResult.Value.Value);
+        minResult.IsSuccess.Should().BeTrue();
+        maxResult.IsSuccess.Should().BeTrue();
+
+        minResult.Value.Value.Should().Be(minPassword);
+        maxResult.Value.Value.Should().Be(maxPassword);
     }
 }

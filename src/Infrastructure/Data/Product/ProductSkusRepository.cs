@@ -76,8 +76,9 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
             )
             .WhereNotNull(filters.BrandIds, p => filters.BrandIds!.Contains(p.Product.BrandId))
             .WhereNotNull(filters.Genders, p => filters.Genders!.Contains(p.Product.Gender))
-            .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice)
-            .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice)
+            .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice!)
+            .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice!)
+            .Where(p => !p.Product.IsDeleted)
             .ApplyKeysetPagination(keysetPagination)
             .Include(p => p.Product);
 
@@ -110,8 +111,8 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
                 filters.InStock,
                 p => filters.InStock == true ? p.Quantity > 0 : p.Quantity == 0
             )
-            .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice)
-            .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice)
+            .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice!)
+            .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice!)
             .WhereNotNull(
                 filters.MinSalePrice,
                 p =>

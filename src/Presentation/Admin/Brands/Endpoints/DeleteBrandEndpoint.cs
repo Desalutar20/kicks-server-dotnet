@@ -4,7 +4,7 @@ using Domain.Brands;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
-internal static partial class AdminBrandsEndpoints
+internal static partial class AdminPromocodesEndpoints
 {
     private static IEndpointRouteBuilder DeleteBrandV1(this IEndpointRouteBuilder endpoint)
     {

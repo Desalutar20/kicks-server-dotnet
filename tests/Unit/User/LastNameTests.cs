@@ -1,4 +1,5 @@
 using Domain.Users;
+using FluentAssertions;
 
 namespace Unit.User;
 
@@ -14,8 +15,8 @@ public class LastNameTests
     {
         var result = LastName.Create(lastName);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(lastName.Trim(), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(lastName.Trim());
     }
 
     [Theory]
@@ -25,7 +26,7 @@ public class LastNameTests
     {
         var result = LastName.Create(lastName);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -35,6 +36,6 @@ public class LastNameTests
 
         var result = LastName.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

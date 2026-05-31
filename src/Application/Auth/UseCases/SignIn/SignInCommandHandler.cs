@@ -22,7 +22,7 @@ public class SignInCommandHandler(
         if (
             user?.HashedPassword is null
             || !hashingService.Verify(command.Password, user.HashedPassword)
-            || !user.IsValid()
+            || !user.IsValid
         )
         {
             return AuthErrors.InvalidCredentials;

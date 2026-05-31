@@ -72,6 +72,44 @@ namespace Infrastructure.Data.Migrations
             );
 
             migrationBuilder.CreateTable(
+                name: "promocode",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    discount_value = table.Column<int>(type: "integer", nullable: false),
+                    type = table.Column<string>(type: "text", nullable: false),
+                    usage_limit = table.Column<int>(type: "integer", nullable: false),
+                    usage_count = table.Column<int>(
+                        type: "integer",
+                        nullable: false,
+                        defaultValue: 0
+                    ),
+                    code = table.Column<string>(type: "text", nullable: false),
+                    valid_from = table.Column<DateTimeOffset>(
+                        type: "timestamp with time zone",
+                        nullable: false
+                    ),
+                    valid_to = table.Column<DateTimeOffset>(
+                        type: "timestamp with time zone",
+                        nullable: false
+                    ),
+                    created_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
+                    updated_at = table.Column<DateTimeOffset>(type: "timestamptz", nullable: false),
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_promocode", x => x.id);
+                    table.CheckConstraint(
+                        "CK_discount_value_percent",
+                        "type != 'percent' OR (discount_value > 0 AND discount_value < 100)"
+                    );
+                    table.CheckConstraint("CK_type", "type IN ('fixed', 'percent')");
+                    table.CheckConstraint("CK_usage_count", "usage_count < usage_limit");
+                    table.CheckConstraint("CK_validity_period", "valid_from < valid_to");
+                }
+            );
+
+            migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
@@ -330,9 +368,9 @@ namespace Infrastructure.Data.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "ix_users_email",
-                table: "users",
-                column: "email",
+                name: "uq_promocode_code",
+                table: "promocode",
+                column: "code",
                 unique: true
             );
 
@@ -349,6 +387,13 @@ namespace Infrastructure.Data.Migrations
                 column: "google_id",
                 unique: true
             );
+
+            migrationBuilder.CreateIndex(
+                name: "uq_user_email",
+                table: "users",
+                column: "email",
+                unique: true
+            );
         }
 
         /// <inheritdoc />
@@ -357,6 +402,8 @@ namespace Infrastructure.Data.Migrations
             migrationBuilder.DropTable(name: "outbox");
 
             migrationBuilder.DropTable(name: "product_sku_review");
+
+            migrationBuilder.DropTable(name: "promocode");
 
             migrationBuilder.DropTable(name: "product_sku");
 

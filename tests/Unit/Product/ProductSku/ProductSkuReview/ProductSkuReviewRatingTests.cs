@@ -1,4 +1,5 @@
 using Domain.Products.ProductSkus.ProductSkuReviews;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku.ProductSkuReview;
 
@@ -14,8 +15,8 @@ public class ProductSkuReviewRatingTests
     {
         var result = ProductSkuReviewRating.Create(rating);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(rating, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(rating);
     }
 
     [Theory]
@@ -27,6 +28,6 @@ public class ProductSkuReviewRatingTests
     {
         var result = ProductSkuReviewRating.Create(rating);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

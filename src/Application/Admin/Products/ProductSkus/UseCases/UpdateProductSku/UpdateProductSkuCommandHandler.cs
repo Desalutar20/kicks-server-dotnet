@@ -50,18 +50,13 @@ internal sealed class UpdateProductSkuCommandHandler(
             return price.Error;
         }
 
-        var updateResult = productSku.Update(
+        productSku.Update(
             price.Value,
-            command.Quantity,
-            command.Size,
-            command.Color,
-            command.Sku
+            command.Quantity ?? productSku.Quantity,
+            command.Size ?? productSku.Size,
+            command.Color ?? productSku.Color,
+            command.Sku ?? productSku.Sku
         );
-
-        if (updateResult.IsFailure)
-        {
-            return updateResult.Error;
-        }
 
         List<FileUploadResult> uploadedFiles = [];
 

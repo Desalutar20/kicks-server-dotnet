@@ -2,6 +2,7 @@ using Domain.Products.ProductSkus;
 using Domain.Products.ProductSkus.ProductSkuReviews;
 using Domain.Shared.FileContent;
 using Domain.Users;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku.ProductSkuReview;
 
@@ -26,14 +27,14 @@ public class ProductSkuReviewTests
             images
         );
 
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         var review = result.Value;
 
-        Assert.Equal(description, review.Description);
-        Assert.Equal(rating, review.Rating);
-        Assert.Equal(ProductSkuReviewStatus.Pending, review.Status);
-        Assert.Empty(review.Images);
+        review.Description.Should().Be(description);
+        review.Rating.Should().Be(rating);
+        review.Status.Should().Be(ProductSkuReviewStatus.Pending);
+        review.Images.Should().BeEmpty();
     }
 
     [Fact]
@@ -61,6 +62,6 @@ public class ProductSkuReviewTests
             images
         );
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

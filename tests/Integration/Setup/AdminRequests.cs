@@ -2,7 +2,10 @@ using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
+using Presentation.Admin.Promocodes.Endpoints;
 using Presentation.Admin.Users.Endpoints;
+using GetBrandsRequest = Presentation.Admin.Brands.Endpoints.GetBrandsRequest;
+using UpdateBrandRequest = Presentation.Admin.Brands.Endpoints.UpdateBrandRequest;
 
 namespace Integration.Setup;
 
@@ -333,6 +336,58 @@ public partial class TestApp
             null,
             HttpMethod.Delete,
             $"/api/v1/admin/products/skus/{productSkuId}/images/{imageId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> GetPromocodes(
+        GetPromocodesRequest? data,
+        string? cookie,
+        CancellationToken ct = default
+    )
+    {
+        var query = new Dictionary<string, string?>
+        {
+            ["code"] = data?.Code,
+            ["limit"] = data?.Limit?.ToString(),
+            ["prevCursor"] = data?.PrevCursor,
+            ["nextCursor"] = data?.NextCursor,
+        }
+            .Where(x => x.Value is not null)
+            .ToDictionary(x => x.Key, x => x.Value);
+
+        return await Request("/api/v1/admin/promocodes", cookie, query, ct);
+    }
+
+    protected async Task<HttpResponseMessage> CreatePromocode(
+        CreatePromocodeRequest data,
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request(data, HttpMethod.Post, "/api/v1/admin/promocodes", cookie, ct);
+
+    protected async Task<HttpResponseMessage> DeletePromocode(
+        Guid promocodeId,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request<object>(
+            null,
+            HttpMethod.Delete,
+            $"/api/v1/admin/promocodes/{promocodeId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> UpdatePromocode(
+        Guid promocodeId,
+        UpdatePromocodeRequest data,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request(
+            data,
+            HttpMethod.Patch,
+            $"/api/v1/admin/promocodes/{promocodeId}",
             cookie,
             ct
         );

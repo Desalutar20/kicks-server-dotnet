@@ -7,7 +7,8 @@ public sealed record ToggleBanUserCommand(UserId UserId) : ICommand;
 
 internal sealed class ToggleBanUserCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork
+    IUnitOfWork unitOfWork,
+    IAuthCache authCache
 ) : ICommandHandler<ToggleBanUserCommand>
 {
     public async Task<Result> Handle(ToggleBanUserCommand command, CancellationToken ct = default)
@@ -19,6 +20,11 @@ internal sealed class ToggleBanUserCommandHandler(
         }
 
         user.ToggleIsBanned();
+        if (user.IsBanned)
+        {
+            await authCache.DeleteAllSessionsAsync(user.Id, ct);
+        }
+
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success();

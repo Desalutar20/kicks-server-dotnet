@@ -3,11 +3,14 @@ using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
 using Domain.Products.ProductSkus;
+using Domain.Promocodes;
 using Domain.Shared;
 using Domain.Shared.FileContent;
 using Microsoft.AspNetCore.Http;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
+using Presentation.Admin.Promocodes.Dto;
+using Presentation.Admin.Promocodes.Endpoints;
 
 namespace Integration;
 
@@ -58,6 +61,28 @@ public static class TestData
             })
             .Generate();
     }
+
+    public static CreatePromocodeRequest CreatePromocodeRequest() =>
+        new Faker<CreatePromocodeRequest>()
+            .CustomInstantiator(f =>
+            {
+                var type = f.PickRandom<PromocodeType>();
+
+                var discountValue =
+                    type == PromocodeType.Percent ? f.Random.Int(1, 99) : f.Random.Int(100, 10_000);
+
+                return new CreatePromocodeRequest(
+                    DiscountValue: discountValue,
+                    Type: type.ToString(),
+                    ValidityPeriod: new PromocodeValidityPeriodDto(
+                        ValidFrom: DateTimeOffset.UtcNow,
+                        ValidTo: DateTimeOffset.UtcNow.AddDays(30)
+                    ),
+                    UsageLimit: f.Random.Int(1, 1000),
+                    Code: f.Random.AlphaNumeric(10).ToUpper()
+                );
+            })
+            .Generate();
 
     public static FormFileCollection CreateImages(int count = 1, long fileSizeBytes = 1024)
     {
@@ -181,40 +206,100 @@ public static class TestData
             .. products
                 .Take(200)
                 .SelectMany(product =>
-                    sizes.Select(s =>
-                    {
-                        var price = ProductSkuPrice
-                            .Create(
+                    sizes
+                        .Select(s =>
+                        {
+                            var priceResult = ProductSkuPrice.Create(
                                 PositiveInt.Create(250 + s * 10).Value,
                                 s % 2 == 0 ? PositiveInt.Create(150 + s * 10).Value : null
-                            )
-                            .Value;
+                            );
 
-                        var quantity = PositiveInt.Create(100).Value;
-                        var size = PositiveInt.Create(s).Value;
-                        var color = ProductSkuColor.Create(faker.Internet.Color()).Value;
-                        var sku = ProductSkuSku.Create(String(ProductSkuSku.MaxLength)).Value;
+                            if (priceResult.IsFailure)
+                                return null;
 
-                        var images = Enumerable
-                            .Range(0, 2)
-                            .Select(_ =>
-                                ProductSkuImage.Create(
-                                    Guid.NewGuid(),
-                                    FileUrl.Create(faker.Image.PlaceImgUrl()).Value,
-                                    FileName.Create(String(FileName.MaxLength)).Value
-                                )
-                            )
-                            .ToList();
+                            var quantityResult = PositiveInt.Create(100);
+                            if (quantityResult.IsFailure)
+                                return null;
 
-                        var productSku = ProductSku
-                            .Create(price, quantity, color, sku, size, product.Id)
-                            .Value;
+                            var sizeResult = PositiveInt.Create(s);
+                            if (sizeResult.IsFailure)
+                                return null;
 
-                        productSku.AddImages(images);
+                            var colorResult = ProductSkuColor.Create(faker.Internet.Color());
+                            if (colorResult.IsFailure)
+                                return null;
 
-                        return productSku;
-                    })
+                            var skuResult = ProductSkuSku.Create(String(ProductSkuSku.MaxLength));
+                            if (skuResult.IsFailure)
+                                return null;
+
+                            var images = Enumerable
+                                .Range(0, 3)
+                                .Select(_ =>
+                                {
+                                    var urlResult = FileUrl.Create(faker.Image.PlaceImgUrl());
+                                    if (urlResult.IsFailure)
+                                        return null;
+
+                                    var nameResult = FileName.Create(faker.System.CommonFileName());
+                                    if (nameResult.IsFailure)
+                                        return null;
+
+                                    return ProductSkuImage.Create(
+                                        Guid.NewGuid(),
+                                        urlResult.Value,
+                                        nameResult.Value
+                                    );
+                                })
+                                .Where(x => x is not null)
+                                .ToList();
+
+                            var productSkuResult = ProductSku.Create(
+                                priceResult.Value,
+                                quantityResult.Value,
+                                colorResult.Value,
+                                skuResult.Value,
+                                sizeResult.Value,
+                                product.Id
+                            );
+
+                            if (productSkuResult.IsFailure)
+                                return null;
+
+                            var productSku = productSkuResult.Value;
+                            productSku.AddImages(images!);
+
+                            return productSku;
+                        })
+                        .Where(x => x is not null)
+                        .Select(x => x!)
                 ),
         ];
+    }
+
+    public static List<Promocode> SeedPromocodes()
+    {
+        var faker = new Faker<Promocode>().CustomInstantiator(f =>
+        {
+            var type = f.PickRandom<PromocodeType>();
+
+            var discountValue =
+                type == PromocodeType.Percent ? f.Random.Int(1, 99) : f.Random.Int(100, 10_000);
+
+            var validFrom = DateTimeOffset.UtcNow;
+            var validTo = validFrom.AddDays(f.Random.Int(1, 365));
+
+            return Promocode
+                .Create(
+                    PositiveInt.Create(discountValue).Value,
+                    type,
+                    PromocodeValidityPeriod.Create(validFrom, validTo).Value,
+                    PositiveInt.Create(f.Random.Int(1, 1000)).Value,
+                    PromocodeCode.Create(f.Random.Replace("PROMO-????-####").ToUpper()).Value
+                )
+                .Value;
+        });
+
+        return faker.Generate(100);
     }
 }

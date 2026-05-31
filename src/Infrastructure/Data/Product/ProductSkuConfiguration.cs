@@ -7,6 +7,8 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
 {
     public void Configure(EntityTypeBuilder<ProductSku> builder)
     {
+        builder.Ignore(x => x.RemainingImageSlots);
+
         builder.ToTable(
             "product_sku",
             table =>
@@ -52,7 +54,7 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
                 price
                     .Property(x => x.SalePrice)
                     .HasConversion<int?>(
-                        p => p == null ? null : p.Value.Value,
+                        p => p == null ? null : p.Value,
                         value => value == null ? null : PositiveInt.Create(value.Value).Value
                     )
                     .HasColumnName("sale_price");

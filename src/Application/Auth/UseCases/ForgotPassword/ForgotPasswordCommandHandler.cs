@@ -16,7 +16,7 @@ internal sealed class ForgotPasswordCommandHandler(
     public async Task<Result> Handle(ForgotPasswordCommand command, CancellationToken ct = default)
     {
         var user = await userRepository.GetUserByEmailAsync(command.Email, false, ct);
-        if (user is null || !user.IsValid())
+        if (user is null || !user.IsValid)
         {
             await Task.Delay(1000, ct);
             return Result.Success();

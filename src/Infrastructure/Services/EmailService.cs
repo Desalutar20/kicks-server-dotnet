@@ -51,7 +51,7 @@ internal sealed class EmailService(Config config) : IEmailSender, IAsyncDisposab
         var builder = new BodyBuilder { TextBody = message.PlainText.Value };
 
         if (message.HtmlText is not null)
-            builder.HtmlBody = message.HtmlText.Value.Value;
+            builder.HtmlBody = message.HtmlText.Value;
 
         msg.Body = builder.ToMessageBody();
 

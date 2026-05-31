@@ -161,10 +161,10 @@ internal static partial class ProductSkusEndpoints
             ? request.Genders.Select(gender => Enum.Parse<ProductGender>(gender, true)).ToList()
             : null;
 
-        PositiveInt? minPrice = request.MinPrice is not null
+        var minPrice = request.MinPrice is not null
             ? PositiveInt.Create(request.MinPrice.Value).Value
             : null;
-        PositiveInt? maxPrice = request.MaxPrice is not null
+        var maxPrice = request.MaxPrice is not null
             ? PositiveInt.Create(request.MaxPrice.Value).Value
             : null;
 

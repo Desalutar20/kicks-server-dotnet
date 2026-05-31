@@ -5,6 +5,8 @@ using Domain.Categories;
 using Domain.Categories.Exceptions;
 using Domain.Products.Exceptions;
 using Domain.Products.ProductSkus.Exceptions;
+using Domain.Promocodes.Exceptions;
+using Domain.Users.Exceptions;
 using Npgsql;
 
 namespace Infrastructure.Data;
@@ -14,6 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     private static readonly Dictionary<string, Func<Exception, Exception>> DuplicateExceptions =
         new()
         {
+            [DbConstants.UserUniqueIndex] = ex => new UserAlreadyExistsException(ex),
             [DbConstants.BrandUniqueIndex] = ex => new BrandAlreadyExistsException(ex),
             [DbConstants.CategoryUniqueIndex] = ex => new CategoryAlreadyExistsException(ex),
             [DbConstants.ProductUniqueIndex] = ex => new ProductAlreadyExistsException(ex),
@@ -22,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             [DbConstants.ProductSkuSkuUniqueIndex] = ex => new ProductSkuSkuAlreadyExistsException(
                 ex
             ),
+            [DbConstants.PromocodeUniqueIndex] = ex => new PromocodeAlreadyExistsException(ex),
         };
 
     private static readonly Dictionary<string, Func<Exception, Exception>> ForeignKeyExceptions =
@@ -36,6 +40,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Category> Categories { get; set; }
     public DbSet<DomainProduct> Products { get; set; }
     public DbSet<ProductSku> ProductSkus { get; set; }
+    public DbSet<DomainPromocode> Promocodes { get; set; }
+
     public DbSet<Application.Abstractions.Outbox.Outbox> Outboxes { get; set; }
 
     public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken ct = default)

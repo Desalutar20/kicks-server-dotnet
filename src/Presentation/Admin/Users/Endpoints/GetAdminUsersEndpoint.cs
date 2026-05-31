@@ -134,12 +134,14 @@ internal static partial class AdminUsersEndpoints
             .Create(request.Limit ?? AdminUsersConstants.GetAdminUsersDefaultLimit)
             .Value;
 
-        NonEmptyString? search = request.Search is not null
+        var search = request.Search is not null
             ? NonEmptyString.Create(request.Search).Value
             : null;
+
         Gender? gender = request.Gender is not null
             ? Enum.Parse<Gender>(request.Gender, true)
             : null;
+
         var prev = request.PrevCursor is not null
             ? KeysetCursor<UserId>
                 .Create(
@@ -151,6 +153,7 @@ internal static partial class AdminUsersEndpoints
                 )
                 .Value
             : null;
+
         var next = request.NextCursor is not null
             ? KeysetCursor<UserId>
                 .Create(

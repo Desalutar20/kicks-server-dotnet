@@ -2,7 +2,7 @@ using Domain.Abstractions;
 
 namespace Domain.Shared;
 
-public readonly record struct NonEmptyString
+public record NonEmptyString
 {
     private NonEmptyString(string value)
     {

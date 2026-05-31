@@ -56,8 +56,4 @@ public sealed record FileName
     }
 
     public override string ToString() => FullName;
-
-    public static implicit operator string(FileName fileName) => fileName.FullName;
-
-    public static implicit operator FileName(string value) => Create(value).Value;
 };

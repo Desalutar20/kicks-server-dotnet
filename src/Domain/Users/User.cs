@@ -23,7 +23,7 @@ public sealed class User(
     public bool IsVerified { get; private set; }
     public bool IsBanned { get; private set; }
 
-    public bool IsValid() => !IsBanned && IsVerified;
+    public bool IsValid => !IsBanned && IsVerified;
 
     public void ConfirmAccount() => IsVerified = true;
 

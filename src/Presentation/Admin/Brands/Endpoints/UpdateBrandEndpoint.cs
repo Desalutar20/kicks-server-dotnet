@@ -14,7 +14,7 @@ public sealed class UpdateBrandRequestValidator : AbstractValidator<UpdateBrandR
     }
 }
 
-internal static partial class AdminBrandsEndpoints
+internal static partial class AdminPromocodesEndpoints
 {
     private static IEndpointRouteBuilder UpdateBrandV1(this IEndpointRouteBuilder endpoint)
     {

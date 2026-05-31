@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Domain.Products.ProductSkus;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku;
 
@@ -14,8 +15,8 @@ public class ProductSkuSkuTests
     {
         var result = ProductSkuSku.Create(sku);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(Regex.Replace(sku, ""), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(Regex.Replace(sku, ""));
     }
 
     [Theory]
@@ -25,7 +26,7 @@ public class ProductSkuSkuTests
     {
         var result = ProductSkuSku.Create(sku);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -34,6 +35,7 @@ public class ProductSkuSkuTests
         var value = new string('a', ProductSkuSku.MaxLength + 1);
 
         var result = ProductSkuSku.Create(value);
-        Assert.True(result.IsFailure);
+
+        result.IsFailure.Should().BeTrue();
     }
 }

@@ -12,5 +12,5 @@ public sealed record AdminCategoryDto(
 internal static class AdminCategoryDtoMapper
 {
     public static AdminCategoryDto ToDto(this Category category) =>
-        new(category.Id.Value, category.CreatedAt, category.UpdatedAt, category.Name.ToString());
+        new(category.Id.Value, category.CreatedAt, category.UpdatedAt, category.Name);
 }

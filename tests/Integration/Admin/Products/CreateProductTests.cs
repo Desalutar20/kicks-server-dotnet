@@ -118,9 +118,9 @@ public class CreateProductTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var createCategoryRequest = TestData.CreateProductRequest("", "");
+        var createProductRequest = TestData.CreateProductRequest("", "");
 
-        var response = await CreateProduct(createCategoryRequest, sessionCookie, ct);
+        var response = await CreateProduct(createProductRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 

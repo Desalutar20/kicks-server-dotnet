@@ -1,5 +1,6 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
+using Domain.Users.Exceptions;
 
 namespace Application.Auth.UseCases.SignUp;
 
@@ -22,6 +23,8 @@ internal sealed class SignUpCommandHandler(
 {
     public async Task<Result> Handle(SignUpCommand command, CancellationToken ct = default)
     {
+        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
+
         var existingUser = await userRepository.GetUserByEmailAsync(command.Email, false, ct);
         if (existingUser is not null)
         {
@@ -50,26 +53,35 @@ internal sealed class SignUpCommandHandler(
             null,
             null
         );
-
-        var message = EmailService.BuildAccountVerificationEmail(
-            config.Application,
-            command.Email,
-            tokenResult.Value
-        );
-        var outbox = new Outbox(OutboxType.Email, EmailService.SerializeMessage(message));
-
-        await authCache.StoreVerificationTokenAsync(
-            user.Id,
-            tokenResult.Value,
-            TimeSpan.FromMinutes(config.Application.AccountVerificationTtlMinutes),
-            ct
-        );
-
         userRepository.CreateUser(user);
-        outboxRepository.CreateOutbox(outbox);
 
-        await unitOfWork.SaveChangesAsync(ct);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(ct);
 
-        return Result.Success();
+            var message = EmailService.BuildAccountVerificationEmail(
+                config.Application,
+                command.Email,
+                tokenResult.Value
+            );
+            var outbox = new Outbox(OutboxType.Email, EmailService.SerializeMessage(message));
+
+            await authCache.StoreVerificationTokenAsync(
+                user.Id,
+                tokenResult.Value,
+                TimeSpan.FromMinutes(config.Application.AccountVerificationTtlMinutes),
+                ct
+            );
+
+            outboxRepository.CreateOutbox(outbox);
+            await unitOfWork.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+
+            return Result.Success();
+        }
+        catch (UserAlreadyExistsException)
+        {
+            return Result.Success();
+        }
     }
 }

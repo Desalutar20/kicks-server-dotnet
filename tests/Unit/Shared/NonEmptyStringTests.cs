@@ -1,4 +1,5 @@
 using Domain.Shared;
+using FluentAssertions;
 
 namespace Unit.Shared;
 
@@ -12,22 +13,20 @@ public class NonEmptyStringTests
     {
         var result = NonEmptyString.Create(value);
 
-        Assert.True(result.IsSuccess);
-
-        Assert.Equal(value, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(value);
     }
 
     [Theory]
     [InlineData("  Hello  ", "Hello")]
     [InlineData("\tTest\t", "Test")]
     [InlineData("\nValue\n", "Value")]
-    public void Create_StringWithWhitespace_TrimmsValue(string value, string expected)
+    public void Create_StringWithWhitespace_TrimsValue(string value, string expected)
     {
         var result = NonEmptyString.Create(value);
 
-        Assert.True(result.IsSuccess);
-
-        Assert.Equal(expected, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(expected);
     }
 
     [Theory]
@@ -39,7 +38,7 @@ public class NonEmptyStringTests
     {
         var result = NonEmptyString.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -49,6 +48,6 @@ public class NonEmptyStringTests
 
         var result = nonEmptyString.ToString();
 
-        Assert.Equal("Hello", result);
+        result.Should().Be("Hello");
     }
 }

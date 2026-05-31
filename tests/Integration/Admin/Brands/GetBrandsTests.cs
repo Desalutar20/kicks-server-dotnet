@@ -75,6 +75,8 @@ public class GetBrandsTests(ApiFactory factory) : TestApp(factory)
 
         return
         [
+            ("search", request with { Search = "" }),
+            ("search", request with { Search = "  " }),
             (
                 "search",
                 request with

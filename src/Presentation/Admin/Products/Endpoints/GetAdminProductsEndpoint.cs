@@ -140,7 +140,7 @@ internal static partial class AdminProductsEndpoints
             .Create(request.Limit ?? ProductsConstants.GetProductsDefaultLimit)
             .Value;
 
-        NonEmptyString? search = request.Search is not null
+        var search = request.Search is not null
             ? NonEmptyString.Create(request.Search).Value
             : null;
         ProductGender? productGender = request.Gender is not null

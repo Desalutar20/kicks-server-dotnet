@@ -1,4 +1,5 @@
 using Domain.Categories;
+using FluentAssertions;
 
 namespace Unit.Category;
 
@@ -14,8 +15,8 @@ public class CategoryNameTests
     {
         var result = CategoryName.Create(categoryName);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(categoryName.Trim(), result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(categoryName.Trim());
     }
 
     [Theory]
@@ -25,7 +26,7 @@ public class CategoryNameTests
     {
         var result = CategoryName.Create(categoryName);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -35,6 +36,6 @@ public class CategoryNameTests
 
         var result = CategoryName.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

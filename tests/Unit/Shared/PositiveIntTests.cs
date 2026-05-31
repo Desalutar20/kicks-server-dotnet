@@ -1,4 +1,5 @@
 using Domain.Shared;
+using FluentAssertions;
 
 namespace Unit.Shared;
 
@@ -12,9 +13,8 @@ public class PositiveIntTests
     {
         var result = PositiveInt.Create(value);
 
-        Assert.True(result.IsSuccess);
-
-        Assert.Equal(value, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(value);
     }
 
     [Theory]
@@ -26,7 +26,7 @@ public class PositiveIntTests
     {
         var result = PositiveInt.Create(value);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class PositiveIntTests
 
         var result = left + right;
 
-        Assert.Equal(15, result.Value);
+        result.Value.Should().Be(15);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class PositiveIntTests
 
         var result = left - right;
 
-        Assert.Equal(5, result.Value);
+        result.Value.Should().Be(5);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class PositiveIntTests
 
         var result = left * right;
 
-        Assert.Equal(50, result.Value);
+        result.Value.Should().Be(50);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class PositiveIntTests
 
         var result = left / right;
 
-        Assert.Equal(2, result.Value);
+        result.Value.Should().Be(2);
     }
 
     [Fact]
@@ -79,9 +79,7 @@ public class PositiveIntTests
         var left = PositiveInt.Create(10).Value;
         var right = PositiveInt.Create(5).Value;
 
-        var result = left > right;
-
-        Assert.True(result);
+        (left > right).Should().BeTrue();
     }
 
     [Fact]
@@ -90,9 +88,7 @@ public class PositiveIntTests
         var left = PositiveInt.Create(5).Value;
         var right = PositiveInt.Create(10).Value;
 
-        var result = left < right;
-
-        Assert.True(result);
+        (left < right).Should().BeTrue();
     }
 
     [Fact]
@@ -101,9 +97,7 @@ public class PositiveIntTests
         var left = PositiveInt.Create(10).Value;
         var right = PositiveInt.Create(10).Value;
 
-        var result = left >= right;
-
-        Assert.True(result);
+        (left >= right).Should().BeTrue();
     }
 
     [Fact]
@@ -112,8 +106,6 @@ public class PositiveIntTests
         var left = PositiveInt.Create(10).Value;
         var right = PositiveInt.Create(10).Value;
 
-        var result = left <= right;
-
-        Assert.True(result);
+        (left <= right).Should().BeTrue();
     }
 }

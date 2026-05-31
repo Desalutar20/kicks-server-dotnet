@@ -2,6 +2,7 @@ using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
 using Domain.Products.ProductSkus;
+using Domain.Promocodes;
 using Microsoft.EntityFrameworkCore;
 
 namespace Integration.Setup;
@@ -43,4 +44,7 @@ public partial class TestApp
         ProductSkuId id,
         CancellationToken ct
     ) => await _dbContext.ProductSkus.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
+
+    protected async Task<Promocode?> GetPromocodeFromDbById(PromocodeId id, CancellationToken ct) =>
+        await _dbContext.Promocodes.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
 }

@@ -24,7 +24,7 @@ internal sealed class ResetPasswordHandler(
         }
 
         var user = await userRepository.GetUserByIdAsync(userId, false, ct);
-        if (user is null || user.Email != command.Email || !user.IsValid())
+        if (user is null || user.Email != command.Email || !user.IsValid)
         {
             return AuthErrors.InvalidOrExpiredToken;
         }

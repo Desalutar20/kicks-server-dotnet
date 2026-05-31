@@ -73,12 +73,6 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                         .UseSnakeCaseNamingConvention();
                 }
             );
-
-            var serviceProvider = services.BuildServiceProvider();
-            var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            // dbContext.Database.EnsureCreated();
         });
 
         base.ConfigureWebHost(builder);

@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
 using Domain.Abstractions;
-using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Users;
 
-public sealed record Email
+public sealed record Email : StringValueObject<Email>
 {
     public const int MaxLength = 100;
 
@@ -15,39 +15,21 @@ public sealed record Email
     );
 
     private Email(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; }
+        : base(value) { }
 
     public static Result<Email> Create(string value)
     {
-        var errors = new List<string>();
+        var result = CreateCore(value, MaxLength, "email", "Email", (val) => new Email(val));
+        if (result.IsFailure)
+            return result.Error;
 
-        var emptyResult = Guard.AgainstEmptyString(value, "Email");
-        if (emptyResult.IsFailure)
+        if (!Regex.IsMatch(result.Value.Value))
         {
-            errors.Add(emptyResult.Error.Description);
+            return Error.Validation("email", ["Email format is invalid"]);
         }
 
-        value = value.Trim();
-
-        var lengthResult = Guard.ForStringLength(value, 1, MaxLength, "Email");
-        if (lengthResult.IsFailure)
-        {
-            errors.Add(lengthResult.Error.Description);
-        }
-
-        if (!Regex.IsMatch(value))
-        {
-            errors.Add("Email format is invalid");
-        }
-
-        return errors.Count == 0 ? new Email(value) : Error.Validation("email", errors);
+        return result.Value;
     }
-
-    public override string ToString() => Value;
 
     public static implicit operator string(Email email) => email.Value;
 }

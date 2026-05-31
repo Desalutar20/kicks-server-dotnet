@@ -1,4 +1,5 @@
 using Domain.Users;
+using FluentAssertions;
 
 namespace Unit.User;
 
@@ -12,8 +13,8 @@ public class EmailTests
     {
         var result = Email.Create(email);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(email, result.Value.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Value.Should().Be(email);
     }
 
     [Theory]
@@ -27,7 +28,7 @@ public class EmailTests
     {
         var result = Email.Create(email);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -38,6 +39,6 @@ public class EmailTests
 
         var result = Email.Create(email);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

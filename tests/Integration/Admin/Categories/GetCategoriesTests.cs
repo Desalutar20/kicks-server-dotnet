@@ -77,6 +77,8 @@ public class GetCategoriesTests(ApiFactory factory) : TestApp(factory)
 
         return
         [
+            ("search", request with { Search = "" }),
+            ("search", request with { Search = "  " }),
             (
                 "search",
                 request with

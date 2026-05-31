@@ -122,9 +122,10 @@ internal static partial class AdminCategoriesEndpoints
             .Create(request.Limit ?? CategoriesConstants.GetCategoriesDefaultLimit)
             .Value;
 
-        NonEmptyString? search = request.Search is not null
+        var search = request.Search is not null
             ? NonEmptyString.Create(request.Search).Value
             : null;
+
         var prev = request.PrevCursor is not null
             ? KeysetCursor<CategoryId>
                 .Create(
@@ -136,6 +137,7 @@ internal static partial class AdminCategoriesEndpoints
                 )
                 .Value
             : null;
+
         var next = request.NextCursor is not null
             ? KeysetCursor<CategoryId>
                 .Create(

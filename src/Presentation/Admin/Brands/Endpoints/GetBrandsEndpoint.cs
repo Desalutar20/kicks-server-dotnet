@@ -54,7 +54,7 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
     }
 }
 
-internal static partial class AdminBrandsEndpoints
+internal static partial class AdminPromocodesEndpoints
 {
     private static IEndpointRouteBuilder GetBrandsV1(this IEndpointRouteBuilder endpoint)
     {
@@ -119,9 +119,10 @@ internal static partial class AdminBrandsEndpoints
             .Create(request.Limit ?? BrandsConstants.GetBrandsDefaultLimit)
             .Value;
 
-        NonEmptyString? search = request.Search is not null
+        var search = request.Search is not null
             ? NonEmptyString.Create(request.Search).Value
             : null;
+
         var prev = request.PrevCursor is not null
             ? KeysetCursor<BrandId>
                 .Create(
@@ -133,6 +134,7 @@ internal static partial class AdminBrandsEndpoints
                 )
                 .Value
             : null;
+
         var next = request.NextCursor is not null
             ? KeysetCursor<BrandId>
                 .Create(

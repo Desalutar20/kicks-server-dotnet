@@ -1,5 +1,6 @@
 using Domain.Products.ProductSkus;
 using Domain.Shared;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku;
 
@@ -12,11 +13,11 @@ public class ProductSkuPriceTests
 
         var result = ProductSkuPrice.Create(price, null);
 
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
-        Assert.Equal(100, result.Value.Price.Value);
-        Assert.Null(result.Value.SalePrice);
-        Assert.Equal(100, result.Value.CurrentPrice.Value);
+        result.Value.Price.Value.Should().Be(100);
+        result.Value.SalePrice.Should().BeNull();
+        result.Value.CurrentPrice.Value.Should().Be(100);
     }
 
     [Fact]
@@ -27,11 +28,11 @@ public class ProductSkuPriceTests
 
         var result = ProductSkuPrice.Create(price, salePrice);
 
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
-        Assert.Equal(100, result.Value.Price.Value);
-        Assert.Equal(80, result.Value.SalePrice!.Value);
-        Assert.Equal(80, result.Value.CurrentPrice.Value);
+        result.Value.Price.Value.Should().Be(100);
+        result.Value.SalePrice!.Value.Should().Be(80);
+        result.Value.CurrentPrice.Value.Should().Be(80);
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class ProductSkuPriceTests
 
         var result = ProductSkuPrice.Create(price, salePrice);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -53,6 +54,6 @@ public class ProductSkuPriceTests
 
         var result = ProductSkuPrice.Create(price, salePrice);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 }

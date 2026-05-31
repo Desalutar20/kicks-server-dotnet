@@ -33,7 +33,7 @@ public sealed class MessageConverter : JsonConverter<Message>
         writer.WriteString("plainText", value.PlainText.ToString());
 
         if (value.HtmlText is not null)
-            writer.WriteString("htmlText", value.HtmlText.Value.Value);
+            writer.WriteString("htmlText", value.HtmlText.Value);
 
         writer.WriteEndObject();
     }

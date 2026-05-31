@@ -1,8 +1,8 @@
 namespace Presentation.Admin.Brands.Endpoints;
 
-internal static partial class AdminBrandsEndpoints
+internal static partial class AdminPromocodesEndpoints
 {
-    public static void MapBrandsV1(this IEndpointRouteBuilder router)
+    public static void MapAdminBrandsV1(this IEndpointRouteBuilder router)
     {
         var group = router.MapGroup("/brands").WithTags("Admin brands");
 

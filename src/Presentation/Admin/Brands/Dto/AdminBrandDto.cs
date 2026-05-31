@@ -12,5 +12,5 @@ public sealed record AdminBrandDto(
 internal static class AdminBrandDtoMapper
 {
     public static AdminBrandDto ToDto(this Brand brand) =>
-        new(brand.Id.Value, brand.CreatedAt, brand.UpdatedAt, brand.Name.ToString());
+        new(brand.Id.Value, brand.CreatedAt, brand.UpdatedAt, brand.Name.Value);
 }

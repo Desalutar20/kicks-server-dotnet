@@ -24,4 +24,5 @@ global using Microsoft.Extensions.Options;
 global using MimeKit;
 global using StackExchange.Redis;
 global using DomainProduct = Domain.Products.Product;
+global using DomainPromocode = Domain.Promocodes.Promocode;
 global using DomainUser = Domain.Users.User;

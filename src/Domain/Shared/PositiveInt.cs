@@ -2,7 +2,7 @@ using Domain.Abstractions;
 
 namespace Domain.Shared;
 
-public readonly record struct PositiveInt
+public record PositiveInt
 {
     private PositiveInt(int value)
     {

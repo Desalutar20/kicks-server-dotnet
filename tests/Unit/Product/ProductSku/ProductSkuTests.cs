@@ -2,6 +2,7 @@ using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Shared;
 using Domain.Shared.FileContent;
+using FluentAssertions;
 
 namespace Unit.Product.ProductSku;
 
@@ -30,35 +31,18 @@ public class ProductSkuTests
             new ProductId(Guid.NewGuid())
         );
 
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         result.Value.AddImages(images);
 
         var productSku = result.Value;
 
-        Assert.Equal(price, productSku.Price);
-        Assert.Equal(quantity, productSku.Quantity);
-        Assert.Equal(size, productSku.Size);
-        Assert.Equal(color, productSku.Color);
-        Assert.Equal(sku, productSku.Sku);
-        Assert.Single(productSku.Images);
-    }
-
-    [Fact]
-    public void Create_Should_Return_Error_When_Images_Are_Empty()
-    {
-        var price = ProductSkuPrice.Create(PositiveInt.Create(100).Value, null).Value;
-
-        var result = Domain.Products.ProductSkus.ProductSku.Create(
-            price,
-            PositiveInt.Create(10).Value,
-            ProductSkuColor.Create("#000000").Value,
-            ProductSkuSku.Create("SKU-1").Value,
-            PositiveInt.Create(42).Value,
-            new ProductId(Guid.NewGuid())
-        );
-
-        Assert.True(result.IsFailure);
+        productSku.Price.Should().Be(price);
+        productSku.Quantity.Should().Be(quantity);
+        productSku.Size.Should().Be(size);
+        productSku.Color.Should().Be(color);
+        productSku.Sku.Should().Be(sku);
+        productSku.Images.Should().HaveCount(1);
     }
 
     [Fact]
@@ -70,8 +54,8 @@ public class ProductSkuTests
 
         var result = sku.AddImages(newImages);
 
-        Assert.True(result.IsSuccess);
-        Assert.Equal(2, sku.Images.Count);
+        result.IsSuccess.Should().BeTrue();
+        sku.Images.Should().HaveCount(2);
     }
 
     [Fact]
@@ -83,7 +67,7 @@ public class ProductSkuTests
 
         var result = sku.AddImages(newImages);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -95,9 +79,9 @@ public class ProductSkuTests
 
         var result = sku.RemoveImage(imageId);
 
-        Assert.True(result.IsSuccess);
-        Assert.Single(sku.Images);
-        Assert.DoesNotContain(sku.Images, x => x.Id == imageId);
+        result.IsSuccess.Should().BeTrue();
+        sku.Images.Should().HaveCount(1);
+        sku.Images.Should().NotContain(x => x.Id == imageId);
     }
 
     [Fact]
@@ -109,7 +93,7 @@ public class ProductSkuTests
 
         var result = sku.RemoveImage(imageId);
 
-        Assert.True(result.IsFailure);
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
@@ -121,7 +105,7 @@ public class ProductSkuTests
             .Create(PositiveInt.Create(200).Value, PositiveInt.Create(150).Value)
             .Value;
 
-        var result = sku.Update(
+        sku.Update(
             newPrice,
             PositiveInt.Create(20).Value,
             PositiveInt.Create(44).Value,
@@ -129,34 +113,12 @@ public class ProductSkuTests
             ProductSkuSku.Create("NEW-SKU").Value
         );
 
-        Assert.True(result.IsSuccess);
-
-        Assert.Equal(200, sku.Price.Price.Value);
-        Assert.Equal(150, sku.Price.SalePrice!.Value);
-        Assert.Equal(20, sku.Quantity.Value);
-        Assert.Equal(44, sku.Size.Value);
-        Assert.Equal("#000000", sku.Color.Value);
-        Assert.Equal("NEW-SKU", sku.Sku.Value);
-    }
-
-    [Fact]
-    public void Update_Should_Return_Error_When_SalePrice_Exceeds_Price()
-    {
-        var sku = CreateValidProductSku();
-
-        var invalidPrice = ProductSkuPrice.Create(PositiveInt.Create(50).Value, null).Value;
-
-        sku.Update(invalidPrice, null, null, null, null);
-
-        var result = sku.Update(
-            ProductSkuPrice.Create(PositiveInt.Create(70).Value, null).Value,
-            null,
-            null,
-            null,
-            null
-        );
-
-        Assert.True(result.IsFailure);
+        sku.Price.Price.Value.Should().Be(200);
+        sku.Price.SalePrice!.Value.Should().Be(150);
+        sku.Quantity.Value.Should().Be(20);
+        sku.Size.Value.Should().Be(44);
+        sku.Color.Value.Should().Be("#000000");
+        sku.Sku.Value.Should().Be("NEW-SKU");
     }
 
     private static Domain.Products.ProductSkus.ProductSku CreateValidProductSku(int imageCount = 1)

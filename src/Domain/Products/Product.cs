@@ -31,19 +31,19 @@ public sealed class Product(
     }
 
     public void Update(
-        ProductTitle? title,
-        ProductDescription? description,
-        ProductGender? gender,
-        ProductTags? tags,
+        ProductTitle title,
+        ProductDescription description,
+        ProductGender gender,
+        ProductTags tags,
         BrandId? brandId,
         CategoryId? categoryId
     )
     {
-        Title = title ?? Title;
-        Description = description ?? Description;
-        Gender = gender ?? Gender;
-        Tags = tags ?? Tags;
-        BrandId = brandId ?? BrandId;
-        CategoryId = categoryId ?? CategoryId;
+        Title = title;
+        Description = description;
+        Gender = gender;
+        Tags = tags;
+        BrandId = brandId;
+        CategoryId = categoryId;
     }
 }

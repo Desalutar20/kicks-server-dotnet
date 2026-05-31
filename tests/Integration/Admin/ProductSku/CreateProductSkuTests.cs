@@ -127,11 +127,11 @@ public class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var createCategoryRequest = TestData.CreateProductSkuRequest();
+        var createProductSkuRequest = TestData.CreateProductSkuRequest();
 
         var response = await CreateProductSku(
             Guid.NewGuid(),
-            createCategoryRequest,
+            createProductSkuRequest,
             sessionCookie,
             ct
         );

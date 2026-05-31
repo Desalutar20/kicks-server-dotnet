@@ -315,6 +315,76 @@ namespace Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Promocodes.Promocode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DiscountValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("discount_value");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("UsageCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("usage_count");
+
+                    b.Property<int>("UsageLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_limit");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "ValidityPeriod", "Domain.Promocodes.Promocode.ValidityPeriod#PromocodeValidityPeriod", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<DateTimeOffset>("ValidFrom")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("valid_from");
+
+                            b1.Property<DateTimeOffset>("ValidTo")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("valid_to");
+                        });
+
+                    b.HasKey("Id")
+                        .HasName("pk_promocode");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("uq_promocode_code");
+
+                    b.ToTable("promocode", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_discount_value_percent", "type != 'percent' OR (discount_value > 0 AND discount_value < 100)");
+
+                            t.HasCheckConstraint("CK_type", "type IN ('fixed', 'percent')");
+
+                            t.HasCheckConstraint("CK_usage_count", "usage_count < usage_limit");
+
+                            t.HasCheckConstraint("CK_validity_period", "valid_from < valid_to");
+                        });
+                });
+
             modelBuilder.Entity("Domain.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -388,7 +458,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasDatabaseName("ix_users_email");
+                        .HasDatabaseName("uq_user_email");
 
                     b.HasIndex("FacebookId")
                         .IsUnique()
