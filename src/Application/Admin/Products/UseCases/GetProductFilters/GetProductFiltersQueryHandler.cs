@@ -10,7 +10,7 @@ internal sealed class GetProductFiltersQueryHandler(IProductRepository productRe
         CancellationToken ct = default
     )
     {
-        var filters = await productRepository.GetProductsFilterOptions(false, ct);
+        var filters = await productRepository.GetProductsFilterOptions(ct);
 
         return filters;
     }

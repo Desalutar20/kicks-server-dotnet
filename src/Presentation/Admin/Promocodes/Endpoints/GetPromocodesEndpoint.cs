@@ -2,7 +2,9 @@ using Application.Admin.Promocodes.Constants;
 using Application.Admin.Promocodes.UseCases.GetPromocodes;
 using Application.Auth.Types;
 using Domain.Promocodes;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Promocodes.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Promocodes.Endpoints;
 
@@ -85,7 +87,7 @@ internal static partial class AdminPromocodesEndpoints
 
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(

@@ -9,8 +9,8 @@ public sealed record ProductSkusFilterOptionsDto(
     List<ProductGender> Genders,
     List<CategoryItemDto> Categories,
     List<BrandItemDto> Brands,
-    int MinPrice,
-    int MaxPrice
+    decimal MinPrice,
+    decimal MaxPrice
 );
 
 internal static class ProductSkusFilterOptionsDtoMapper
@@ -22,7 +22,7 @@ internal static class ProductSkusFilterOptionsDtoMapper
             model.Genders.ToList(),
             model.Categories.Select(x => new CategoryItemDto(x.Id.Value, x.Name.Value)).ToList(),
             model.Brands.Select(x => new BrandItemDto(x.Id.Value, x.Name.Value)).ToList(),
-            model.MinPrice.Value,
-            model.MaxPrice.Value
+            model.MinPrice.Dollars,
+            model.MaxPrice.Dollars
         );
 }

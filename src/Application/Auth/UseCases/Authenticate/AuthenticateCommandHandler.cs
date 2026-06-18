@@ -14,6 +14,11 @@ internal sealed class AuthenticateCommandHandler(IAuthCache cache)
     )
     {
         var sessionUser = await cache.GetSessionAsync(command.SessionId, ct);
-        return sessionUser ?? AuthErrors.Unauthorized;
+        if (sessionUser is null)
+        {
+            return AuthErrors.Unauthorized;
+        }
+
+        return sessionUser;
     }
 }

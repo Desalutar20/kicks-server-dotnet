@@ -5,9 +5,11 @@ namespace Infrastructure.Data;
 
 internal sealed class EfTransaction(IDbContextTransaction transaction) : IDbTransaction
 {
-    public Task CommitAsync(CancellationToken ct = default) => transaction.CommitAsync(ct);
+    public async Task CommitAsync(CancellationToken ct = default) =>
+        await transaction.CommitAsync(ct);
 
     public async ValueTask DisposeAsync() => await transaction.DisposeAsync();
 
-    public Task RollbackAsync(CancellationToken ct = default) => transaction.RollbackAsync(ct);
+    public async Task RollbackAsync(CancellationToken ct = default) =>
+        await transaction.RollbackAsync(ct);
 }

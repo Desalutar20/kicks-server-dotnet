@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Abstractions.Database;
 using Application.Abstractions.Email.JsonConverters;
 using Application.Abstractions.Outbox;
+using Domain.Shared.ValueObjects;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 

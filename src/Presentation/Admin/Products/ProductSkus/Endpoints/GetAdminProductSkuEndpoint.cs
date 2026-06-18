@@ -2,6 +2,7 @@ using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSku;
 using Application.Auth.Types;
 using Domain.Products.ProductSkus;
 using Presentation.Admin.Products.ProductSkus.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
@@ -33,7 +34,7 @@ internal static partial class AdminProductSkusEndpoints
                     var query = new GetAdminProductSkuQuery(new ProductSkuId(id));
                     var result = await queryHandler.Handle(query, ct);
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<AdminProductSkuDto>(result.Value.ToDto()));
                 }
             )

@@ -1,7 +1,7 @@
 using Domain.Products;
 using Domain.Products.ProductSkus;
-using Domain.Shared;
 using Domain.Shared.FileContent;
+using Domain.Shared.ValueObjects;
 using FluentAssertions;
 
 namespace Unit.Product.ProductSku;
@@ -12,7 +12,7 @@ public class ProductSkuTests
     public void Create_Should_Create_ProductSku()
     {
         var price = ProductSkuPrice
-            .Create(PositiveInt.Create(100).Value, PositiveInt.Create(80).Value)
+            .Create(Money.FromCents(100).Value, Money.FromCents(80).Value)
             .Value;
 
         var quantity = PositiveInt.Create(10).Value;
@@ -28,12 +28,11 @@ public class ProductSkuTests
             color,
             sku,
             size,
+            images,
             new ProductId(Guid.NewGuid())
         );
 
         result.IsSuccess.Should().BeTrue();
-
-        result.Value.AddImages(images);
 
         var productSku = result.Value;
 
@@ -102,7 +101,7 @@ public class ProductSkuTests
         var sku = CreateValidProductSku();
 
         var newPrice = ProductSkuPrice
-            .Create(PositiveInt.Create(200).Value, PositiveInt.Create(150).Value)
+            .Create(Money.FromCents(2000).Value, Money.FromCents(1500).Value)
             .Value;
 
         sku.Update(
@@ -113,9 +112,9 @@ public class ProductSkuTests
             ProductSkuSku.Create("NEW-SKU").Value
         );
 
-        sku.Price.Price.Value.Should().Be(200);
-        sku.Price.SalePrice!.Value.Should().Be(150);
-        sku.Quantity.Value.Should().Be(20);
+        sku.Price.Price.Dollars.Should().Be(20);
+        sku.Price.SalePrice!.Dollars.Should().Be(15);
+        sku.Quantity.Should().Be(20);
         sku.Size.Value.Should().Be(44);
         sku.Color.Value.Should().Be("#000000");
         sku.Sku.Value.Should().Be("NEW-SKU");
@@ -127,18 +126,15 @@ public class ProductSkuTests
 
         var productSku = Domain
             .Products.ProductSkus.ProductSku.Create(
-                ProductSkuPrice
-                    .Create(PositiveInt.Create(100).Value, PositiveInt.Create(80).Value)
-                    .Value,
+                ProductSkuPrice.Create(Money.FromCents(100).Value, Money.FromCents(80).Value).Value,
                 PositiveInt.Create(10).Value,
                 ProductSkuColor.Create("#ffffff").Value,
                 ProductSkuSku.Create("SKU-1").Value,
                 PositiveInt.Create(42).Value,
+                images,
                 new ProductId(Guid.NewGuid())
             )
             .Value;
-
-        productSku.AddImages(images);
 
         return productSku;
     }

@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.Abstractions.OAuth;
+using Domain.Shared.ValueObjects;
 
 namespace Infrastructure.Services.OAuth;
 

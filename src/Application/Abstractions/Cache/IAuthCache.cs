@@ -1,4 +1,5 @@
 using Application.Auth.Types;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Abstractions.Cache;
 

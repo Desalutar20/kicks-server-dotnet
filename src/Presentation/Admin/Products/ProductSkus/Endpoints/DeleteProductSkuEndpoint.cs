@@ -1,6 +1,7 @@
 using Application.Admin.Products.ProductSkus.UseCases.DeleteProductSku;
 using Application.Auth.Types;
 using Domain.Products.ProductSkus;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
@@ -33,7 +34,7 @@ internal static partial class AdminProductSkusEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("Success"));
                 }
             )

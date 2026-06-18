@@ -1,5 +1,6 @@
 using Application.Admin.Users.UseCases.DeleteUser;
 using Application.Auth.Types;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Users.Endpoints;
 
@@ -32,7 +33,7 @@ internal static partial class AdminUsersEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("Success"));
                 }
             )

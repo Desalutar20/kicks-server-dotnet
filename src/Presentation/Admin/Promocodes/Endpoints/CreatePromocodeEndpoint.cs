@@ -1,7 +1,9 @@
 using Application.Admin.Promocodes.UseCases.CreatePromocode;
 using Application.Auth.Types;
 using Domain.Promocodes;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Promocodes.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Promocodes.Endpoints;
 
@@ -75,7 +77,7 @@ internal static partial class AdminPromocodesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
                             new ApiResponse<AdminPromocodeDto>(result.Value.ToDto())

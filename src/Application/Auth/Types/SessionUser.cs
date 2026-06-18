@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Auth.Types;
 
 public sealed record SessionUser(

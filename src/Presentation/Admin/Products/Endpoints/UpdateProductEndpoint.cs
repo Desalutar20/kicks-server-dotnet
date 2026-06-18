@@ -4,6 +4,7 @@ using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -71,7 +72,7 @@ internal static partial class AdminProductsEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<AdminProductDto>(result.Value.ToDto()));
                 }
             )

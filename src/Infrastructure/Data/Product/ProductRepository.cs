@@ -63,10 +63,7 @@ internal sealed class ProductRepository(AppDbContext dbContext)
         );
     }
 
-    public async Task<ProductFilterOptions> GetProductsFilterOptions(
-        bool trackChanges,
-        CancellationToken ct = default
-    )
+    public async Task<ProductFilterOptions> GetProductsFilterOptions(CancellationToken ct = default)
     {
         await using var connection = _dbContext.Database.GetDbConnection();
         await connection.OpenAsync(ct);

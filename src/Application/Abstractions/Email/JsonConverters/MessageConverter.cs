@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Abstractions.Email.JsonConverters;
 
@@ -14,7 +15,9 @@ public sealed class MessageConverter : JsonConverter<Message>
         var root = JsonDocument.ParseValue(ref reader).RootElement;
 
         var subject = NonEmptyString.Create(root.GetProperty("subject").GetString()!).Value;
-        var email = Domain.Users.Email.Create(root.GetProperty("to").GetString()!).Value;
+        var email = Domain
+            .Shared.ValueObjects.Email.Create(root.GetProperty("to").GetString()!)
+            .Value;
         var plainText = NonEmptyString.Create(root.GetProperty("plainText").GetString()!).Value;
 
         NonEmptyString? htmlText = root.TryGetProperty("htmlText", out var fn)

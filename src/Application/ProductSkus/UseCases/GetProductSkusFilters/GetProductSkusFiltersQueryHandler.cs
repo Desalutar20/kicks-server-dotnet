@@ -11,7 +11,7 @@ internal sealed class GetProductSkusFiltersQueryHandler(
         CancellationToken ct = default
     )
     {
-        var filters = await productSkusRepository.GetProductSkusFilterOptions(false, ct);
+        var filters = await productSkusRepository.GetProductSkusFilterOptions(ct);
 
         return filters;
     }

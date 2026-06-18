@@ -1,6 +1,7 @@
 using Application.Auth.Types;
 using Application.Auth.UseCases.Logout;
 using Application.Config;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -37,7 +38,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     ClearSessionCookie(ctx, config.Application);

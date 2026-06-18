@@ -2,10 +2,11 @@ using Application.ProductSkus.Types;
 using Application.ProductSkus.UseCases.GetProductSku;
 using Domain.Products.ProductSkus;
 using Presentation.ProductSkus.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;
 
-internal static partial class ProductSkusEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder GetProductSkuV1(this IEndpointRouteBuilder endpoint)
     {
@@ -25,7 +26,7 @@ internal static partial class ProductSkusEndpoints
                     var result = await queryHandler.Handle(query, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiResponse<ProductSkuWithVariantsDto>(result.Value.ToDto())
                         );

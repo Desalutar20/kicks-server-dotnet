@@ -1,5 +1,6 @@
 using Application.Auth.Errors;
 using Application.Auth.Types;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.UseCases.SignIn;
 

@@ -1,6 +1,8 @@
 using Application.Abstractions.OAuth;
 using Application.Auth.UseCases.GenerateOAuthUrl;
 using Application.Config;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -24,10 +26,7 @@ internal static partial class AuthEndpoint
 
                     if (!Enum.TryParse<OAuthProvider>(provider, true, out var parsedProvider))
                     {
-                        return ErrorHandler.Handle(
-                            Error.Validation("provider", ["Invalid oauth provider"]),
-                            logger
-                        );
+                        Error.Validation("provider", ["Invalid oauth provider"]).ToApiError(logger);
                     }
 
                     NonEmptyString? additionalState = null;
@@ -36,7 +35,7 @@ internal static partial class AuthEndpoint
                         var additionalStateResult = NonEmptyString.Create(redirectPath);
                         if (additionalStateResult.IsFailure)
                         {
-                            return ErrorHandler.Handle(additionalStateResult.Error, logger);
+                            return additionalStateResult.Error.ToApiError(logger);
                         }
 
                         additionalState = additionalStateResult.Value;
@@ -46,7 +45,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     var cookieOptions = new CookieOptions

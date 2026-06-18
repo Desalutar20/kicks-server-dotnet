@@ -13,11 +13,5 @@ public sealed record UserDto(
 internal static class UserDtoMapper
 {
     public static UserDto ToDto(this SessionUser user) =>
-        new(
-            user.Email.ToString(),
-            user.FirstName?.Value,
-            user.LastName?.Value,
-            user.Role,
-            user.Gender
-        );
+        new(user.Email.Value, user.FirstName?.Value, user.LastName?.Value, user.Role, user.Gender);
 }

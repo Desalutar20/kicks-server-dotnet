@@ -1,4 +1,5 @@
 using Application.Abstractions.Outbox;
+using Domain.Shared.ValueObjects;
 
 namespace Infrastructure.Data.Outbox;
 

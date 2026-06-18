@@ -2,16 +2,18 @@ using Application.Admin.Products.ProductSkus.Constants;
 using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSkus;
 using Application.Auth.Types;
 using Domain.Products.ProductSkus;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Products.ProductSkus.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
 public sealed record GetAdminProductSkusRequest(
     bool? InStock,
-    int? MinPrice,
-    int? MaxPrice,
-    int? MinSalePrice,
-    int? MaxSalePrice,
+    decimal? MinPrice,
+    decimal? MaxPrice,
+    decimal? MinSalePrice,
+    decimal? MaxSalePrice,
     int? Size,
     string? Color,
     string? Sku,
@@ -27,17 +29,21 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetAdminP
         RuleFor(x => x.Limit).InclusiveBetween(1, ProductSkusConstants.GetAdminProductSkusMaxLimit);
 
         RuleFor(x => x.MinPrice)
-            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Min price"));
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MinPrice is not null);
         RuleFor(x => x.MaxPrice)
-            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Max price"));
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MaxPrice is not null);
         RuleFor(x => x.MinSalePrice)
-            .ValidateNullableValueObject(x =>
-                PositiveInt.Create(x!.Value, label: "Min sale price")
-            );
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MinSalePrice is not null);
         RuleFor(x => x.MaxSalePrice)
-            .ValidateNullableValueObject(x =>
-                PositiveInt.Create(x!.Value, label: "Max sale price")
-            );
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MaxSalePrice is not null);
 
         RuleFor(x => x)
             .Must(x => x.MinPrice is null || x.MaxPrice is null || x.MinPrice <= x.MaxPrice)
@@ -120,7 +126,7 @@ internal static partial class AdminProductSkusEndpoints
                     var result = await queryHandler.Handle(query, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiCursorResponse<AdminProductSkuDto>(
                                 [.. result.Value.Data.Select(u => u.ToDto())],
@@ -153,16 +159,16 @@ internal static partial class AdminProductSkusEndpoints
             .Value;
 
         var minPrice = request.MinPrice is not null
-            ? PositiveInt.Create(request.MinPrice.Value).Value
+            ? Money.FromDollars(request.MinPrice.Value).Value
             : null;
         var maxPrice = request.MaxPrice is not null
-            ? PositiveInt.Create(request.MaxPrice.Value).Value
+            ? Money.FromDollars(request.MaxPrice.Value).Value
             : null;
         var minSalePrice = request.MinSalePrice is not null
-            ? PositiveInt.Create(request.MinSalePrice.Value).Value
+            ? Money.FromDollars(request.MinSalePrice.Value).Value
             : null;
         var maxSalePrice = request.MaxSalePrice is not null
-            ? PositiveInt.Create(request.MaxSalePrice.Value).Value
+            ? Money.FromDollars(request.MaxSalePrice.Value).Value
             : null;
 
         var size = request.Size is not null ? PositiveInt.Create(request.Size.Value).Value : null;

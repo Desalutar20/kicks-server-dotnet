@@ -1,13 +1,14 @@
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
 
 public sealed record AdminProductSkusFilters(
     bool? InStock,
-    PositiveInt? MinPrice,
-    PositiveInt? MaxPrice,
-    PositiveInt? MinSalePrice,
-    PositiveInt? MaxSalePrice,
+    Money? MinPrice,
+    Money? MaxPrice,
+    Money? MinSalePrice,
+    Money? MaxSalePrice,
     PositiveInt? Size,
     ProductSkuColor? Color,
     ProductSkuSku? Sku

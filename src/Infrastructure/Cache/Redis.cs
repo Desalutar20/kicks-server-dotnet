@@ -1,5 +1,6 @@
 using Application.Abstractions.Cache;
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Infrastructure.Cache;
 

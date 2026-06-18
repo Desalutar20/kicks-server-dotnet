@@ -1,8 +1,10 @@
 using Application.Abstractions.Database;
 using Domain.Brands;
 using Domain.Brands.Exceptions;
+using Domain.Carts.Exceptions;
 using Domain.Categories;
 using Domain.Categories.Exceptions;
+using Domain.Orders.Exceptions;
 using Domain.Products.Exceptions;
 using Domain.Products.ProductSkus.Exceptions;
 using Domain.Promocodes.Exceptions;
@@ -26,6 +28,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 ex
             ),
             [DbConstants.PromocodeUniqueIndex] = ex => new PromocodeAlreadyExistsException(ex),
+            [DbConstants.OrderUserPromocodeUniqueIndex] = ex => new PromocodeAlreadyUsedException(
+                ex
+            ),
         };
 
     private static readonly Dictionary<string, Func<Exception, Exception>> ForeignKeyExceptions =
@@ -33,6 +38,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             [DbConstants.ProductBrandForeignKey] = ex => new BrandDoesNotExistsException(ex),
             [DbConstants.ProductCategoryForeignKey] = ex => new CategoryDoesNotExistsException(ex),
+            [DbConstants.ProductSkuProductForeignKey] = ex => new ProductDoesNotExistsException(ex),
+            [DbConstants.CartItemProductSkuForeignKey] = ex => new ProductSkuDoesNotExistsException(
+                ex
+            ),
+            [DbConstants.OrderDeliveryOptionForeignKey] =
+                ex => new DeliveryOptionDoesNotExistsException(ex),
         };
 
     public DbSet<DomainUser> Users { get; set; }
@@ -41,6 +52,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DomainProduct> Products { get; set; }
     public DbSet<ProductSku> ProductSkus { get; set; }
     public DbSet<DomainPromocode> Promocodes { get; set; }
+    public DbSet<DomainCart> Carts { get; set; }
+    public DbSet<DomainOrder> Orders { get; set; }
+    public DbSet<DomainDeliveryOption> DeliveryOptions { get; set; }
 
     public DbSet<Application.Abstractions.Outbox.Outbox> Outboxes { get; set; }
 

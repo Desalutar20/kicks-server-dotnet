@@ -1,6 +1,8 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.OAuth;
 using Application.Auth.Errors;
+using Domain.Carts;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.UseCases.OAuthSignIn;
 
@@ -15,6 +17,7 @@ internal sealed class OAuthSignInCommandHandler(
     IOAuthClientFactory clientFactory,
     IUnitOfWork unitOfWork,
     IUserRepository userRepository,
+    ICartRepository cartRepository,
     IAuthCache authCache,
     Config.Config config
 ) : ICommandHandler<OAuthSignInCommand, Guid>
@@ -40,7 +43,10 @@ internal sealed class OAuthSignInCommandHandler(
         if (user is null)
         {
             user = new User(oauthUser.Value.Email, null, null, null, null, null, null);
+            var cart = new Cart(user.Id);
+
             userRepository.CreateUser(user);
+            cartRepository.CreateCart(cart);
         }
 
         var result = user.LinkOAuthProvider(command.Provider, oauthUser.Value.ProviderId);

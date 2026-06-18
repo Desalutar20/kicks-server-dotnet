@@ -24,7 +24,7 @@ internal static class AdminUserDtoMapper
             user.Id.Value,
             user.CreatedAt,
             user.UpdatedAt,
-            user.Email.ToString(),
+            user.Email.Value,
             user.FirstName?.Value,
             user.LastName?.Value,
             user.Role,

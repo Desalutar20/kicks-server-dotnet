@@ -1,5 +1,7 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
+using Domain.Carts;
+using Domain.Shared.ValueObjects;
 using Domain.Users.Exceptions;
 
 namespace Application.Auth.UseCases.SignUp;
@@ -15,6 +17,7 @@ public sealed record SignUpCommand(
 internal sealed class SignUpCommandHandler(
     IUnitOfWork unitOfWork,
     IUserRepository userRepository,
+    ICartRepository cartRepository,
     IOutboxRepository outboxRepository,
     IHashingService hashingService,
     IAuthCache authCache,
@@ -53,7 +56,10 @@ internal sealed class SignUpCommandHandler(
             null,
             null
         );
+        var cart = new Cart(user.Id);
+
         userRepository.CreateUser(user);
+        cartRepository.CreateCart(cart);
 
         try
         {

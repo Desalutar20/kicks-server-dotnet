@@ -1,4 +1,6 @@
 using Application.Auth.UseCases.VerifyAccount;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -35,7 +37,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiResponse<string>(
                                 "Your account has been successfully verified. You can now log in."

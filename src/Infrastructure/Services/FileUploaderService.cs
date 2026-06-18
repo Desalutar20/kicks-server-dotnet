@@ -16,7 +16,7 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
         new Account(config.Cloudinary.CloudName, config.Cloudinary.ApiKey, config.Cloudinary.Secret)
     );
 
-    public async Task DeleteFileAsync(Guid id)
+    public async Task<Result> DeleteFileAsync(Guid id)
     {
         var result = await _cloudinary.DestroyAsync(
             new DeletionParams($"{config.Cloudinary.Folder}/{id}")
@@ -24,15 +24,22 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
 
         if (result.Error is not null)
         {
-            logger.LogWarning(
+            logger.LogError(
                 "Cloudinary delete failed. FileId: {FileId}, Error: {Error}",
                 id,
                 result.Error.Message
             );
+
+            return Domain.Abstractions.Error.Failure("Deleting file failed");
         }
+
+        return Result.Success();
     }
 
-    public async Task DeleteFilesAsync(IEnumerable<Guid> ids, CancellationToken ct = default)
+    public async Task<Result> DeleteFilesAsync(
+        IEnumerable<Guid> ids,
+        CancellationToken ct = default
+    )
     {
         var result = await _cloudinary.DeleteResourcesAsync(
             new DelResParams()
@@ -49,7 +56,11 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
                 ids,
                 result.Error.Message
             );
+
+            return Domain.Abstractions.Error.Failure("Deleting files failed");
         }
+
+        return Result.Success();
     }
 
     public async Task<Result<FileUploadResult>> UploadFileAsync(
@@ -72,9 +83,13 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
         var uploadResult = await _cloudinary.UploadAsync(uploadParams, ct);
         if (uploadResult.Error is not null)
         {
-            return Domain.Abstractions.Error.Internal(
-                $"Cloudinary upload failed: {uploadResult.Error.Message}"
+            logger.LogError(
+                "Cloudinary upload failed. File: {FileName}, Error: {Error}",
+                file.FileName.FullName,
+                uploadResult.Error
             );
+
+            return Domain.Abstractions.Error.Failure("File upload failed");
         }
 
         var fileUrlResult = FileUrl.Create(uploadResult.SecureUrl?.ToString() ?? "");
@@ -116,18 +131,13 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
 
                     var result = await UploadFileAsync(file, token);
 
-                    results.Add(result);
-
                     if (result.IsFailure)
                     {
-                        logger.LogError(
-                            "File upload failed. File: {FileName}, Error: {Error}",
-                            file.FileName.FullName,
-                            result.Error.Description
-                        );
-
                         cts.Cancel();
+                        return;
                     }
+
+                    results.Add(result);
                 }
             );
 
@@ -135,15 +145,15 @@ internal sealed class FileUploaderService(Config config, ILogger<FileUploaderSer
         }
         catch (Exception ex)
         {
+            if (ex is not TaskCanceledException)
+            {
+                logger.LogError(ex, "Error while uploading files");
+            }
+
             var uploadedFiles = results.Where(r => r.IsSuccess).Select(r => r.Value).ToList();
             if (uploadedFiles.Count != 0)
             {
                 await DeleteFilesAsync(uploadedFiles.Select(f => f.Id).ToList(), ct);
-            }
-
-            if (ex is not TaskCanceledException)
-            {
-                logger.LogError(ex, "Error while uploading files");
             }
 
             return Domain.Abstractions.Error.Failure("Failed to upload files");

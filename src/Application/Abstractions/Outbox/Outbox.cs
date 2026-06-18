@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Abstractions.Outbox;
 
 public sealed class Outbox(OutboxType type, NonEmptyString data)

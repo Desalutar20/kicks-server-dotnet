@@ -2,7 +2,9 @@ using Application.Admin.Categories.Constants;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Auth.Types;
 using Domain.Categories;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Categories.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -87,7 +89,7 @@ internal static partial class AdminCategoriesEndpoints
 
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(

@@ -2,6 +2,7 @@ using Application.Abstractions.Database;
 using Application.Admin.Promocodes.Errors;
 using Domain.Promocodes;
 using Domain.Promocodes.Exceptions;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Promocodes.UseCases.CreatePromocode;
 

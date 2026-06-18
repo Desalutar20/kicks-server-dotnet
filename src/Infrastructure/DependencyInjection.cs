@@ -2,18 +2,27 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.Events;
 using Application.Abstractions.FileUploader;
+using Application.Abstractions.Messaging;
 using Application.Abstractions.OAuth;
 using Application.Abstractions.Outbox;
 using Domain.Brands;
+using Domain.Carts;
 using Domain.Categories;
+using Domain.DeliveryOptions;
+using Domain.Orders;
 using Domain.Promocodes;
 using Infrastructure.BackgroundTasks;
+using Infrastructure.BackgroundTasks.FileDeleter;
 using Infrastructure.Cache;
+using Infrastructure.Data.Cart;
+using Infrastructure.Data.DeliveryOption;
+using Infrastructure.Data.Order;
 using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Product;
 using Infrastructure.Data.Promocode;
 using Infrastructure.Data.User;
 using Infrastructure.Events;
+using Infrastructure.MessageQueue;
 using Infrastructure.Services;
 using Infrastructure.Services.OAuth;
 using Microsoft.Extensions.Configuration;
@@ -126,6 +135,11 @@ public static class DependencyInjection
                 client.Timeout = TimeSpan.FromSeconds(10)
             );
 
+            services.AddSingleton<
+                IMessageQueue<IEnumerable<FileUploadResult>>,
+                InMemoryMessageQueue<IEnumerable<FileUploadResult>>
+            >();
+
             return services;
         }
 
@@ -137,6 +151,9 @@ public static class DependencyInjection
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductSkusRepository, ProductSkusRepository>();
             services.AddScoped<IPromocodeRepository, PromocodeRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IDeliveryOptionRepository, DeliveryOptionRepository>();
 
             services.AddScoped<IOutboxRepository, OutboxRepository>();
 
@@ -147,7 +164,10 @@ public static class DependencyInjection
         {
             services.AddHostedService<OutboxEmailSender>();
             services.AddHostedService<OutboxFileDeleter>();
+            services.AddHostedService<QueueFileDeleter>();
             services.AddHostedService<DeleteExpiredSessions>();
+            services.AddHostedService<RemoveInvalidPromocodesFromCarts>();
+            services.AddHostedService<CancelExpiredOrders>();
 
             return services;
         }

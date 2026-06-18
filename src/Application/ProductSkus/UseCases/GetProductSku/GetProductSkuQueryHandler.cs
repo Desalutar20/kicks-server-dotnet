@@ -23,20 +23,15 @@ internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSk
         var variants = skus.GroupBy(x => x.Size)
             .Select(g =>
             {
-                var matchingColor = g.FirstOrDefault(p =>
-                    p.Color == data.Color && p.Quantity.Value > 0
-                );
+                var matchingColor = g.FirstOrDefault(p => p.Color == data.Color && p.Quantity > 0);
 
-                var selected =
-                    matchingColor ?? g.FirstOrDefault(p => p.Quantity.Value > 0) ?? g.First();
-
-                //  var sizeAvailable = g.Any(p => p.Quantity.Value > 0);
+                var selected = matchingColor ?? g.FirstOrDefault(p => p.Quantity > 0) ?? g.First();
 
                 return new ProductSkuVariant(
                     g.Key,
                     selected.Id,
-                    selected.Quantity.Value > 0,
-                    g.Select(x => new ProductSkuVariantColor(x.Color, x.Id, x.Quantity.Value > 0))
+                    selected.Quantity > 0,
+                    g.Select(x => new ProductSkuVariantColor(x.Color, x.Id, x.Quantity > 0))
                         .ToList()
                 );
             })

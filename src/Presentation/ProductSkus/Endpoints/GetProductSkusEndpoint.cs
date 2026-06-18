@@ -4,7 +4,9 @@ using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
 using Domain.Products.ProductSkus;
+using Domain.Shared.ValueObjects;
 using Presentation.ProductSkus.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;
 
@@ -14,8 +16,8 @@ public sealed record GetProductSkusRequest(
     [FromQuery] string[]? CategoryIds,
     [FromQuery] string[]? BrandIds,
     [FromQuery] string[]? Genders,
-    int? MinPrice,
-    int? MaxPrice,
+    decimal? MinPrice,
+    decimal? MaxPrice,
     int? Limit,
     string? PrevCursor,
     string? NextCursor
@@ -26,9 +28,13 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetProduc
     public GetProductSkusRequestValidator()
     {
         RuleFor(x => x.MinPrice)
-            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Min price"));
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MinPrice is not null);
         RuleFor(x => x.MaxPrice)
-            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Max price"));
+            .GreaterThan(0)
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.MaxPrice is not null);
 
         RuleFor(x => x.Sizes).ValidateEachValueObject(x => PositiveInt.Create(x, label: "Size"));
         RuleFor(x => x.Colors)
@@ -89,7 +95,7 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetProduc
     }
 }
 
-internal static partial class ProductSkusEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder GetProductSkusV1(this IEndpointRouteBuilder endpoint)
     {
@@ -112,7 +118,7 @@ internal static partial class ProductSkusEndpoints
                     var result = await queryHandler.Handle(query, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiCursorResponse<ProductSkuDto>(
                                 [.. result.Value.Data.Select(u => u.ToDto())],
@@ -162,10 +168,10 @@ internal static partial class ProductSkusEndpoints
             : null;
 
         var minPrice = request.MinPrice is not null
-            ? PositiveInt.Create(request.MinPrice.Value).Value
+            ? Money.FromDollars(request.MinPrice.Value).Value
             : null;
         var maxPrice = request.MaxPrice is not null
-            ? PositiveInt.Create(request.MaxPrice.Value).Value
+            ? Money.FromDollars(request.MaxPrice.Value).Value
             : null;
 
         var prev = request.PrevCursor is not null

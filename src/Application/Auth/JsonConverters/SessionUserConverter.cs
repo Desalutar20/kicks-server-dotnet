@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Application.Auth.Types;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.JsonConverters;
 

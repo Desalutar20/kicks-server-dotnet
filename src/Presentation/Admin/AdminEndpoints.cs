@@ -1,5 +1,6 @@
 using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
+using Presentation.Admin.DeliveryOptions.Endpoints;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Promocodes.Endpoints;
 using Presentation.Admin.Users.Endpoints;
@@ -17,5 +18,6 @@ public static class AdminEndpoints
         group.MapAdminCategoriesV1();
         group.MapAdminProductsV1();
         group.MapAdminPromocodesV1();
+        group.MapAdminDeliveryOptionsV1();
     }
 }

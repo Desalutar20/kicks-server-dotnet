@@ -2,6 +2,7 @@ using Application.Admin.Brands.UseCases.CreateBrand;
 using Application.Auth.Types;
 using Domain.Brands;
 using Presentation.Admin.Brands.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -15,7 +16,7 @@ public sealed class CreateBrandRequestValidator : AbstractValidator<CreateBrandR
     }
 }
 
-internal static partial class AdminPromocodesEndpoints
+internal static partial class AdminBrandsEndpoints
 {
     private static IEndpointRouteBuilder CreateBrandV1(this IEndpointRouteBuilder endpoint)
     {
@@ -43,7 +44,7 @@ internal static partial class AdminPromocodesEndpoints
                     var command = request.ToCommand();
                     var result = await commandHandler.Handle(command, ct);
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
                             new ApiResponse<AdminBrandDto>(result.Value.ToDto())
@@ -68,7 +69,7 @@ internal static partial class AdminPromocodesEndpoints
 
     private static CreateBrandCommand ToCommand(this CreateBrandRequest request)
     {
-        var nameResult = BrandName.Create(request.Name).Value;
-        return new CreateBrandCommand(nameResult);
+        var name = BrandName.Create(request.Name).Value;
+        return new CreateBrandCommand(name);
     }
 }

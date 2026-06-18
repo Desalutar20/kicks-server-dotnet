@@ -1,4 +1,5 @@
 using Domain.Shared.FileContent;
+using Domain.Shared.ValueObjects;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Product;
@@ -47,24 +48,21 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
             {
                 price
                     .Property(p => p.Price)
-                    .HasConversion(p => p.Value, value => PositiveInt.Create(value).Value)
+                    .HasConversion(p => p.Cents, value => Money.FromCents(value).Value)
                     .HasColumnName("price")
                     .IsRequired();
 
                 price
                     .Property(x => x.SalePrice)
-                    .HasConversion<int?>(
-                        p => p == null ? null : p.Value,
-                        value => value == null ? null : PositiveInt.Create(value.Value).Value
+                    .HasConversion<long?>(
+                        p => p == null ? null : p.Cents,
+                        value => value == null ? null : Money.FromCents(value.Value).Value
                     )
                     .HasColumnName("sale_price");
             }
         );
 
-        builder
-            .Property(x => x.Quantity)
-            .HasConversion(q => q.Value, value => PositiveInt.Create(value).Value)
-            .IsRequired();
+        builder.Property(x => x.Quantity).IsRequired();
 
         builder
             .Property(x => x.Size)
@@ -113,5 +111,7 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
             .WithMany()
             .HasForeignKey(x => x.ProductId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(x => x.Product).AutoInclude();
     }
 }

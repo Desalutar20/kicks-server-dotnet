@@ -1,7 +1,9 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
+using Application.Abstractions.Messaging;
 using Application.Admin.Products.ProductSkus.Errors;
 using Domain.Products.ProductSkus.Exceptions;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.CreateProductSku;
 
@@ -18,7 +20,8 @@ public sealed record CreateProductSkuCommand(
 internal sealed class CreateProductSkuCommandHandler(
     IFileUploader fileUploader,
     IUnitOfWork unitOfWork,
-    IProductSkusRepository productSkusRepository
+    IProductSkusRepository productSkusRepository,
+    IMessageQueue<IEnumerable<FileUploadResult>> messageQueue
 ) : ICommandHandler<CreateProductSkuCommand, ProductSkuId>
 {
     public async Task<Result<ProductSkuId>> Handle(
@@ -26,13 +29,22 @@ internal sealed class CreateProductSkuCommandHandler(
         CancellationToken ct = default
     )
     {
-        await using var transaction = await unitOfWork.BeginTransactionAsync(ct);
-
         var duplicateResult = await ValidateDuplicateAsync(command, ct);
         if (duplicateResult.IsFailure)
         {
             return duplicateResult.Error;
         }
+
+        var uploadResults = new List<FileUploadResult>();
+
+        var uploadResult = await UploadImagesAsync(command.Images, ct);
+        if (uploadResult.IsFailure)
+        {
+            return uploadResult.Error;
+        }
+
+        var (images, results) = uploadResult.Value;
+        uploadResults = results;
 
         var result = ProductSku.Create(
             command.Price,
@@ -40,42 +52,30 @@ internal sealed class CreateProductSkuCommandHandler(
             command.Color,
             command.Sku,
             command.Size,
+            images,
             command.ProductId
         );
 
         if (result.IsFailure)
         {
+            await CleanupFilesAsync(uploadResults);
+
             return result.Error;
         }
 
         productSkusRepository.CreateProductSku(result.Value);
 
-        List<FileUploadResult> uploadResults = [];
-
         try
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            var uploadResult = await UploadImagesAsync(command.Images, ct);
-            if (uploadResult.IsFailure)
-            {
-                return uploadResult.Error;
-            }
-
-            var (images, results) = uploadResult.Value;
-            uploadResults = results;
-
-            var addImagesResult = result.Value.AddImages(images);
-            if (addImagesResult.IsFailure)
-            {
-                await CleanupFilesAsync(uploadResults);
-                return addImagesResult.Error;
-            }
-
-            await unitOfWork.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-
             return result.Value.Id;
+        }
+        catch (ProductDoesNotExistsException)
+        {
+            await CleanupFilesAsync(uploadResults);
+
+            return AdminProductSkuErrors.ProductDoesNotExist(command.ProductId);
         }
         catch (ProductSkuDuplicateCombinationException)
         {
@@ -139,13 +139,16 @@ internal sealed class CreateProductSkuCommandHandler(
             return uploadResults.Error;
         }
 
-        var images = uploadResults.Value.Select(result =>
-            ProductSkuImage.Create(result.Id, result.Uri, result.FileName)
-        );
+        var images = uploadResults
+            .Value.Select(result => ProductSkuImage.Create(result.Id, result.Uri, result.FileName))
+            .ToList();
 
-        return (images.ToList(), uploadResults.Value.ToList());
+        return (images, uploadResults.Value.ToList());
     }
 
-    private async Task CleanupFilesAsync(IEnumerable<FileUploadResult> uploadResults) =>
-        await fileUploader.DeleteFilesAsync(uploadResults.Select(image => image.Id));
+    private async Task CleanupFilesAsync(List<FileUploadResult> uploadResults)
+    {
+        if (uploadResults.Count > 0)
+            await messageQueue.WriteAsync(uploadResults);
+    }
 }

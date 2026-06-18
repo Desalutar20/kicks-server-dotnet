@@ -1,5 +1,5 @@
-using Domain.Shared;
 using Domain.Shared.Pagination;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Categories;
 

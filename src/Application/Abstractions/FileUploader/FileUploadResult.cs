@@ -1,4 +1,5 @@
 using Domain.Shared.FileContent;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Abstractions.FileUploader;
 

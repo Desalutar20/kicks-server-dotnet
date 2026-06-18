@@ -1,7 +1,9 @@
 using Application.Auth.Types;
 using Application.Auth.UseCases.SignIn;
 using Application.Config;
+using Domain.Shared.ValueObjects;
 using Presentation.Auth.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -38,7 +40,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command, ct);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     var (user, sessionId) = result.Value;

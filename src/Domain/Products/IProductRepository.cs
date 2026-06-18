@@ -17,10 +17,7 @@ public interface IProductRepository
         CancellationToken ct = default
     );
 
-    Task<ProductFilterOptions> GetProductsFilterOptions(
-        bool trackChanges,
-        CancellationToken ct = default
-    );
+    Task<ProductFilterOptions> GetProductsFilterOptions(CancellationToken ct = default);
 
     void CreateProduct(Product product);
     void UpdateProduct(Product product);

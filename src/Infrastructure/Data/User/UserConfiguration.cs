@@ -1,3 +1,4 @@
+using Domain.Shared.ValueObjects;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Role = Domain.Users.Role;
 

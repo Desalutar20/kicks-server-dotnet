@@ -2,6 +2,7 @@ using Application.Admin.Categories.UseCases.CreateCategory;
 using Application.Auth.Types;
 using Domain.Categories;
 using Presentation.Admin.Categories.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -44,7 +45,7 @@ internal static partial class AdminCategoriesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
                             new ApiResponse<AdminCategoryDto>(result.Value.ToDto())

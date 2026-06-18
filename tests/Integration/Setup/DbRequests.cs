@@ -1,8 +1,10 @@
 using Domain.Brands;
 using Domain.Categories;
+using Domain.DeliveryOptions;
 using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Promocodes;
+using Domain.Shared.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Integration.Setup;
@@ -47,4 +49,30 @@ public partial class TestApp
 
     protected async Task<Promocode?> GetPromocodeFromDbById(PromocodeId id, CancellationToken ct) =>
         await _dbContext.Promocodes.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
+
+    protected async Task<List<ProductSkuId>> GetProductSkuIdsFromDb(int count, CancellationToken ct)
+    {
+        return await _dbContext
+            .ProductSkus.AsNoTracking()
+            .OrderBy(x => x.Id)
+            .Take(count)
+            .Select(x => x.Id)
+            .ToListAsync(ct);
+    }
+
+    protected async Task<Promocode> GetPromocodeFromDb(CancellationToken ct) =>
+        await _dbContext.Promocodes.AsNoTracking().Take(1).FirstAsync(ct);
+
+    protected async Task<DeliveryOption?> GetDeliveryOptionFromDbByTitle(
+        DeliveryOptionTitle title,
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .DeliveryOptions.AsNoTracking()
+            .SingleOrDefaultAsync(b => b.Title == title, ct);
+
+    protected async Task<DeliveryOption?> GetDeliveryOptionFromDbById(
+        DeliveryOptionId id,
+        CancellationToken ct
+    ) => await _dbContext.DeliveryOptions.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, ct);
 }

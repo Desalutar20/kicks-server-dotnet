@@ -1,7 +1,12 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Admin.Products.ProductSkus.Errors;
 
 public static class AdminProductSkuErrors
 {
+    public static Error ProductDoesNotExist(ProductId productId) =>
+        Error.Failure($"Product with id '{productId}' doesn't exist");
+
     public static Error ProductSkuDuplicateCombination(
         ProductId productId,
         ProductSkuColor color,

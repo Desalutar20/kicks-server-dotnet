@@ -4,7 +4,9 @@ using Application.Auth.Types;
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -106,7 +108,7 @@ internal static partial class AdminProductsEndpoints
                     var result = await queryHandler.Handle(query, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiCursorResponse<AdminProductDto>(
                                 [.. result.Value.Data.Select(u => u.ToDto())],

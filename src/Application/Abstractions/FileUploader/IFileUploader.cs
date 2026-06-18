@@ -9,6 +9,6 @@ public interface IFileUploader
         CancellationToken ct = default
     );
 
-    Task DeleteFilesAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
-    Task DeleteFileAsync(Guid id);
+    Task<Result> DeleteFilesAsync(IEnumerable<Guid> ids, CancellationToken ct = default);
+    Task<Result> DeleteFileAsync(Guid id);
 }

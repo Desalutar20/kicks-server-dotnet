@@ -1,6 +1,8 @@
 using Application.Abstractions.OAuth;
 using Application.Auth.UseCases.OAuthSignIn;
 using Application.Config;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -41,13 +43,13 @@ internal static partial class AuthEndpoint
                     var commandResult = ToCommand(state, code, provider, expectedState);
                     if (commandResult.IsFailure)
                     {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
+                        return commandResult.Error.ToApiError(logger);
                     }
 
                     var result = await commandHandler.Handle(commandResult.Value, ct);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     SetSessionCookie(ctx, result.Value, config.Application);

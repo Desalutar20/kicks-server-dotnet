@@ -1,10 +1,11 @@
 using Application.ProductSkus.UseCases.GetProductSkusFilters;
 using Domain.Products.ProductSkus;
 using Presentation.ProductSkus.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;
 
-internal static partial class ProductSkusEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder GetProductSkusFiltersV1(
         this IEndpointRouteBuilder endpoint
@@ -27,7 +28,7 @@ internal static partial class ProductSkusEndpoints
                     var result = await queryHandler.Handle(new GetProductSkusFiltersQuery(), ct);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(

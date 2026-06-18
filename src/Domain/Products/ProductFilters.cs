@@ -1,6 +1,7 @@
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products;
 

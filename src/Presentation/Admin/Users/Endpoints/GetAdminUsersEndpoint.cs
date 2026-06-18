@@ -2,7 +2,9 @@ using Application.Admin.Users.Constants;
 using Application.Admin.Users.Types;
 using Application.Admin.Users.UseCases.GetAllAdminUsers;
 using Application.Auth.Types;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Users.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Users.Endpoints;
 
@@ -93,13 +95,13 @@ internal static partial class AdminUsersEndpoints
                     var queryResult = request.ToQuery();
                     if (queryResult.IsFailure)
                     {
-                        return ErrorHandler.Handle(queryResult.Error, logger);
+                        return queryResult.Error.ToApiError(logger);
                     }
 
                     var result = await queryHandler.Handle(queryResult.Value, ct);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(

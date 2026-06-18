@@ -102,6 +102,35 @@ public class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
     }
 
     [Fact]
+    public async ValueTask Should_ReturnBadRequest_When_PriceIsLessThanSalePrice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var request = TestData.SignUpRequest();
+        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+
+        var response = await GetProductSkus(null, sessionCookie, ct);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
+            ct
+        );
+        body.Should().NotBeNull();
+
+        var product = body.Data.First(d => d.SalePrice is not null);
+
+        var updateProductSkuRequest = new UpdateProductSkuRequest { Price = product.SalePrice - 1 };
+        var updateProductSkuResponse = await UpdateProductSku(
+            product.Id,
+            updateProductSkuRequest,
+            sessionCookie,
+            ct
+        );
+
+        updateProductSkuResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
     public async ValueTask Should_ReturnBadRequest_When_ProductSkuNotFound()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -124,7 +153,7 @@ public class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
     public async ValueTask Should_ReturnUnauthorized_When_UserNotSignedIn()
     {
         var ct = TestContext.Current.CancellationToken;
-        var request = new UpdateProductSkuRequest() { Price = 100 };
+        var request = new UpdateProductSkuRequest { Price = 100 };
         var response = await UpdateProductSku(Guid.Empty, request, null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -137,7 +166,7 @@ public class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var updateProductSkuRequest = new UpdateProductSkuRequest() { Price = 100 };
+        var updateProductSkuRequest = new UpdateProductSkuRequest { Price = 100 };
 
         var response = await UpdateProductSku(
             Guid.Empty,

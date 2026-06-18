@@ -94,6 +94,41 @@ namespace Infrastructure.Data.Migrations
                     b.ToTable("brand", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Carts.Cart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("PromocodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promocode_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cart");
+
+                    b.HasIndex("PromocodeId")
+                        .HasDatabaseName("ix_cart_promocode_id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_cart_user");
+
+                    b.ToTable("cart", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Categories.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -122,6 +157,160 @@ namespace Infrastructure.Data.Migrations
                         .HasDatabaseName("uq_category_name");
 
                     b.ToTable("category", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.DeliveryOptions.DeliveryOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint")
+                        .HasColumnName("price");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_delivery_options");
+
+                    b.ToTable("delivery_options", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Orders.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DeliveryOptionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("delivery_option_id");
+
+                    b.Property<long>("DeliveryPrice")
+                        .HasColumnType("bigint")
+                        .HasColumnName("delivery_price");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number");
+
+                    b.Property<Guid?>("PromocodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("promocode_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("pending")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "BillingAddress", "Domain.Orders.Order.BillingAddress#OrderAddress", b1 =>
+                        {
+                            b1.Property<string>("Apartment")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("billing_address_apartment");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("billing_address_city");
+
+                            b1.Property<string>("Home")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("billing_address_home");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("billing_address_street");
+                        });
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "DeliveryAddress", "Domain.Orders.Order.DeliveryAddress#OrderAddress", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<string>("Apartment")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("delivery_address_apartment");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("delivery_address_city");
+
+                            b1.Property<string>("Home")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("delivery_address_home");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("delivery_address_street");
+                        });
+
+                    b.HasKey("Id")
+                        .HasName("pk_order");
+
+                    b.HasIndex("DeliveryOptionId")
+                        .HasDatabaseName("ix_order_delivery_option_id");
+
+                    b.HasIndex("PromocodeId")
+                        .HasDatabaseName("ix_order_promocode_id");
+
+                    b.HasIndex("UserId", "PromocodeId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_order_user_promocode")
+                        .HasFilter("    \"promocode_id\" IS NOT NULL\n    AND \"status\" <> 'cancelled'");
+
+                    b.ToTable("order", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_order_status", "status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')");
+                        });
                 });
 
             modelBuilder.Entity("Domain.Products.Product", b =>
@@ -235,12 +424,12 @@ namespace Infrastructure.Data.Migrations
                         {
                             b1.IsRequired();
 
-                            b1.Property<int>("Price")
-                                .HasColumnType("integer")
+                            b1.Property<long>("Price")
+                                .HasColumnType("bigint")
                                 .HasColumnName("price");
 
-                            b1.Property<int?>("SalePrice")
-                                .HasColumnType("integer")
+                            b1.Property<long?>("SalePrice")
+                                .HasColumnType("bigint")
                                 .HasColumnName("sale_price");
                         });
 
@@ -474,6 +663,207 @@ namespace Infrastructure.Data.Migrations
 
                             t.HasCheckConstraint("CK_role", "role IN ('regular', 'admin')");
                         });
+                });
+
+            modelBuilder.Entity("Domain.Carts.Cart", b =>
+                {
+                    b.HasOne("Domain.Promocodes.Promocode", "Promocode")
+                        .WithMany()
+                        .HasForeignKey("PromocodeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_cart_promocode_promocode_id");
+
+                    b.HasOne("Domain.Users.User", null)
+                        .WithOne()
+                        .HasForeignKey("Domain.Carts.Cart", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_cart_users_user_id");
+
+                    b.OwnsMany("Domain.Carts.CartItem", "CartItems", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<Guid>("CartId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("cart_id");
+
+                            b1.Property<Guid>("ProductSkuId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_sku_id");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("integer")
+                                .HasColumnName("quantity");
+
+                            b1.HasKey("Id")
+                                .HasName("pk_cart_item");
+
+                            b1.HasIndex("ProductSkuId")
+                                .HasDatabaseName("ix_cart_item_product_sku_id");
+
+                            b1.HasIndex("CartId", "ProductSkuId")
+                                .IsUnique()
+                                .HasDatabaseName("uq_cart_items_cart_id_product_sku_id");
+
+                            b1.ToTable("cart_item", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("CartId")
+                                .HasConstraintName("fk_cart_item_cart_cart_id");
+
+                            b1.HasOne("Domain.Products.ProductSkus.ProductSku", "ProductSku")
+                                .WithMany()
+                                .HasForeignKey("ProductSkuId")
+                                .OnDelete(DeleteBehavior.Cascade)
+                                .IsRequired()
+                                .HasConstraintName("fk_cart_item_product_sku_product_sku_id");
+
+                            b1.Navigation("ProductSku");
+                        });
+
+                    b.Navigation("CartItems");
+
+                    b.Navigation("Promocode");
+                });
+
+            modelBuilder.Entity("Domain.Orders.Order", b =>
+                {
+                    b.HasOne("Domain.DeliveryOptions.DeliveryOption", "DeliveryOption")
+                        .WithMany()
+                        .HasForeignKey("DeliveryOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_delivery_options_delivery_option_id");
+
+                    b.HasOne("Domain.Promocodes.Promocode", "Promocode")
+                        .WithMany()
+                        .HasForeignKey("PromocodeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_order_promocode_promocode_id");
+
+                    b.HasOne("Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_users_user_id");
+
+                    b.OwnsMany("Domain.Orders.OrderItem", "OrderItems", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("order_id");
+
+                            b1.Property<long>("Price")
+                                .HasColumnType("bigint")
+                                .HasColumnName("price");
+
+                            b1.Property<Guid>("ProductSkuId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("product_sku_id");
+
+                            b1.Property<int>("Quantity")
+                                .HasColumnType("integer")
+                                .HasColumnName("quantity");
+
+                            b1.HasKey("Id")
+                                .HasName("pk_order_item");
+
+                            b1.HasIndex("ProductSkuId")
+                                .HasDatabaseName("ix_order_item_product_sku_id");
+
+                            b1.HasIndex("OrderId", "ProductSkuId")
+                                .IsUnique()
+                                .HasDatabaseName("uq_order_items_order_id_product_sku_id");
+
+                            b1.ToTable("order_item", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId")
+                                .HasConstraintName("fk_order_item_order_order_id");
+
+                            b1.HasOne("Domain.Products.ProductSkus.ProductSku", "ProductSku")
+                                .WithMany()
+                                .HasForeignKey("ProductSkuId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired()
+                                .HasConstraintName("fk_order_item_product_sku_product_sku_id");
+
+                            b1.Navigation("ProductSku");
+                        });
+
+                    b.OwnsMany("Domain.Orders.OrderPayment", "OrderPayments", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<long>("Amount")
+                                .HasColumnType("bigint")
+                                .HasColumnName("amount");
+
+                            b1.Property<DateTimeOffset>("CreatedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("created_at");
+
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("order_id");
+
+                            b1.Property<string>("Status")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("text")
+                                .HasDefaultValue("pending")
+                                .HasColumnName("status");
+
+                            b1.Property<string>("TransactionId")
+                                .IsRequired()
+                                .HasMaxLength(60)
+                                .HasColumnType("character varying(60)")
+                                .HasColumnName("transaction_id");
+
+                            b1.Property<DateTimeOffset>("UpdatedAt")
+                                .HasColumnType("timestamp with time zone")
+                                .HasColumnName("updated_at");
+
+                            b1.HasKey("Id")
+                                .HasName("pk_order_payment");
+
+                            b1.HasIndex("OrderId")
+                                .HasDatabaseName("ix_order_payment_order_id");
+
+                            b1.HasIndex("TransactionId")
+                                .IsUnique()
+                                .HasDatabaseName("ix_order_payment_transaction_id");
+
+                            b1.ToTable("order_payment", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_order_payment_status", "status IN ('pending', 'completed', 'failed', 'expired', 'refunded', 'cancelled')");
+                                });
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId")
+                                .HasConstraintName("fk_order_payment_order_order_id");
+                        });
+
+                    b.Navigation("DeliveryOption");
+
+                    b.Navigation("OrderItems");
+
+                    b.Navigation("OrderPayments");
+
+                    b.Navigation("Promocode");
                 });
 
             modelBuilder.Entity("Domain.Products.Product", b =>

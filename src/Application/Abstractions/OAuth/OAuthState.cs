@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Abstractions.OAuth;
 
 public sealed record OAuthState(Guid StateId, NonEmptyString? AdditionalState)

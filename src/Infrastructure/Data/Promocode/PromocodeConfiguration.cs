@@ -1,4 +1,5 @@
 using Domain.Promocodes;
+using Domain.Shared.ValueObjects;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Promocode;
@@ -12,9 +13,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<DomainPromocode>
             Enum.GetNames<PromocodeType>().Select(r => $"'{r.ToLower()}'")
         );
 
-        builder.Ignore(x => x.IsActive);
-        builder.Ignore(x => x.IsExpired);
-        builder.Ignore(x => x.HasUsagesLeft);
+        builder.Ignore(x => x.IsValid);
 
         builder.ToTable(
             "promocode",

@@ -1,11 +1,12 @@
 using Application.Admin.Products.ProductSkus.Constants;
 using Domain.Brands;
 using Domain.Categories;
+using Domain.DeliveryOptions;
 using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Promocodes;
-using Domain.Shared;
 using Domain.Shared.FileContent;
+using Domain.Shared.ValueObjects;
 using Microsoft.AspNetCore.Http;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -139,18 +140,19 @@ public static class TestData
 
     public static string Password(int length = 10) => Faker.Internet.Password(length);
 
-    public static List<User> SeedUsers()
-    {
-        var faker = new Faker<User>().CustomInstantiator(f =>
-        {
-            var email = Domain.Users.Email.Create(f.Internet.Email()).Value;
-            var hashedPassword = HashedPassword.Create(Password(HashedPassword.MinLength)).Value;
+    public static List<User> SeedUsers() =>
+        Enumerable
+            .Range(1, 200)
+            .Select(i =>
+            {
+                var email = Domain.Shared.ValueObjects.Email.Create($"user{i}@test.local").Value;
+                var hashedPassword = HashedPassword
+                    .Create(Password(HashedPassword.MinLength))
+                    .Value;
 
-            return new User(email, hashedPassword, null, null, null, null, null);
-        });
-
-        return faker.Generate(200);
-    }
+                return new User(email, hashedPassword, null, null, null, null, null);
+            })
+            .ToList();
 
     public static List<Brand> SeedBrands() =>
         Enumerable
@@ -210,8 +212,8 @@ public static class TestData
                         .Select(s =>
                         {
                             var priceResult = ProductSkuPrice.Create(
-                                PositiveInt.Create(250 + s * 10).Value,
-                                s % 2 == 0 ? PositiveInt.Create(150 + s * 10).Value : null
+                                Money.FromCents(250 + s * 10).Value,
+                                s % 2 == 0 ? Money.FromCents(150 + s * 10).Value : null
                             );
 
                             if (priceResult.IsFailure)
@@ -260,6 +262,7 @@ public static class TestData
                                 colorResult.Value,
                                 skuResult.Value,
                                 sizeResult.Value,
+                                images!,
                                 product.Id
                             );
 
@@ -267,7 +270,6 @@ public static class TestData
                                 return null;
 
                             var productSku = productSkuResult.Value;
-                            productSku.AddImages(images!);
 
                             return productSku;
                         })
@@ -301,5 +303,34 @@ public static class TestData
         });
 
         return faker.Generate(100);
+    }
+
+    public static List<DeliveryOption> SeedDeliveryOptions()
+    {
+        return
+        [
+            new DeliveryOption(
+                DeliveryOptionTitle.Create("Standard Delivery").Value,
+                DeliveryOptionDescription.Create("Delivery within 3-5 business days.").Value,
+                Money.FromCents(1500).Value
+            ),
+            new DeliveryOption(
+                DeliveryOptionTitle.Create("Express Delivery").Value,
+                DeliveryOptionDescription.Create("Delivery within 1-2 business days.").Value,
+                Money.FromCents(3000).Value
+            ),
+            new DeliveryOption(
+                DeliveryOptionTitle.Create("Same Day Delivery").Value,
+                DeliveryOptionDescription
+                    .Create("Delivered on the same day for eligible locations.")
+                    .Value,
+                Money.FromCents(5000).Value
+            ),
+            new DeliveryOption(
+                DeliveryOptionTitle.Create("Store Pickup").Value,
+                DeliveryOptionDescription.Create("Pick up your order from our store.").Value,
+                Money.FromCents(0).Value
+            ),
+        ];
     }
 }

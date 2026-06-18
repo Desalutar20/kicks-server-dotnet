@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Abstractions.Email;
 using Application.Abstractions.Email.JsonConverters;
 using Application.Config;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Services;
 

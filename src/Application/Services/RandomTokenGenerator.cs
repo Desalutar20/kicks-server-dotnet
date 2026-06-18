@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Services;
 
 internal static class RandomTokenGenerator

@@ -1,6 +1,7 @@
 using Application.Admin.Promocodes.UseCases.DeletePromocode;
 using Application.Auth.Types;
 using Domain.Promocodes;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Promocodes.Endpoints;
 
@@ -33,7 +34,7 @@ internal static partial class AdminPromocodesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("Success"));
                 }
             )

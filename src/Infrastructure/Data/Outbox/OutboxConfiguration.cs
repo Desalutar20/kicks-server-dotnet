@@ -1,4 +1,5 @@
 using Application.Abstractions.Outbox;
+using Domain.Shared.ValueObjects;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Outbox;

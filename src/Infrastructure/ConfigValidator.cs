@@ -10,10 +10,15 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.Application.ResetPasswordPath).NotEmpty();
         RuleFor(x => x.Application.SessionCookieName).NotEmpty();
         RuleFor(x => x.Application.OAuthStateCookieName).NotEmpty();
+        RuleFor(x => x.Application.MaxCancelledOrdersPerDay).InclusiveBetween(3, 5);
         RuleFor(x => x.Application.AccountVerificationTtlMinutes).InclusiveBetween(60, 1440);
         RuleFor(x => x.Application.SessionTtlMinutes).InclusiveBetween(1440, 43800);
         RuleFor(x => x.Application.ResetPasswordTtlMinutes).InclusiveBetween(5, 10);
         RuleFor(x => x.Application.OAuthStateTtlMinutes).InclusiveBetween(3, 5);
+        RuleFor(x => x.Application.OrderExpirationTtlMinutes)
+            .LessThanOrEqualTo(DomainOrder.ExpirationMaxMinutes);
+        RuleFor(x => x.Application.OAuthStateTtlMinutes).InclusiveBetween(3, 5);
+
         RuleFor(x => x.Application.CookieSecure).NotNull();
 
         RuleFor(x => x.OAuth).NotEmpty();
@@ -65,5 +70,13 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.RateLimit.GetProductSku).NotEmpty();
         RuleFor(x => x.RateLimit.GetProductSkus).NotEmpty();
         RuleFor(x => x.RateLimit.GetProductSkusFilters).NotEmpty();
+        RuleFor(x => x.RateLimit.GetCart).NotEmpty();
+        RuleFor(x => x.RateLimit.AddCartItem).NotEmpty();
+        RuleFor(x => x.RateLimit.UpdateCartItemQuantity).NotEmpty();
+        RuleFor(x => x.RateLimit.RemoveCartItem).NotEmpty();
+        RuleFor(x => x.RateLimit.ClearCart).NotEmpty();
+        RuleFor(x => x.RateLimit.ApplyPromocode).NotEmpty();
+        RuleFor(x => x.RateLimit.RemovePromocode).NotEmpty();
+        RuleFor(x => x.RateLimit.CreateOrder).NotEmpty();
     }
 }

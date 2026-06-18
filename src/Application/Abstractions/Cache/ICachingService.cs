@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Abstractions.Cache;
 
 public interface ICachingService

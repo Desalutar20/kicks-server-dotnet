@@ -1,4 +1,4 @@
-using Domain.Products.ProductSkus.ProductSkuReviews;
+using Domain.Shared.ValueObjects;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.Product;
@@ -31,11 +31,7 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
         ProductSkuId id,
         bool trackChanges,
         CancellationToken ct = default
-    ) =>
-        await FindByCondition(x => x.Id == id, trackChanges)
-            .Include(x => x.Product)
-            .Include(x => x.Reviews.Where(r => r.Status == ProductSkuReviewStatus.Approved))
-            .FirstOrDefaultAsync(ct);
+    ) => await FindByCondition(x => x.Id == id, trackChanges).FirstOrDefaultAsync(ct);
 
     public async Task<IEnumerable<ProductSku>> GetVariants(
         ProductId productId,
@@ -79,8 +75,7 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
             .WhereNotNull(filters.MinPrice, p => p.Price.Price >= filters.MinPrice!)
             .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice!)
             .Where(p => !p.Product.IsDeleted)
-            .ApplyKeysetPagination(keysetPagination)
-            .Include(p => p.Product);
+            .ApplyKeysetPagination(keysetPagination);
 
         var result = await query.ToListAsync(ct);
 
@@ -115,21 +110,16 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
             .WhereNotNull(filters.MaxPrice, p => p.Price.Price <= filters.MaxPrice!)
             .WhereNotNull(
                 filters.MinSalePrice,
-                p =>
-                    p.Price.SalePrice != null
-                    && p.Price.SalePrice.Value >= filters.MinSalePrice!.Value
+                p => p.Price.SalePrice != null && p.Price.SalePrice >= filters.MinSalePrice!
             )
             .WhereNotNull(
                 filters.MaxSalePrice,
-                p =>
-                    p.Price.SalePrice != null
-                    && p.Price.SalePrice.Value <= filters.MaxSalePrice!.Value
+                p => p.Price.SalePrice != null && p.Price.SalePrice <= filters.MaxSalePrice!
             )
             .WhereNotNull(filters.Size, p => p.Size == filters.Size)
             .WhereNotNull(filters.Color, p => p.Color == filters.Color)
             .WhereNotNull(filters.Sku, p => p.Sku == filters.Sku)
-            .ApplyKeysetPagination(keysetPagination)
-            .Include(p => p.Product);
+            .ApplyKeysetPagination(keysetPagination);
 
         var result = await query.ToListAsync(ct);
 
@@ -142,7 +132,6 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
     }
 
     public async Task<ProductSkusFilterOptions> GetProductSkusFilterOptions(
-        bool trackChanges,
         CancellationToken ct = default
     )
     {
@@ -194,15 +183,47 @@ internal sealed class ProductSkusRepository(AppDbContext dbContext)
                 .ToArray(),
             Deserialize<List<CategoryFilterItem>>(reader["categories"]) ?? [],
             Deserialize<List<BrandFilterItem>>(reader["brands"]) ?? [],
-            PositiveInt
-                .Create(Convert.ToInt32(reader["min_price"] is DBNull ? 1 : reader["min_price"]))
+            Money
+                .FromCents(Convert.ToInt32(reader["min_price"] is DBNull ? 1 : reader["min_price"]))
                 .Value,
-            PositiveInt
-                .Create(Convert.ToInt32(reader["max_price"] is DBNull ? 100 : reader["max_price"]))
+            Money
+                .FromCents(
+                    Convert.ToInt32(reader["max_price"] is DBNull ? 100 : reader["max_price"])
+                )
                 .Value
         );
 
         return result;
+    }
+
+    public async Task BulkIncrementQuantityAsync(
+        IEnumerable<(ProductSkuId Id, PositiveInt Quantity)> data,
+        CancellationToken ct = default
+    )
+    {
+        if (!data.Any())
+            return;
+
+        var items = data.ToArray();
+
+        var valuesSql = string.Join(",", items.Select((_, i) => $"(@id{i}, @qty{i})"));
+
+        var parameters = new List<Npgsql.NpgsqlParameter>(items.Length * 2);
+
+        for (var i = 0; i < items.Length; i++)
+        {
+            parameters.Add(new Npgsql.NpgsqlParameter($"id{i}", items[i].Id.Value));
+            parameters.Add(new Npgsql.NpgsqlParameter($"qty{i}", items[i].Quantity.Value));
+        }
+
+        var sql = $"""
+                UPDATE product_sku ps
+                SET quantity = ps.quantity + v.qty
+                FROM (VALUES {valuesSql}) AS v(id, qty)
+                WHERE ps.id = v.id;
+            """;
+
+        await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters, ct);
     }
 
     public void UpdateProductSku(ProductSku product) => Update(product);

@@ -5,8 +5,8 @@ namespace Presentation.ProductSkus.Dto;
 public sealed record ProductSkuDto(
     Guid Id,
     DateTimeOffset CreatedAt,
-    int Price,
-    int? SalePrice,
+    decimal Price,
+    decimal? SalePrice,
     int Quantity,
     int Size,
     string Color,
@@ -22,9 +22,9 @@ internal static class ProductSkuDtoMapper
         new(
             model.Id.Value,
             model.CreatedAt,
-            model.Price.Price.Value,
-            model.Price.SalePrice?.Value,
-            model.Quantity.Value,
+            model.Price.Price.Dollars,
+            model.Price.SalePrice?.Dollars,
+            model.Quantity,
             model.Size.Value,
             model.Color.Value,
             model.Sku.Value,

@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Admin.Categories.UseCases.GetCategories;
 
 public sealed record GetCategoriesQuery(

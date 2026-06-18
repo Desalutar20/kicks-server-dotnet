@@ -1,4 +1,6 @@
 using Application.Auth.UseCases.SignUp;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -46,7 +48,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/sign-up",
                             new ApiResponse<string>(

@@ -1,4 +1,5 @@
 using Application.Abstractions.OAuth;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.UseCases.GenerateOAuthUrl;
 

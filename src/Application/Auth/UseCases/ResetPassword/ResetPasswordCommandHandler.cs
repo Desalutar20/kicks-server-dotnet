@@ -1,6 +1,7 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
 using Application.Auth.Errors;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.UseCases.ResetPassword;
 

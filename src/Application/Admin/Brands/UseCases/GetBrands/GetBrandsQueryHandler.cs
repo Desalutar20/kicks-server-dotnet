@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Admin.Brands.UseCases.GetBrands;
 
 public sealed record GetBrandsQuery(

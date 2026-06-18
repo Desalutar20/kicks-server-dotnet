@@ -1,5 +1,6 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Auth.UseCases.ForgotPassword;
 

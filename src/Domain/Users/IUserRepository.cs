@@ -1,4 +1,5 @@
 using Domain.Shared.Pagination;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Users;
 

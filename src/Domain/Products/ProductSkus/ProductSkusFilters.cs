@@ -1,6 +1,7 @@
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
 
@@ -10,6 +11,6 @@ public sealed record ProductSkusFilters(
     IEnumerable<CategoryId>? CategoryIds,
     IEnumerable<BrandId>? BrandIds,
     IEnumerable<ProductGender>? Genders,
-    PositiveInt? MinPrice,
-    PositiveInt? MaxPrice
+    Money? MinPrice,
+    Money? MaxPrice
 );

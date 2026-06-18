@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Admin.Users.Types;
 
 public sealed record AdminUser(

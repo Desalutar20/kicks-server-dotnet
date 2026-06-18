@@ -21,8 +21,8 @@ public sealed record PromocodeCode : StringValueObject<PromocodeCode>
         CreateCore(
             value,
             MaxLength,
-            "sku",
-            "Product sku",
+            "code",
+            "Promocode",
             (v) => new PromocodeCode(v),
             static (v) => Regex.Replace(v, "")
         );

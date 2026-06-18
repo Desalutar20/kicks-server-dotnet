@@ -5,16 +5,18 @@ using Application.Auth.Types;
 using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Shared.FileContent;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
 
 public sealed record CreateProductSkuRequest
 {
     [FromForm(Name = "price")]
-    public int Price { get; set; }
+    public decimal Price { get; set; }
 
     [FromForm(Name = "salePrice")]
-    public int? SalePrice { get; set; }
+    public decimal? SalePrice { get; set; }
 
     [FromForm(Name = "quantity")]
     public int Quantity { get; set; }
@@ -36,9 +38,10 @@ public sealed class CreateProductSkuRequestValidator : AbstractValidator<CreateP
 {
     public CreateProductSkuRequestValidator()
     {
-        RuleFor(x => x.Price).ValidateValueObject(x => PositiveInt.Create(x, label: "Price"));
+        RuleFor(x => x.Price).GreaterThan(0).ValidateValueObject(Money.FromDollars);
         RuleFor(x => x.SalePrice)
-            .ValidateNullableValueObject(x => PositiveInt.Create(x!.Value, label: "Sale price"));
+            .ValidateNullableValueObject(x => Money.FromDollars(x!.Value))
+            .When(x => x.SalePrice is not null);
         RuleFor(x => x)
             .Must(x => x.SalePrice == null || x.SalePrice < x.Price)
             .WithMessage("Sale price must be less than price.")
@@ -110,7 +113,7 @@ internal static partial class AdminProductSkusEndpoints
                     var commandResult = request.ToCommand(productId);
                     if (commandResult.IsFailure)
                     {
-                        return ErrorHandler.Handle(commandResult.Error, logger);
+                        return commandResult.Error.ToApiError(logger);
                     }
 
                     var (command, files) = commandResult.Value;
@@ -126,7 +129,7 @@ internal static partial class AdminProductSkusEndpoints
                     }
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Created("/", new ApiResponse<Guid>(result.Value.Value));
                 }
             )
@@ -154,9 +157,9 @@ internal static partial class AdminProductSkusEndpoints
         Guid productId
     )
     {
-        var positivePrice = PositiveInt.Create(request.Price, "price").Value;
+        var positivePrice = Money.FromDollars(request.Price).Value;
         var positiveSalePrice = request.SalePrice is not null
-            ? PositiveInt.Create(request.SalePrice.Value).Value
+            ? Money.FromDollars(request.SalePrice.Value).Value
             : null;
 
         var price = ProductSkuPrice.Create(positivePrice, positiveSalePrice);

@@ -26,4 +26,6 @@ public sealed record ProductSkuSku : StringValueObject<ProductSkuSku>
             (v) => new ProductSkuSku(v),
             static (v) => Regex.Replace(v, "")
         );
+
+    public override string ToString() => Value;
 }

@@ -1,3 +1,4 @@
+using Domain.Shared.ValueObjects;
 using Domain.Users;
 using FluentAssertions;
 

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Abstractions.Database;
 using Application.Abstractions.Outbox;
 using Application.Admin.Products.ProductSkus.Errors;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.DeleteProductSku;
 

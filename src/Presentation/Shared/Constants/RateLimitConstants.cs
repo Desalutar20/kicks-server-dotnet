@@ -13,4 +13,14 @@ public static class RateLimitConstants
     public const string GetProductSku = "GetProductSku";
     public const string GetProductSkus = "GetProductSkus";
     public const string GetProductSkusFilters = "GetProductSkusFilters";
+
+    public const string GetCart = "GetCart";
+    public const string AddCartItem = "AddCartItem";
+    public const string UpdateCartItemQuantity = "UpdateCartItemQuantity";
+    public const string RemoveCartItem = "RemoveCartItem";
+    public const string ClearCart = "ClearCart";
+    public const string ApplyPromocode = "ApplyPromocode";
+    public const string RemovePromocode = "RemovePromocode";
+
+    public const string CreateOrder = "CreateOrder";
 }

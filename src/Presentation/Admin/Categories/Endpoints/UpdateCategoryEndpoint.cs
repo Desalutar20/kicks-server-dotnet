@@ -1,6 +1,7 @@
 using Application.Admin.Categories.UseCases.UpdateCategory;
 using Application.Auth.Types;
 using Domain.Categories;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Categories.Endpoints;
 
@@ -44,7 +45,7 @@ internal static partial class AdminCategoriesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("success"));
                 }
             )

@@ -1,3 +1,4 @@
+using Domain.Shared.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Integration.Auth;

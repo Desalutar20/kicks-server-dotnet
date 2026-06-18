@@ -1,14 +1,16 @@
 using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
+using Application.Abstractions.Messaging;
 using Application.Admin.Products.ProductSkus.Errors;
 using Domain.Products.ProductSkus.Exceptions;
+using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.UpdateProductSku;
 
 public sealed record UpdateProductSkuCommand(
     ProductSkuId Id,
-    PositiveInt? Price,
-    PositiveInt? SalePrice,
+    Money? Price,
+    Money? SalePrice,
     PositiveInt? Quantity,
     PositiveInt? Size,
     ProductSkuColor? Color,
@@ -19,7 +21,8 @@ public sealed record UpdateProductSkuCommand(
 internal sealed class UpdateProductSkuCommandHandler(
     IFileUploader fileUploader,
     IUnitOfWork unitOfWork,
-    IProductSkusRepository productSkusRepository
+    IProductSkusRepository productSkusRepository,
+    IMessageQueue<IEnumerable<FileUploadResult>> messageQueue
 ) : ICommandHandler<UpdateProductSkuCommand, ProductSku>
 {
     public async Task<Result<ProductSku>> Handle(
@@ -82,6 +85,7 @@ internal sealed class UpdateProductSkuCommandHandler(
                 }
             }
 
+            await unitOfWork.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
 
             return productSku;
@@ -163,13 +167,16 @@ internal sealed class UpdateProductSkuCommandHandler(
         if (uploadResults.IsFailure)
             return uploadResults.Error;
 
-        var images = uploadResults.Value.Select(result =>
-            ProductSkuImage.Create(result.Id, result.Uri, result.FileName)
-        );
+        var images = uploadResults
+            .Value.Select(result => ProductSkuImage.Create(result.Id, result.Uri, result.FileName))
+            .ToList();
 
-        return (images.ToList(), uploadResults.Value.ToList());
+        return (images, uploadResults.Value.ToList());
     }
 
-    private async Task CleanupFilesAsync(IEnumerable<FileUploadResult> uploadResults) =>
-        await fileUploader.DeleteFilesAsync(uploadResults.Select(image => image.Id));
+    private async Task CleanupFilesAsync(IList<FileUploadResult> uploadResults)
+    {
+        if (uploadResults.Count > 0)
+            await messageQueue.WriteAsync(uploadResults);
+    }
 }

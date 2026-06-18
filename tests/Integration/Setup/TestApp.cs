@@ -36,6 +36,7 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
         _dbContext.Products.AddRange(products);
         _dbContext.ProductSkus.AddRange(TestData.SeedProductSkus(products));
         _dbContext.Promocodes.AddRange(TestData.SeedPromocodes());
+        _dbContext.DeliveryOptions.AddRange(TestData.SeedDeliveryOptions());
 
         await _dbContext.SaveChangesAsync();
     }

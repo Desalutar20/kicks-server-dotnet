@@ -1,5 +1,5 @@
 using Domain.Abstractions;
-using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Promocodes;
 
@@ -31,30 +31,10 @@ public sealed class Promocode : Entity<PromocodeId>
     public int UsageCount { get; private set; } = 0;
     public PromocodeCode Code { get; private set; } = null!;
 
-    public bool IsActive =>
+    public bool IsValid =>
         DateTimeOffset.UtcNow >= ValidityPeriod.ValidFrom
-        && DateTimeOffset.UtcNow < ValidityPeriod.ValidTo;
-
-    public bool IsExpired => DateTimeOffset.UtcNow >= ValidityPeriod.ValidTo;
-
-    public bool HasUsagesLeft => UsageCount < UsageLimit.Value;
-
-    public static Result<Promocode> Create(
-        PositiveInt discountValue,
-        PromocodeType type,
-        PromocodeValidityPeriod validityPeriod,
-        PositiveInt usageLimit,
-        PromocodeCode code
-    )
-    {
-        var result = ValidateDiscount(type, discountValue);
-        if (result.IsFailure)
-        {
-            return result.Error;
-        }
-
-        return new Promocode(discountValue, type, validityPeriod, usageLimit, code);
-    }
+        && DateTimeOffset.UtcNow < ValidityPeriod.ValidTo
+        && UsageCount < UsageLimit.Value;
 
     public Result Update(
         PositiveInt discountValue,
@@ -77,6 +57,55 @@ public sealed class Promocode : Entity<PromocodeId>
         Code = code;
 
         return Result.Success();
+    }
+
+    public Money CalculateDiscount(Money subtotal)
+    {
+        if (!IsValid)
+            return Money.FromCents(0).Value;
+
+        var discountCents = Type switch
+        {
+            PromocodeType.Fixed => DiscountValue.Value * 100,
+            PromocodeType.Percent => subtotal.Cents * DiscountValue.Value / 100,
+
+            _ => 0,
+        };
+
+        if (discountCents <= 0)
+            return Money.FromCents(0).Value;
+
+        if (discountCents > subtotal.Cents)
+            discountCents = subtotal.Cents;
+
+        return Money.FromCents(discountCents).Value;
+    }
+
+    public Result IncreaseUsageCount()
+    {
+        if (++UsageCount > UsageLimit.Value)
+        {
+            return Error.Failure("The coupon usage limit has been reached.");
+        }
+
+        return Result.Success();
+    }
+
+    public static Result<Promocode> Create(
+        PositiveInt discountValue,
+        PromocodeType type,
+        PromocodeValidityPeriod validityPeriod,
+        PositiveInt usageLimit,
+        PromocodeCode code
+    )
+    {
+        var result = ValidateDiscount(type, discountValue);
+        if (result.IsFailure)
+        {
+            return result.Error;
+        }
+
+        return new Promocode(discountValue, type, validityPeriod, usageLimit, code);
     }
 
     private static Result ValidateDiscount(PromocodeType type, PositiveInt discountValue)

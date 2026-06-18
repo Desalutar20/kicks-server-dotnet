@@ -10,8 +10,11 @@ public sealed record ApplicationConfig
     public required string OAuthStateCookieName { get; init; }
     public required bool CookieSecure { get; init; }
 
+    public required int MaxCancelledOrdersPerDay { get; init; }
+
     public required int AccountVerificationTtlMinutes { get; init; }
     public required int SessionTtlMinutes { get; init; }
     public required int OAuthStateTtlMinutes { get; init; }
     public required int ResetPasswordTtlMinutes { get; init; }
+    public required int OrderExpirationTtlMinutes { get; init; }
 }

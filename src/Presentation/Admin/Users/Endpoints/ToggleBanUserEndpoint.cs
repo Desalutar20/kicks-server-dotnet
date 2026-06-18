@@ -1,5 +1,6 @@
 using Application.Admin.Users.UseCases.ToggleBanUser;
 using Application.Auth.Types;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Users.Endpoints;
 
@@ -32,7 +33,7 @@ internal static partial class AdminUsersEndpoints
                     var result = await commandHandler.Handle(command, ct);
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(new ApiResponse<string>("Success"));

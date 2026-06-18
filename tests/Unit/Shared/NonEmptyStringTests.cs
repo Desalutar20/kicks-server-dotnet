@@ -1,4 +1,5 @@
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 using FluentAssertions;
 
 namespace Unit.Shared;

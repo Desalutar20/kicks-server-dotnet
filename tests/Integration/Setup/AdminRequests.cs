@@ -1,5 +1,7 @@
+using System.Globalization;
 using Presentation.Admin.Brands.Endpoints;
 using Presentation.Admin.Categories.Endpoints;
+using Presentation.Admin.DeliveryOptions.Endpoints;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
 using Presentation.Admin.Promocodes.Endpoints;
@@ -232,7 +234,7 @@ public partial class TestApp
     {
         var formData = new MultipartFormDataContent
         {
-            { new StringContent(data.Price.ToString()), "price" },
+            { new StringContent(data.Price.ToString(CultureInfo.InvariantCulture)), "price" },
             { new StringContent(data.Quantity.ToString()), "quantity" },
             { new StringContent(data.Size.ToString()), "size" },
             { new StringContent(data.Color), "color" },
@@ -241,7 +243,10 @@ public partial class TestApp
 
         if (data.SalePrice is not null)
         {
-            formData.Add(new StringContent(data.SalePrice.Value.ToString()), "salePrice");
+            formData.Add(
+                new StringContent(data.SalePrice.Value.ToString(CultureInfo.InvariantCulture)),
+                "salePrice"
+            );
         }
 
         foreach (var image in data.Images)
@@ -274,10 +279,16 @@ public partial class TestApp
         var formData = new MultipartFormDataContent();
 
         if (data.Price is not null)
-            formData.Add(new StringContent(data.Price.Value.ToString()), "price");
+            formData.Add(
+                new StringContent(data.Price.Value.ToString(CultureInfo.InvariantCulture)),
+                "price"
+            );
 
         if (data.SalePrice is not null)
-            formData.Add(new StringContent(data.SalePrice.Value.ToString()), "salePrice");
+            formData.Add(
+                new StringContent(data.SalePrice.Value.ToString(CultureInfo.InvariantCulture)),
+                "salePrice"
+            );
 
         if (data.Quantity is not null)
             formData.Add(new StringContent(data.Quantity.Value.ToString()), "quantity");
@@ -388,6 +399,44 @@ public partial class TestApp
             data,
             HttpMethod.Patch,
             $"/api/v1/admin/promocodes/{promocodeId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> GetDeliveryOptions(
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request("/api/v1/admin/delivery-options", cookie, null, ct);
+
+    protected async Task<HttpResponseMessage> CreateDeliveryOption(
+        CreateDeliveryOptionRequest data,
+        string? cookie,
+        CancellationToken ct = default
+    ) => await Request(data, HttpMethod.Post, "/api/v1/admin/delivery-options", cookie, ct);
+
+    protected async Task<HttpResponseMessage> UpdateDeliveryOption(
+        Guid deliveryOptionId,
+        UpdateDeliveryOptionRequest data,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request(
+            data,
+            HttpMethod.Patch,
+            $"/api/v1/admin/delivery-options/{deliveryOptionId}",
+            cookie,
+            ct
+        );
+
+    protected async Task<HttpResponseMessage> DeleteDeliveryOption(
+        Guid deliveryOptionId,
+        string? cookie,
+        CancellationToken ct = default
+    ) =>
+        await Request<object>(
+            null,
+            HttpMethod.Delete,
+            $"/api/v1/admin/delivery-options/{deliveryOptionId}",
             cookie,
             ct
         );

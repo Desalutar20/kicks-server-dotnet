@@ -15,12 +15,10 @@ public abstract record StringValueObject<T>(string Value)
         int minLength = 1
     )
     {
-        var errors = new List<string>();
-
         var emptyResult = Guard.AgainstEmptyString(value, label);
         if (emptyResult.IsFailure)
         {
-            errors.Add(emptyResult.Error.Description);
+            return Error.Validation(validationField, [emptyResult.Error.Description]);
         }
 
         value = value.Trim();
@@ -36,12 +34,13 @@ public abstract record StringValueObject<T>(string Value)
             maxLength,
             label
         );
+
         if (lengthResult.IsFailure)
         {
-            errors.Add(lengthResult.Error.Description);
+            return Error.Validation(validationField, [lengthResult.Error.Description]);
         }
 
-        return errors.Count == 0 ? factory(value) : Error.Validation(validationField, errors);
+        return factory(value);
     }
 
     public override string ToString() => Value;

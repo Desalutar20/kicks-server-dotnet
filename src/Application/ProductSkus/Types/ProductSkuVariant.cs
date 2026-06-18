@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.ProductSkus.Types;
 
 public sealed record ProductSkuVariant(

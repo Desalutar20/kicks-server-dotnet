@@ -2,6 +2,7 @@ using Application.Admin.Products.UseCases.GetProductFilters;
 using Application.Auth.Types;
 using Domain.Products;
 using Presentation.Admin.Products.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
 
@@ -32,7 +33,7 @@ internal static partial class AdminProductsEndpoints
                     var result = await queryHandler.Handle(new GetProductFiltersQuery(), ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiResponse<ProductFilterOptionsDto>(result.Value.ToDto())
                         );

@@ -1,4 +1,6 @@
 using Application.Auth.UseCases.ForgotPassword;
+using Domain.Shared.ValueObjects;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Auth.Endpoints;
 
@@ -32,7 +34,7 @@ internal static partial class AuthEndpoint
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(
                             new ApiResponse<string>(
                                 "If the email is registered, password reset instructions have been sent"

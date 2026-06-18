@@ -1,5 +1,6 @@
 using Domain.Promocodes;
 using Domain.Shared;
+using Domain.Shared.ValueObjects;
 using FluentAssertions;
 
 namespace Unit.Promocode;
@@ -28,6 +29,42 @@ public sealed class PromocodeTests
         result.Value.UsageCount.Should().Be(0);
     }
 
+    [Fact]
+    public void CalculateDiscount_Should_ReturnPercentDiscount()
+    {
+        var promocode = CreatePromocode(discountValue: 20, type: PromocodeType.Percent);
+
+        var subtotal = Money.FromCents(10_000).Value;
+
+        var discount = promocode.CalculateDiscount(subtotal);
+
+        discount.Cents.Should().Be(2_000);
+    }
+
+    [Fact]
+    public void CalculateDiscount_Should_ReturnFixedDiscount()
+    {
+        var promocode = CreatePromocode(discountValue: 25, type: PromocodeType.Fixed);
+
+        var subtotal = Money.FromCents(10_000).Value;
+
+        var discount = promocode.CalculateDiscount(subtotal);
+
+        discount.Cents.Should().Be(2_500);
+    }
+
+    [Fact]
+    public void CalculateDiscount_Should_NotExceedSubtotal()
+    {
+        var promocode = CreatePromocode(discountValue: 100, type: PromocodeType.Fixed);
+
+        var subtotal = Money.FromCents(5_000).Value;
+
+        var discount = promocode.CalculateDiscount(subtotal);
+
+        discount.Cents.Should().Be(5_000);
+    }
+
     [Theory]
     [InlineData(100)]
     [InlineData(101)]
@@ -46,5 +83,25 @@ public sealed class PromocodeTests
         );
 
         result.IsFailure.Should().BeTrue();
+    }
+
+    private static Domain.Promocodes.Promocode CreatePromocode(
+        int discountValue = 20,
+        PromocodeType type = PromocodeType.Percent
+    )
+    {
+        var validityPeriod = PromocodeValidityPeriod
+            .Create(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(10))
+            .Value;
+
+        return Domain
+            .Promocodes.Promocode.Create(
+                PositiveInt.Create(discountValue).Value,
+                type,
+                validityPeriod,
+                PositiveInt.Create(100).Value,
+                PromocodeCode.Create("SUMMER20").Value
+            )
+            .Value;
     }
 }

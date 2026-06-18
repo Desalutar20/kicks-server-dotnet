@@ -1,3 +1,4 @@
+using Domain.Shared.ValueObjects;
 using Infrastructure.Data.Extensions;
 
 namespace Infrastructure.Data.User;

@@ -1,10 +1,11 @@
 using Application.Admin.Brands.UseCases.DeleteBrand;
 using Application.Auth.Types;
 using Domain.Brands;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
-internal static partial class AdminPromocodesEndpoints
+internal static partial class AdminBrandsEndpoints
 {
     private static IEndpointRouteBuilder DeleteBrandV1(this IEndpointRouteBuilder endpoint)
     {
@@ -33,7 +34,7 @@ internal static partial class AdminPromocodesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("Success"));
                 }
             )

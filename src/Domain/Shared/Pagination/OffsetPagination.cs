@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Domain.Shared.Pagination;
 
 public sealed record OffsetPagination

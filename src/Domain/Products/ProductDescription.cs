@@ -20,6 +20,4 @@ public sealed record ProductDescription : StringValueObject<ProductDescription>
         );
 
     public static implicit operator string(ProductDescription description) => description.Value;
-
-    // public static implicit operator ProductDescription(string value) => Create(value).Value;
 }

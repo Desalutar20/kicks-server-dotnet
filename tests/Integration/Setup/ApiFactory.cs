@@ -45,6 +45,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                     new Dictionary<string, string?>
                     {
                         ["Database:Name"] = $"test-{guid}",
+                        ["Database:MaxPoolSize"] = "200",
 
                         ["Redis:KeyPrefix"] = $"{guid}:",
 
@@ -55,6 +56,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                         ["RateLimit:VerifyAccount"] = "30",
                         ["RateLimit:ForgotPassword"] = "20",
                         ["RateLimit:ResetPassword"] = "20",
+                        ["RateLimit:AddCartItem"] = "150",
                     }
                 );
             }

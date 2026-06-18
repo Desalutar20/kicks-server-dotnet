@@ -1,4 +1,4 @@
-using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
 
@@ -8,6 +8,6 @@ public sealed record ProductSkusFilterOptions(
     IEnumerable<ProductGender> Genders,
     IEnumerable<CategoryFilterItem> Categories,
     IEnumerable<BrandFilterItem> Brands,
-    PositiveInt MinPrice,
-    PositiveInt MaxPrice
+    Money MinPrice,
+    Money MaxPrice
 );

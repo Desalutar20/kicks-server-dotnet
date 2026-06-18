@@ -1,5 +1,5 @@
-using Domain.Shared;
 using Domain.Shared.Pagination;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Promocodes;
 
@@ -21,6 +21,16 @@ public interface IPromocodeRepository
     Task<Promocode?> GetPromocodeByCodeAsync(
         PromocodeCode code,
         bool trackChanges,
+        CancellationToken ct = default
+    );
+
+    Task<IEnumerable<PromocodeId>> GetAndLockInvalidPromocodeIdsAsync(
+        PositiveInt batchSize,
+        CancellationToken ct = default
+    );
+
+    Task BulkDecrementUsageCountAsync(
+        IReadOnlyCollection<PromocodeId> ids,
         CancellationToken ct = default
     );
 

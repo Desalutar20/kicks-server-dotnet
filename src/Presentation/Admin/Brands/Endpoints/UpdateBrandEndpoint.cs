@@ -1,6 +1,7 @@
 using Application.Admin.Brands.UseCases.UpdateBrand;
 using Application.Auth.Types;
 using Domain.Brands;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -14,7 +15,7 @@ public sealed class UpdateBrandRequestValidator : AbstractValidator<UpdateBrandR
     }
 }
 
-internal static partial class AdminPromocodesEndpoints
+internal static partial class AdminBrandsEndpoints
 {
     private static IEndpointRouteBuilder UpdateBrandV1(this IEndpointRouteBuilder endpoint)
     {
@@ -44,7 +45,7 @@ internal static partial class AdminPromocodesEndpoints
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
-                        ? ErrorHandler.Handle(result.Error, logger)
+                        ? result.Error.ToApiError(logger)
                         : Results.Ok(new ApiResponse<string>("success"));
                 }
             )
@@ -66,8 +67,8 @@ internal static partial class AdminPromocodesEndpoints
 
     private static UpdateBrandCommand ToCommand(this UpdateBrandRequest request, Guid id)
     {
-        var nameResult = BrandName.Create(request.Name).Value;
+        var name = BrandName.Create(request.Name).Value;
 
-        return new UpdateBrandCommand(new BrandId(id), nameResult);
+        return new UpdateBrandCommand(new BrandId(id), name);
     }
 }

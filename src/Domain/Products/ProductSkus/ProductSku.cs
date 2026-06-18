@@ -1,6 +1,6 @@
 using Domain.Abstractions;
 using Domain.Products.ProductSkus.ProductSkuReviews;
-using Domain.Shared;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
 
@@ -12,7 +12,7 @@ public sealed class ProductSku : Entity<ProductSkuId>
         : base(new ProductSkuId(Guid.NewGuid())) { }
 
     public ProductSkuPrice Price { get; private set; } = null!;
-    public PositiveInt Quantity { get; private set; } = null!;
+    public int Quantity { get; private set; }
     public PositiveInt Size { get; private set; } = null!;
     public ProductSkuColor Color { get; private set; } = null!;
     public ProductSkuSku Sku { get; private set; } = null!;
@@ -33,18 +33,29 @@ public sealed class ProductSku : Entity<ProductSkuId>
         ProductSkuColor color,
         ProductSkuSku sku,
         PositiveInt size,
+        List<ProductSkuImage> images,
         ProductId productId
     )
     {
         var productSku = new ProductSku()
         {
             Price = price,
-            Quantity = quantity,
+            Quantity = quantity.Value,
             Color = color,
             Sku = sku,
             Size = size,
             ProductId = productId,
         };
+
+        if (images is null || images.Count == 0 || images.Count > MaxImages)
+        {
+            return Error.Validation(
+                "productSkuImages",
+                [$"Product SKU must contain 1 to {MaxImages} images."]
+            );
+        }
+
+        productSku._images.AddRange(images);
 
         return productSku;
     }
@@ -82,18 +93,35 @@ public sealed class ProductSku : Entity<ProductSkuId>
         return image.Id;
     }
 
-    public void Update(
+    public Result Update(
         ProductSkuPrice price,
-        PositiveInt quantity,
+        int quantity,
         PositiveInt size,
         ProductSkuColor color,
         ProductSkuSku sku
     )
     {
+        if (quantity < 0)
+        {
+            return Error.Failure("Quantity can not be negative");
+        }
+
         Price = price;
         Quantity = quantity;
         Size = size;
         Color = color;
         Sku = sku;
+
+        return Result.Success();
+    }
+
+    public Result DecreaseQuantity(PositiveInt amount)
+    {
+        if (Quantity < amount.Value)
+            return Error.Failure("Not enough stock.");
+
+        Quantity -= amount.Value;
+
+        return Result.Success();
     }
 }

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Application.Abstractions.Cache;
 using Application.Auth.JsonConverters;
 using Application.Auth.Types;
+using Domain.Shared.ValueObjects;
 using NRedisStack;
 
 namespace Infrastructure.Cache;

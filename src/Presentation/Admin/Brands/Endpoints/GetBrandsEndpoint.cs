@@ -2,7 +2,9 @@ using Application.Admin.Brands.Constants;
 using Application.Admin.Brands.UseCases.GetBrands;
 using Application.Auth.Types;
 using Domain.Brands;
+using Domain.Shared.ValueObjects;
 using Presentation.Admin.Brands.Dto;
+using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
 
@@ -54,7 +56,7 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
     }
 }
 
-internal static partial class AdminPromocodesEndpoints
+internal static partial class AdminBrandsEndpoints
 {
     private static IEndpointRouteBuilder GetBrandsV1(this IEndpointRouteBuilder endpoint)
     {
@@ -84,7 +86,7 @@ internal static partial class AdminPromocodesEndpoints
 
                     if (result.IsFailure)
                     {
-                        return ErrorHandler.Handle(result.Error, logger);
+                        return result.Error.ToApiError(logger);
                     }
 
                     return Results.Ok(

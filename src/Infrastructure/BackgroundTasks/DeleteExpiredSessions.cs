@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Infrastructure.BackgroundTasks;
 
-public class DeleteExpiredSessions(IServiceScopeFactory serviceFactory) : BackgroundService
+internal sealed class DeleteExpiredSessions(IServiceScopeFactory serviceFactory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

@@ -1,5 +1,6 @@
 using Domain.Shared;
 using Domain.Shared.Pagination;
+using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
 
@@ -31,16 +32,18 @@ public interface IProductSkusRepository
         CancellationToken ct = default
     );
 
-    Task<ProductSkusFilterOptions> GetProductSkusFilterOptions(
-        bool trackChanges,
-        CancellationToken ct = default
-    );
+    Task<ProductSkusFilterOptions> GetProductSkusFilterOptions(CancellationToken ct = default);
 
     Task<bool> ExistsBySkuAsync(ProductSkuSku sku, CancellationToken ct = default);
     Task<bool> ExistsByProductSizeColorAsync(
         ProductId productId,
         PositiveInt size,
         ProductSkuColor color,
+        CancellationToken ct = default
+    );
+
+    Task BulkIncrementQuantityAsync(
+        IEnumerable<(ProductSkuId Id, PositiveInt Quantity)> data,
         CancellationToken ct = default
     );
 

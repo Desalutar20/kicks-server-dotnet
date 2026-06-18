@@ -40,11 +40,13 @@ internal class GlobalExceptionHandler(
         httpContext.Response.StatusCode = (int)status;
 
         if (status == HttpStatusCode.InternalServerError)
+        {
             logger.LogError(
                 exception,
                 "Unhandled exception occurred: {Message}",
                 exception.Message
             );
+        }
 
         ProblemDetails problemDetails = new()
         {
@@ -54,14 +56,18 @@ internal class GlobalExceptionHandler(
         };
 
         if (errors is not null)
+        {
             problemDetails.Extensions.TryAdd("errors", errors);
+        }
 
         var result = await problemDetailsService.TryWriteAsync(
             new ProblemDetailsContext { HttpContext = httpContext, ProblemDetails = problemDetails }
         );
 
         if (!result)
+        {
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        }
 
         return true;
     }

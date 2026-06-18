@@ -1,3 +1,5 @@
+using Domain.Shared.ValueObjects;
+
 namespace Application.Abstractions.OAuth;
 
 public interface IOAuthClient
