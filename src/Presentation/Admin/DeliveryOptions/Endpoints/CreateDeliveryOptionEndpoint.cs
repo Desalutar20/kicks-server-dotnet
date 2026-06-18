@@ -20,7 +20,7 @@ public sealed class CreateDeliveryOptionRequestValidator
     }
 }
 
-internal static partial class AdminDeliveryOptionsEndpoints
+internal static partial class DeliveryOptionsEndpoints
 {
     private static IEndpointRouteBuilder CreateDeliveryOptionV1(this IEndpointRouteBuilder endpoint)
     {
@@ -51,7 +51,7 @@ internal static partial class AdminDeliveryOptionsEndpoints
                         ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
-                            new ApiResponse<AdminDeliveryOptionDto>(result.Value.ToDto())
+                            new ApiResponse<AdminDeliveryOptionDto>(result.Value.ToAdminDto())
                         );
                 }
             )

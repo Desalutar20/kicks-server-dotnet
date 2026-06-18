@@ -9,7 +9,7 @@ namespace Integration.Setup;
 
 public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
 {
-    private readonly Config _config;
+    public readonly Config Config;
     private readonly AppDbContext _dbContext;
     private readonly HttpClient _httpClient;
     private readonly IConnectionMultiplexer _multiplexer;
@@ -20,7 +20,7 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
         _scope = factory.Services.CreateScope();
         _dbContext = _scope.ServiceProvider.GetRequiredService<AppDbContext>();
         _multiplexer = _scope.ServiceProvider.GetRequiredService<IConnectionMultiplexer>();
-        _config = _scope.ServiceProvider.GetRequiredService<Config>();
+        Config = _scope.ServiceProvider.GetRequiredService<Config>();
         _httpClient = factory.CreateClient();
     }
 
@@ -57,7 +57,7 @@ public partial class TestApp : IAsyncLifetime, IClassFixture<ApiFactory>
         var db = _multiplexer.GetDatabase();
         var redisServer = _multiplexer.GetServer(_multiplexer.GetEndPoints().First());
 
-        await foreach (var key in redisServer.KeysAsync(pattern: $"{_config.Redis.KeyPrefix}*"))
+        await foreach (var key in redisServer.KeysAsync(pattern: $"{Config.Redis.KeyPrefix}*"))
             await db.KeyDeleteAsync(key);
 
         await _dbContext.DisposeAsync();

@@ -17,7 +17,7 @@ public sealed class UpdateCartItemQuantityRequestValidator
     }
 }
 
-internal static partial class OrderEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder UpdateCartItemQuantityV1(
         this IEndpointRouteBuilder endpoint

@@ -95,7 +95,7 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetProduc
     }
 }
 
-internal static partial class CartEndpoints
+internal static partial class ProductSkusEndpoints
 {
     private static IEndpointRouteBuilder GetProductSkusV1(this IEndpointRouteBuilder endpoint)
     {

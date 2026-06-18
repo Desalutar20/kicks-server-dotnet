@@ -4,7 +4,7 @@ using Presentation.Shared.Extensions;
 
 namespace Presentation.Cart.Endpoints;
 
-internal static partial class OrderEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder ClearCartV1(this IEndpointRouteBuilder endpoint)
     {

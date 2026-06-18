@@ -23,4 +23,6 @@ public static class RateLimitConstants
     public const string RemovePromocode = "RemovePromocode";
 
     public const string CreateOrder = "CreateOrder";
+    public const string GetOrders = "GetOrders";
+    public const string GetOrder = "GetOrder";
 }

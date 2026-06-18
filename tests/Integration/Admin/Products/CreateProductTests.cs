@@ -8,7 +8,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Products;
 
-public class CreateProductTests(ApiFactory factory) : TestApp(factory)
+public sealed class CreateProductTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()

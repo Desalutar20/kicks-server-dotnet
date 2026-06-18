@@ -6,7 +6,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Promocodes;
 
-public class UpdatePromocodeTests(ApiFactory factory) : TestApp(factory)
+public sealed class UpdatePromocodeTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

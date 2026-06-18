@@ -6,7 +6,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Categories;
 
-public class UpdateCategoryTests(ApiFactory factory) : TestApp(factory)
+public sealed class UpdateCategoryTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

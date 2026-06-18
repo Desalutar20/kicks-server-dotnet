@@ -3,7 +3,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Cart;
 
-public class GetCartTests(ApiFactory factory) : TestApp(factory)
+public sealed class GetCartTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
@@ -11,7 +11,7 @@ public class GetCartTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
         var response = await GetCart(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);

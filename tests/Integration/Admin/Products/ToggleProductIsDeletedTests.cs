@@ -4,7 +4,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Products;
 
-public class ToggleProductIsDeletedTests(ApiFactory factory) : TestApp(factory)
+public sealed class ToggleProductIsDeletedTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

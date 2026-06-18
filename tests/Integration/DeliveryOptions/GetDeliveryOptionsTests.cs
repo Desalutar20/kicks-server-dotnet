@@ -1,9 +1,9 @@
-using Presentation.Admin.DeliveryOptions.Dto;
+using Presentation.DeliveryOptions.Dto;
 using Presentation.Shared.Dto;
 
-namespace Integration.Admin.DeliveryOptions;
+namespace Integration.DeliveryOptions;
 
-public class GetDeliveryOptionsTests(ApiFactory factory) : TestApp(factory)
+public sealed class GetDeliveryOptionsTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
@@ -11,13 +11,13 @@ public class GetDeliveryOptionsTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
         var response = await GetDeliveryOptions(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<
-            ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>
+            ApiResponse<IReadOnlyList<DeliveryOptionDto>>
         >(ct);
 
         body.Should().NotBeNull();
@@ -30,17 +30,5 @@ public class GetDeliveryOptionsTests(ApiFactory factory) : TestApp(factory)
 
         var response = await GetDeliveryOptions(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
-    public async ValueTask Should_ReturnForbidden_When_UserIsNotAdmin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct);
-
-        var response = await GetDeliveryOptions(sessionCookie, ct);
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

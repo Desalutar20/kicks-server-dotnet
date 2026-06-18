@@ -80,38 +80,9 @@ public class Order : Entity<OrderId>
         ExpiresAt = expiresAt;
         _orderItems = orderItems;
         UserId = userId;
-        DeliveryOption = deliveryOption;
         DeliveryPrice = deliveryOption.Price;
         DeliveryOptionId = deliveryOption.Id;
         PromocodeId = promocode?.Id;
-        Promocode = promocode;
-    }
-
-    public Result AddPayment(OrderPayment payment)
-    {
-        if (IsExpired)
-        {
-            return Error.Failure("Order has expired.");
-        }
-
-        if (Status != OrderStatus.Pending)
-        {
-            return Error.Failure($"Order status is '{Status}'. Only Pending orders can be paid.");
-        }
-
-        if (_orderPayments.Any(p => p.Status == OrderPaymentStatus.Completed))
-        {
-            return Error.Failure("Order already has a completed payment.");
-        }
-
-        if (_orderPayments.Count >= MaxPaymentsCount)
-        {
-            return Error.Failure("Payment attempts limit reached.");
-        }
-
-        _orderPayments.Add(payment);
-
-        return Result.Success();
     }
 
     public static Result<Order> Create(
@@ -153,5 +124,32 @@ public class Order : Entity<OrderId>
             deliveryOption,
             promocode
         );
+    }
+
+    public Result AddPayment(OrderPayment payment)
+    {
+        if (IsExpired)
+        {
+            return Error.Failure("Order has expired.");
+        }
+
+        if (Status != OrderStatus.Pending)
+        {
+            return Error.Failure($"Order status is '{Status}'. Only Pending orders can be paid.");
+        }
+
+        if (_orderPayments.Any(p => p.Status == OrderPaymentStatus.Completed))
+        {
+            return Error.Failure("Order already has a completed payment.");
+        }
+
+        if (_orderPayments.Count >= MaxPaymentsCount)
+        {
+            return Error.Failure("Payment attempts limit reached.");
+        }
+
+        _orderPayments.Add(payment);
+
+        return Result.Success();
     }
 }

@@ -23,7 +23,7 @@ public sealed class UpdateDeliveryOptionRequestValidator
     }
 }
 
-internal static partial class AdminDeliveryOptionsEndpoints
+internal static partial class DeliveryOptionsEndpoints
 {
     private static IEndpointRouteBuilder UpdateDeliveryOptionV1(this IEndpointRouteBuilder endpoint)
     {

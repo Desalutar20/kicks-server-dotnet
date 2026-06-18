@@ -6,7 +6,7 @@ using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;
 
-internal static partial class CartEndpoints
+internal static partial class ProductSkusEndpoints
 {
     private static IEndpointRouteBuilder GetProductSkuV1(this IEndpointRouteBuilder endpoint)
     {

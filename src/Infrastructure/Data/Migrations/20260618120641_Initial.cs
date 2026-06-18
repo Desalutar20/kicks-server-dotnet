@@ -578,6 +578,14 @@ namespace Infrastructure.Data.Migrations
             );
 
             migrationBuilder.CreateIndex(
+                name: "uq_order_user_pending_unique",
+                table: "order",
+                column: "user_id",
+                unique: true,
+                filter: "status = 'pending'"
+            );
+
+            migrationBuilder.CreateIndex(
                 name: "uq_order_user_promocode",
                 table: "order",
                 columns: new[] { "user_id", "promocode_id" },

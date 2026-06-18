@@ -6,7 +6,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Cart;
 
-public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
+public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
@@ -14,9 +14,9 @@ public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await GetProductSkus(null, sessionCookie, ct);
+        var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
@@ -46,9 +46,9 @@ public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var response = await GetProductSkus(null, sessionCookie, ct);
+        var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
@@ -89,7 +89,7 @@ public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
         var response = await AddCartItem(invalidRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -106,7 +106,7 @@ public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
         var productSkuIds = await GetProductSkuIdsFromDb(
             Domain.Carts.Cart.MaxCartItemsLength + 1,
@@ -143,7 +143,7 @@ public class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var ct = TestContext.Current.CancellationToken;
 
         var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
+        var sessionCookie = await CreateAndSignIn(request, ct);
 
         var addCartItemRequest = new AddCartItemRequest(Guid.NewGuid().ToString(), 5);
         var updateProductSkuResponse = await AddCartItem(addCartItemRequest, sessionCookie, ct);

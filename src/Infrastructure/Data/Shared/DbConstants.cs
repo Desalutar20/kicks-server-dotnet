@@ -23,6 +23,7 @@ internal static class DbConstants
     public const string CartItemUniqueIndex = "uq_cart_items_cart_id_product_sku_id";
     public const string OrderItemUniqueIndex = "uq_order_items_order_id_product_sku_id";
     public const string OrderUserPromocodeUniqueIndex = "uq_order_user_promocode";
+    public const string OrderUserPendingUniqueIndex = "uq_order_user_pending_unique";
 
     public const string ProductBrandForeignKey = "fk_product_brand_brand_id";
     public const string ProductCategoryForeignKey = "fk_product_category_category_id";

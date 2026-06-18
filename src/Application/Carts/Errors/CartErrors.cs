@@ -6,5 +6,4 @@ internal static class CartErrors
     public static Error InvalidPromocode => Error.Failure("Invalid promocode.");
     public static Error PromocodeAlreadyUsed => Error.Failure("Promocode has already been used.");
     public static Error ProductSkuNotFound => Error.Failure("Product SKU not found.");
-    public static Error DeliveryOptionNotFound => Error.Failure("Delivery option not found.");
 }

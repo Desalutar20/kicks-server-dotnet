@@ -20,7 +20,7 @@ public sealed class AddCartItemRequestValidator : AbstractValidator<AddCartItemR
     }
 }
 
-internal static partial class OrderEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder AddCartItemV1(this IEndpointRouteBuilder endpoint)
     {

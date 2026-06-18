@@ -1,6 +1,6 @@
 namespace Integration.Auth;
 
-public class LogoutTests(ApiFactory factory) : TestApp(factory)
+public sealed class LogoutTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

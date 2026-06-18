@@ -302,6 +302,11 @@ namespace Infrastructure.Data.Migrations
                     b.HasIndex("PromocodeId")
                         .HasDatabaseName("ix_order_promocode_id");
 
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_order_user_pending_unique")
+                        .HasFilter("status = 'pending'");
+
                     b.HasIndex("UserId", "PromocodeId")
                         .IsUnique()
                         .HasDatabaseName("uq_order_user_promocode")

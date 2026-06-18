@@ -3,10 +3,10 @@ using Application.Orders.UseCases.CreateOrder;
 using Domain.DeliveryOptions;
 using Domain.Orders;
 using Domain.Shared.ValueObjects;
-using Presentation.Order.Dto;
+using Presentation.Orders.Dto;
 using Presentation.Shared.Extensions;
 
-namespace Presentation.Order.Endpoints;
+namespace Presentation.Orders.Endpoints;
 
 public sealed record CreateOrderRequest(
     string Email,
@@ -48,7 +48,7 @@ internal static partial class OrderEndpoints
                 "",
                 async (
                     CreateOrderRequest request,
-                    ICommandHandler<CreateOrderCommand> commandHandler,
+                    ICommandHandler<CreateOrderCommand, OrderId> commandHandler,
                     HttpContext ctx,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -69,12 +69,16 @@ internal static partial class OrderEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(new ApiResponse<string>("success"));
+                        : Results.CreatedAtRoute(
+                            "GetOrder",
+                            new { id = result.Value },
+                            new ApiResponse<Guid>(result.Value)
+                        );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<string>>()
+            .Produces<ApiResponse<Guid>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

@@ -7,7 +7,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
 
-public class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
+public sealed class GetAdminProductSkusTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

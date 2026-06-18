@@ -4,7 +4,7 @@ using Presentation.Admin.Brands.Endpoints;
 
 namespace Integration.Admin.Brands;
 
-public class CreateBrandTests(ApiFactory factory) : TestApp(factory)
+public sealed class CreateBrandTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()

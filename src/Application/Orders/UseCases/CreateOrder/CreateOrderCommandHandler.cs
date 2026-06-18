@@ -1,5 +1,6 @@
 using Application.Abstractions.Database;
 using Application.Carts.Errors;
+using Application.Orders.Errors;
 using Domain.Carts;
 using Domain.DeliveryOptions;
 using Domain.Orders;
@@ -15,7 +16,7 @@ public sealed record CreateOrderCommand(
     OrderAddress? BillingAddress,
     OrderAddress DeliveryAddress,
     DeliveryOptionId DeliveryOptionId
-) : ICommand;
+) : ICommand<OrderId>;
 
 public class CreateOrderCommandHandler(
     ICartRepository cartRepository,
@@ -23,9 +24,12 @@ public class CreateOrderCommandHandler(
     IDeliveryOptionRepository deliveryOptionRepository,
     IUnitOfWork unitOfWork,
     Config.Config config
-) : ICommandHandler<CreateOrderCommand>
+) : ICommandHandler<CreateOrderCommand, OrderId>
 {
-    public async Task<Result> Handle(CreateOrderCommand command, CancellationToken ct = default)
+    public async Task<Result<OrderId>> Handle(
+        CreateOrderCommand command,
+        CancellationToken ct = default
+    )
     {
         var cart = await cartRepository.GetCartByUserIdAsync(command.UserId, true, ct);
         if (cart is null)
@@ -45,7 +49,7 @@ public class CreateOrderCommandHandler(
         );
         if (deliveryOption is null)
         {
-            return CartErrors.DeliveryOptionNotFound;
+            return OrderErrors.DeliveryOptionNotFound;
         }
 
         var maxCancelledOrdersPerDay = config.Application.MaxCancelledOrdersPerDay;
@@ -71,14 +75,12 @@ public class CreateOrderCommandHandler(
             && cancelledOrders.Last().CreatedAt > DateTimeOffset.UtcNow.AddDays(-1)
         )
         {
-            return Error.Failure("Order creation limit exceeded.");
+            return OrderErrors.OrderCreationLimitExceeded;
         }
 
-        if (orders.Data.Count > 0 && orders.Data[0].Status == OrderStatus.Pending)
+        if (orders.Data.Any(x => x.Status == OrderStatus.Pending))
         {
-            return Error.Failure(
-                "You already have a pending order. Complete or cancel it before creating a new one."
-            );
+            return OrderErrors.AlreadyHasPendingError;
         }
 
         var orderItems = new List<OrderItem>();
@@ -125,11 +127,15 @@ public class CreateOrderCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return Result.Success();
+            return order.Value.Id;
         }
         catch (DeliveryOptionDoesNotExistsException)
         {
-            return CartErrors.DeliveryOptionNotFound;
+            return OrderErrors.DeliveryOptionNotFound;
+        }
+        catch (PendingOrderAlreadyExistsException)
+        {
+            return OrderErrors.AlreadyHasPendingError;
         }
     }
 }

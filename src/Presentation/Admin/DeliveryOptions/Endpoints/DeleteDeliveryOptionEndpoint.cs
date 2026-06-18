@@ -5,7 +5,7 @@ using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.DeliveryOptions.Endpoints;
 
-internal static partial class AdminDeliveryOptionsEndpoints
+internal static partial class DeliveryOptionsEndpoints
 {
     private static IEndpointRouteBuilder DeleteDeliveryOptionV1(this IEndpointRouteBuilder endpoint)
     {

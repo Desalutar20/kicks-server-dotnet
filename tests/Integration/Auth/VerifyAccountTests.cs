@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Integration.Auth;
 
-public class VerifyAccountTests(ApiFactory factory) : TestApp(factory)
+public sealed class VerifyAccountTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async Task Should_ReturnOk_WhenRequestIsValid()

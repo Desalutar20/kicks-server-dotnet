@@ -78,5 +78,7 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.RateLimit.ApplyPromocode).NotEmpty();
         RuleFor(x => x.RateLimit.RemovePromocode).NotEmpty();
         RuleFor(x => x.RateLimit.CreateOrder).NotEmpty();
+        RuleFor(x => x.RateLimit.GetOrders).NotEmpty();
+        RuleFor(x => x.RateLimit.GetOrder).NotEmpty();
     }
 }

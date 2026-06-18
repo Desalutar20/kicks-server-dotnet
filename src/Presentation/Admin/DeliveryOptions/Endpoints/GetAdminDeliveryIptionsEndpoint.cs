@@ -6,9 +6,11 @@ using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.DeliveryOptions.Endpoints;
 
-internal static partial class AdminDeliveryOptionsEndpoints
+internal static partial class DeliveryOptionsEndpoints
 {
-    private static IEndpointRouteBuilder GetDeliveryOptionsV1(this IEndpointRouteBuilder endpoint)
+    private static IEndpointRouteBuilder GetAdminDeliveryOptionsV1(
+        this IEndpointRouteBuilder endpoint
+    )
     {
         endpoint
             .MapGet(
@@ -41,7 +43,7 @@ internal static partial class AdminDeliveryOptionsEndpoints
 
                     return Results.Ok(
                         new ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>(
-                            result.Value.Select(x => x.ToDto()).ToList()
+                            result.Value.Select(x => x.ToAdminDto()).ToList()
                         )
                     );
                 }

@@ -44,6 +44,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 configBuilder.AddInMemoryCollection(
                     new Dictionary<string, string?>
                     {
+                        ["Application:MaxCancelledOrdersPerDay"] = "3",
+
                         ["Database:Name"] = $"test-{guid}",
                         ["Database:MaxPoolSize"] = "200",
 
@@ -51,12 +53,13 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
                         ["Cloudinary:Folder"] = "kicks-test",
 
-                        ["RateLimit:SignUp"] = "30",
-                        ["RateLimit:SignIn"] = "30",
-                        ["RateLimit:VerifyAccount"] = "30",
+                        ["RateLimit:SignUp"] = "40",
+                        ["RateLimit:SignIn"] = "40",
+                        ["RateLimit:VerifyAccount"] = "40",
                         ["RateLimit:ForgotPassword"] = "20",
                         ["RateLimit:ResetPassword"] = "20",
                         ["RateLimit:AddCartItem"] = "150",
+                        ["RateLimit:CreateOrder"] = "40",
                     }
                 );
             }

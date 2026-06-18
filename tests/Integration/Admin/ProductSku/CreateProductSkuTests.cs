@@ -7,7 +7,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
 
-public class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
+public sealed class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()

@@ -5,7 +5,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Auth;
 
-public class SignInTests(ApiFactory factory) : TestApp(factory)
+public sealed class SignInTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_WhenRequestIsValid()

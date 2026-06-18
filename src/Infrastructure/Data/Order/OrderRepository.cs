@@ -13,9 +13,12 @@ internal sealed class OrderRepository(AppDbContext dbContext)
 
     public async Task<DomainOrder?> GetOrderByUserIdAsync(
         UserId userId,
+        OrderId orderId,
         bool trackChanges,
         CancellationToken ct = default
-    ) => await FindByCondition(x => x.UserId == userId, trackChanges).FirstOrDefaultAsync(ct);
+    ) =>
+        await FindByCondition(x => x.UserId == userId && x.Id == orderId, trackChanges)
+            .FirstOrDefaultAsync(ct);
 
     public async Task<KeysetPaginated<DomainOrder, OrderId>> GetOrdersByUserIdAsync(
         UserId userId,

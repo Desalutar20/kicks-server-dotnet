@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260618050407_Initial")]
+    [Migration("20260618120641_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -304,6 +304,11 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("PromocodeId")
                         .HasDatabaseName("ix_order_promocode_id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_order_user_pending_unique")
+                        .HasFilter("status = 'pending'");
 
                     b.HasIndex("UserId", "PromocodeId")
                         .IsUnique()

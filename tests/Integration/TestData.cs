@@ -2,6 +2,7 @@ using Application.Admin.Products.ProductSkus.Constants;
 using Domain.Brands;
 using Domain.Categories;
 using Domain.DeliveryOptions;
+using Domain.Orders;
 using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Promocodes;
@@ -12,6 +13,8 @@ using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
 using Presentation.Admin.Promocodes.Dto;
 using Presentation.Admin.Promocodes.Endpoints;
+using Presentation.Orders.Dto;
+using Presentation.Orders.Endpoints;
 
 namespace Integration;
 
@@ -133,6 +136,27 @@ public static class TestData
 
         return result;
     }
+
+    public static CreateOrderRequest CreateOrderRequest(string deliveryOptionId) =>
+        new Faker<CreateOrderRequest>()
+            .CustomInstantiator(f => new CreateOrderRequest(
+                Email(),
+                f.Phone.PhoneNumber(),
+                new OrderAddressDto(
+                    f.Address.City(),
+                    f.Address.StreetName(),
+                    String(OrderAddress.MaxHomeLength),
+                    String(OrderAddress.MaxApartmentLength)
+                ),
+                new OrderAddressDto(
+                    f.Address.City(),
+                    f.Address.StreetName(),
+                    String(OrderAddress.MaxHomeLength),
+                    String(OrderAddress.MaxApartmentLength)
+                ),
+                deliveryOptionId
+            ))
+            .Generate();
 
     public static string Email() => Faker.Internet.Email();
 

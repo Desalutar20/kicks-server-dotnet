@@ -3,7 +3,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Users;
 
-public class ToggleBanUserTests(ApiFactory factory) : TestApp(factory)
+public sealed class ToggleBanUserTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

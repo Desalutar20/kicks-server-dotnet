@@ -4,7 +4,7 @@ using Presentation.Admin.Categories.Endpoints;
 
 namespace Integration.Admin.Categories;
 
-public class CreateCategoryTests(ApiFactory factory) : TestApp(factory)
+public sealed class CreateCategoryTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()

@@ -13,7 +13,7 @@ public sealed record AdminDeliveryOptionDto(
 
 internal static class AdminDeliveryOptionDtoMapper
 {
-    public static AdminDeliveryOptionDto ToDto(this DeliveryOption deliveryOption) =>
+    public static AdminDeliveryOptionDto ToAdminDto(this DeliveryOption deliveryOption) =>
         new(
             deliveryOption.Id.Value,
             deliveryOption.CreatedAt,

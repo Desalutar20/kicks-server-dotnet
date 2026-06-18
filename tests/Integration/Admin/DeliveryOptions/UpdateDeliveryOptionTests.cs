@@ -6,7 +6,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.DeliveryOptions;
 
-public class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(factory)
+public sealed class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
@@ -16,7 +16,7 @@ public class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await GetDeliveryOptions(sessionCookie, ct);
+        var response = await GetAdminDeliveryOptions(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<
@@ -71,7 +71,7 @@ public class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
 
-        var response = await GetDeliveryOptions(sessionCookie, ct);
+        var response = await GetAdminDeliveryOptions(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<

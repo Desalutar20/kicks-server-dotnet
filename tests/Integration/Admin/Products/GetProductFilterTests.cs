@@ -3,7 +3,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Products;
 
-public class GetProductFilterTests(ApiFactory factory) : TestApp(factory)
+public sealed class GetProductFilterTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

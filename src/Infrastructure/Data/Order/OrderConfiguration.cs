@@ -37,6 +37,16 @@ public class CartConfiguration : IEntityTypeConfiguration<DomainOrder>
             )
             .HasDatabaseName(DbConstants.OrderUserPromocodeUniqueIndex);
 
+        builder
+            .HasIndex(x => x.UserId)
+            .IsUnique()
+            .HasFilter(
+                """
+                status = 'pending'
+                """
+            )
+            .HasDatabaseName(DbConstants.OrderUserPendingUniqueIndex);
+
         builder.HasKey(x => x.Id);
 
         builder
@@ -225,5 +235,6 @@ public class CartConfiguration : IEntityTypeConfiguration<DomainOrder>
         builder.Navigation(x => x.OrderItems).AutoInclude();
         builder.Navigation(x => x.OrderPayments).AutoInclude();
         builder.Navigation(x => x.Promocode).AutoInclude();
+        builder.Navigation(x => x.DeliveryOption).AutoInclude();
     }
 }

@@ -1,6 +1,6 @@
 namespace Presentation.ProductSkus.Endpoints;
 
-internal static partial class CartEndpoints
+internal static partial class ProductSkusEndpoints
 {
     public static void MapProductSkusV1(this IEndpointRouteBuilder router)
     {

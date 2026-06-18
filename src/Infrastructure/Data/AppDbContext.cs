@@ -31,6 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             [DbConstants.OrderUserPromocodeUniqueIndex] = ex => new PromocodeAlreadyUsedException(
                 ex
             ),
+            [DbConstants.OrderUserPendingUniqueIndex] =
+                ex => new PendingOrderAlreadyExistsException(ex),
         };
 
     private static readonly Dictionary<string, Func<Exception, Exception>> ForeignKeyExceptions =

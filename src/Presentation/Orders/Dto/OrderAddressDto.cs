@@ -1,6 +1,6 @@
 using Domain.Orders;
 
-namespace Presentation.Order.Dto;
+namespace Presentation.Orders.Dto;
 
 public sealed record OrderAddressDto(string City, string Street, string Home, string Apartment);
 

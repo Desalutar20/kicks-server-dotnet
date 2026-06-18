@@ -121,7 +121,7 @@ internal static partial class AdminProductsEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminProductDto>>()
+            .Produces<ApiCursorResponse<AdminProductDto>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

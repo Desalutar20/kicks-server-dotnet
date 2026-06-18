@@ -1,6 +1,7 @@
 using Domain.Brands;
 using Domain.Categories;
 using Domain.DeliveryOptions;
+using Domain.Orders;
 using Domain.Products;
 using Domain.Products.ProductSkus;
 using Domain.Promocodes;
@@ -50,6 +51,20 @@ public partial class TestApp
     protected async Task<Promocode?> GetPromocodeFromDbById(PromocodeId id, CancellationToken ct) =>
         await _dbContext.Promocodes.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, ct);
 
+    protected async Task<Domain.Carts.Cart?> GetCartByUserEmailFromDb(
+        Email email,
+        CancellationToken ct
+    )
+    {
+        var user = await GetUserFromDbByEmail(email, ct);
+        user.Should().NotBeNull();
+
+        var cart = await _dbContext
+            .Carts.AsNoTracking()
+            .SingleOrDefaultAsync(c => c.UserId == user.Id, ct);
+        return cart;
+    }
+
     protected async Task<List<ProductSkuId>> GetProductSkuIdsFromDb(int count, CancellationToken ct)
     {
         return await _dbContext
@@ -75,4 +90,15 @@ public partial class TestApp
         DeliveryOptionId id,
         CancellationToken ct
     ) => await _dbContext.DeliveryOptions.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, ct);
+
+    protected async Task<Order?> GetOrderFromDbById(OrderId id, CancellationToken ct) =>
+        await _dbContext.Orders.AsNoTracking().SingleOrDefaultAsync(b => b.Id == id, ct);
+
+    protected async Task CancelOrderInDbById(OrderId id, CancellationToken ct) =>
+        await _dbContext
+            .Orders.Where(u => u.Id == id)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(u => u.Status, OrderStatus.Cancelled),
+                ct
+            );
 }

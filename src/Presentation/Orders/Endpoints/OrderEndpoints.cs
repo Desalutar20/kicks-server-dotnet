@@ -1,4 +1,4 @@
-namespace Presentation.Order.Endpoints;
+namespace Presentation.Orders.Endpoints;
 
 internal static partial class OrderEndpoints
 {
@@ -6,6 +6,6 @@ internal static partial class OrderEndpoints
     {
         var group = router.MapGroup("/orders").WithTags("Orders");
 
-        group.CreateOrderV1();
+        group.GetOrdersV1().GetOrderV1().CreateOrderV1();
     }
 }

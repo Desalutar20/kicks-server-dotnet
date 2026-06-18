@@ -4,7 +4,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Categories;
 
-public class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
+public sealed class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()

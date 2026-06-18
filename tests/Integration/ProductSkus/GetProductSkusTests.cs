@@ -6,17 +6,14 @@ using Presentation.Shared.Dto;
 
 namespace Integration.ProductSkus;
 
-public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
+public sealed class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
-
-        var response = await GetProductSkus(null, sessionCookie, ct);
+        var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
@@ -34,10 +31,7 @@ public class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
     {
         var ct = TestContext.Current.CancellationToken;
 
-        var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct, Role.Admin);
-
-        var response = await GetProductSkus(invalidRequest, sessionCookie, ct);
+        var response = await GetProductSkus(invalidRequest, ct);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);

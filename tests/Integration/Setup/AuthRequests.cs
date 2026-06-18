@@ -79,10 +79,10 @@ public partial class TestApp
         ok.Should().BeTrue();
 
         var sessionCookie = values!.FirstOrDefault(c =>
-            c.StartsWith(_config.Application.SessionCookieName)
+            c.StartsWith(Config.Application.SessionCookieName)
         );
         sessionCookie.Should().NotBeNull();
 
-        return sessionCookie!;
+        return sessionCookie;
     }
 }

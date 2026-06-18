@@ -36,7 +36,7 @@ public partial class TestApp
             _ => CacheConstants.ResetPasswordPrefix,
         };
 
-        var pattern = $"{_config.Redis.KeyPrefix}{prefix}";
+        var pattern = $"{Config.Redis.KeyPrefix}{prefix}";
 
         return pattern;
     }

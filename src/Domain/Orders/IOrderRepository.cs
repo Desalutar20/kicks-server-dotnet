@@ -9,6 +9,7 @@ public interface IOrderRepository
 {
     Task<Order?> GetOrderByUserIdAsync(
         UserId userId,
+        OrderId orderId,
         bool trackChanges,
         CancellationToken ct = default
     );

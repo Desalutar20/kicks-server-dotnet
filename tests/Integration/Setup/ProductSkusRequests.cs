@@ -6,7 +6,6 @@ public partial class TestApp
 {
     protected async Task<HttpResponseMessage> GetProductSkus(
         GetProductSkusRequest? data,
-        string? cookie,
         CancellationToken ct = default
     )
     {
@@ -24,6 +23,15 @@ public partial class TestApp
         query.Add("prevCursor", data?.PrevCursor);
         query.Add("nextCursor", data?.NextCursor);
 
-        return await Request("/api/v1/product-skus", cookie, query, ct);
+        return await Request("/api/v1/product-skus", null, query, ct);
     }
+
+    protected async Task<HttpResponseMessage> GetProductSku(
+        Guid id,
+        CancellationToken ct = default
+    ) => await Request($"/api/v1/product-skus/{id}", null, null, ct);
+
+    protected async Task<HttpResponseMessage> GetProductSkusFilters(
+        CancellationToken ct = default
+    ) => await Request($"/api/v1/product-skus/filters", null, null, ct);
 }

@@ -1,6 +1,6 @@
 namespace Presentation.Cart.Endpoints;
 
-internal static partial class OrderEndpoints
+internal static partial class CartEndpoints
 {
     public static void MapCartV1(this IEndpointRouteBuilder router)
     {

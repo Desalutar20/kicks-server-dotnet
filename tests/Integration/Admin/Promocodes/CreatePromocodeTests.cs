@@ -6,7 +6,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Promocodes;
 
-public class CreatePromocodeTests(ApiFactory factory) : TestApp(factory)
+public sealed class CreatePromocodeTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()

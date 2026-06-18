@@ -403,7 +403,7 @@ public partial class TestApp
             ct
         );
 
-    protected async Task<HttpResponseMessage> GetDeliveryOptions(
+    protected async Task<HttpResponseMessage> GetAdminDeliveryOptions(
         string? cookie,
         CancellationToken ct = default
     ) => await Request("/api/v1/admin/delivery-options", cookie, null, ct);

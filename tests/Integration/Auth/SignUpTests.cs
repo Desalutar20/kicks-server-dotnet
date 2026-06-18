@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Integration.Auth;
 
-public class SignUpTests(ApiFactory factory) : TestApp(factory)
+public sealed class SignUpTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnCreated_When_RequestIsValid()
@@ -20,6 +20,9 @@ public class SignUpTests(ApiFactory factory) : TestApp(factory)
         user.Should().NotBeNull();
         user.IsVerified.Should().BeFalse();
         user.HashedPassword!.Value.Should().NotBeEquivalentTo(request.Password);
+
+        var cart = await GetCartByUserEmailFromDb(user.Email, ct);
+        cart.Should().NotBeNull();
     }
 
     [Theory]

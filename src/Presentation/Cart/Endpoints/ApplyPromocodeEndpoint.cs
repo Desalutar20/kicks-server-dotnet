@@ -15,7 +15,7 @@ public sealed class ApplyPromocodeRequestValidator : AbstractValidator<ApplyProm
     }
 }
 
-internal static partial class OrderEndpoints
+internal static partial class CartEndpoints
 {
     private static IEndpointRouteBuilder ApplyPromocodeV1(this IEndpointRouteBuilder endpoint)
     {

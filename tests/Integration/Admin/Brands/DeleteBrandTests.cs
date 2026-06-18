@@ -4,7 +4,7 @@ using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Brands;
 
-public class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
+public sealed class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
 {
     [Fact]
     public async ValueTask Should_ReturnOk_When_RequestIsValid()
