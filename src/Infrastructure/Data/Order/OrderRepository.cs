@@ -11,6 +11,33 @@ internal sealed class OrderRepository(AppDbContext dbContext)
 {
     private readonly AppDbContext _dbContext = dbContext;
 
+    public async Task<DomainOrder?> GetAndLockOrderByUserIdAsync(
+        UserId userId,
+        OrderId orderId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbContext
+            .Orders.FromSqlInterpolated(
+                $"""
+                    SELECT *,
+                      billing_address_city AS "BillingAddress_City",
+                      billing_address_street AS "BillingAddress_Street",
+                      billing_address_home AS "BillingAddress_Home",
+                      billing_address_apartment AS "BillingAddress_Apartment",
+                      delivery_address_city AS "DeliveryAddress_City",
+                      delivery_address_street AS "DeliveryAddress_Street",
+                      delivery_address_home AS "DeliveryAddress_Home",
+                      delivery_address_apartment AS "DeliveryAddress_Apartment"
+                    FROM "order"
+                    WHERE id = {orderId.Value}
+                      AND user_id = {userId.Value}
+                    FOR UPDATE
+                """
+            )
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<DomainOrder?> GetOrderByUserIdAsync(
         UserId userId,
         OrderId orderId,

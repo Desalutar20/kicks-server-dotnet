@@ -1,4 +1,5 @@
 using Application.Abstractions.Database;
+using Application.Admin.DeliveryOptions.Constants;
 using Application.Admin.DeliveryOptions.Errors;
 using Domain.DeliveryOptions;
 
@@ -7,6 +8,7 @@ namespace Application.Admin.DeliveryOptions.UseCases.DeleteDeliveryOption;
 public sealed record DeleteDeliveryOptionCommand(DeliveryOptionId DeliveryOptionId) : ICommand;
 
 internal sealed class DeleteDeliveryOptionCommandHandler(
+    ICachingService cachingService,
     IDeliveryOptionRepository deliveryOptionRepository,
     IUnitOfWork unitOfWork
 ) : ICommandHandler<DeleteDeliveryOptionCommand>
@@ -27,6 +29,8 @@ internal sealed class DeleteDeliveryOptionCommandHandler(
         }
 
         deliveryOptionRepository.DeleteDeliveryOption(deliveryOption);
+
+        await cachingService.DeleteAsync(DeliveryOptionsConstants.CacheKey, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success();

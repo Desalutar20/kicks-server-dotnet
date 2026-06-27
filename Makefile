@@ -14,3 +14,11 @@ ef-update:
 	--startup-project src/Api/Api.csproj \
 	--context Infrastructure.Data.AppDbContext \
 	--configuration Debug
+
+ef-script:
+	dotnet ef migrations script \
+	--project src/Infrastructure/Infrastructure.csproj \
+	--startup-project src/Api/Api.csproj \
+	--context Infrastructure.Data.AppDbContext \
+	--configuration Debug \
+	--output migration.sql

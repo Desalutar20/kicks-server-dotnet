@@ -1,5 +1,4 @@
 using Domain.Abstractions;
-using Domain.Products.ProductSkus.ProductSkuReviews;
 using Domain.Shared.ValueObjects;
 
 namespace Domain.Products.ProductSkus;
@@ -23,9 +22,6 @@ public sealed class ProductSku : Entity<ProductSkuId>
     public int RemainingImageSlots => MaxImages - _images.Count;
     public ProductId ProductId { get; private set; } = null!;
     public Product Product { get; private set; } = null!;
-
-    private readonly List<ProductSkuReview> _reviews = [];
-    public IReadOnlyList<ProductSkuReview> Reviews => _reviews;
 
     public static Result<ProductSku> Create(
         ProductSkuPrice price,

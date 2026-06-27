@@ -1,9 +1,8 @@
 using Application.Admin.Categories.Constants;
+using Application.Admin.Categories.Types;
 using Application.Admin.Categories.UseCases.GetCategories;
 using Application.Auth.Types;
-using Domain.Categories;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Categories.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Categories.Endpoints;
@@ -32,24 +31,18 @@ public sealed class GetCategoriesRequestValidator : AbstractValidator<GetCategor
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<CategoryId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid category id")
-                            : new CategoryId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid category id") : id
                 )
             )
             .MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<CategoryId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid category id")
-                            : new CategoryId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid category id") : id
                 )
             )
             .MaximumLength(CategoriesConstants.GetCategoriesCursorMaxLength);
@@ -67,7 +60,7 @@ internal static partial class AdminCategoriesEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetCategoriesQuery,
-                        KeysetPaginated<Category, CategoryId>
+                        KeysetPaginated<AdminCategoryResponse, Guid>
                     > queryHandler,
                     [AsParameters] GetCategoriesRequest request,
                     ILoggerFactory loggerFactory,
@@ -93,8 +86,8 @@ internal static partial class AdminCategoriesEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<AdminCategoryDto>(
-                            [.. result.Value.Data.Select(u => u.ToDto())],
+                        new ApiCursorResponse<AdminCategoryResponse>(
+                            [.. result.Value.Data],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
                         )
@@ -104,7 +97,7 @@ internal static partial class AdminCategoriesEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminCategoryDto>>()
+            .Produces<ApiCursorResponse<AdminCategoryResponse>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -129,30 +122,24 @@ internal static partial class AdminCategoriesEndpoints
             : null;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<CategoryId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid category id")
-                            : new CategoryId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid category id") : id
                 )
                 .Value
             : null;
 
         var next = request.NextCursor is not null
-            ? KeysetCursor<CategoryId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid category id")
-                            : new CategoryId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid category id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<CategoryId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
 
         return new GetCategoriesQuery(search, pagination);
     }

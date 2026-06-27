@@ -1,7 +1,6 @@
+using Application.Admin.Products.Types;
 using Application.Admin.Products.UseCases.GetProductFilters;
 using Application.Auth.Types;
-using Domain.Products;
-using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
@@ -34,14 +33,12 @@ internal static partial class AdminProductsEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(
-                            new ApiResponse<ProductFilterOptionsDto>(result.Value.ToDto())
-                        );
+                        : Results.Ok(new ApiResponse<ProductFilterOptions>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
-            .Produces<ApiResponse<ProductFilterOptionsDto>>()
+            .Produces<ApiResponse<ProductFilterOptions>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

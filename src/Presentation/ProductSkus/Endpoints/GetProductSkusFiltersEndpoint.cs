@@ -1,6 +1,5 @@
+using Application.ProductSkus.Types;
 using Application.ProductSkus.UseCases.GetProductSkusFilters;
-using Domain.Products.ProductSkus;
-using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;
@@ -31,12 +30,10 @@ internal static partial class ProductSkusEndpoints
                         return result.Error.ToApiError(logger);
                     }
 
-                    return Results.Ok(
-                        new ApiResponse<ProductSkusFilterOptionsDto>(result.Value.ToDto())
-                    );
+                    return Results.Ok(new ApiResponse<ProductSkusFilterOptions>(result.Value));
                 }
             )
-            .Produces<ApiResponse<ProductSkusFilterOptionsDto>>()
+            .Produces<ApiResponse<ProductSkusFilterOptions>>()
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithName("GetProductSkusFilters")
             .WithSummary("Retrieves available product skus filter options.")

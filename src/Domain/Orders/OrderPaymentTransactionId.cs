@@ -5,7 +5,7 @@ namespace Domain.Orders;
 
 public sealed record OrderPaymentTransactionId
 {
-    public const int MaxLength = 60;
+    public const int MaxLength = 100;
 
     public string Value { get; }
 

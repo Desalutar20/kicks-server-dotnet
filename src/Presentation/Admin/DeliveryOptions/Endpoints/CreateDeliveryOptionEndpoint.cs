@@ -1,3 +1,4 @@
+using Application.Admin.DeliveryOptions.Types;
 using Application.Admin.DeliveryOptions.UseCases.CreateDeliveryOption;
 using Application.Auth.Types;
 using Domain.DeliveryOptions;
@@ -30,7 +31,10 @@ internal static partial class DeliveryOptionsEndpoints
                 async (
                     HttpContext ctx,
                     CreateDeliveryOptionRequest request,
-                    ICommandHandler<CreateDeliveryOptionCommand, DeliveryOption> commandHandler,
+                    ICommandHandler<
+                        CreateDeliveryOptionCommand,
+                        DeliveryOptionResponse
+                    > commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>

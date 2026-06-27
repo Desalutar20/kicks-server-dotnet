@@ -1,5 +1,5 @@
+using Application.Admin.Products.ProductSkus.Types;
 using Domain.Products.ProductSkus;
-using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
@@ -17,9 +17,9 @@ public sealed class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(fac
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var deleteProductSkuImageResponse = await DeleteProductSkuImage(
@@ -47,9 +47,9 @@ public sealed class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(fac
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         for (var i = 0; i < body.Data[0].Images.Count; i++)
@@ -99,9 +99,9 @@ public sealed class DeleteProductSkuImageTests(ApiFactory factory) : TestApp(fac
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var deleteProductSkuImageResponse = await DeleteProductSkuImage(

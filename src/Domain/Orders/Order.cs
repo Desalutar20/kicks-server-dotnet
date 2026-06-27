@@ -9,10 +9,10 @@ namespace Domain.Orders;
 public class Order : Entity<OrderId>
 {
     public const int ExpirationMaxMinutes = 30;
-    public const int MaxPaymentsCount = 10;
+    public const int MaxPaymentsCount = 5;
 
     public Email Email { get; private set; } = null!;
-    public NonEmptyString PhoneNumber { get; private set; } = null!;
+    public PhoneNumber PhoneNumber { get; private set; } = null!;
     public OrderAddress? BillingAddress { get; private set; }
     public OrderAddress DeliveryAddress { get; private set; } = null!;
     public OrderStatus Status { get; private set; } = OrderStatus.Pending;
@@ -62,7 +62,7 @@ public class Order : Entity<OrderId>
 
     private Order(
         Email email,
-        NonEmptyString phoneNumber,
+        PhoneNumber phoneNumber,
         OrderAddress? billingAddress,
         OrderAddress deliveryAddress,
         DateTimeOffset expiresAt,
@@ -87,7 +87,7 @@ public class Order : Entity<OrderId>
 
     public static Result<Order> Create(
         Email email,
-        NonEmptyString phoneNumber,
+        PhoneNumber phoneNumber,
         OrderAddress? billingAddress,
         OrderAddress deliveryAddress,
         DateTimeOffset expiresAt,
@@ -110,7 +110,7 @@ public class Order : Entity<OrderId>
 
         if (diff > TimeSpan.FromMinutes(ExpirationMaxMinutes))
             return Error.Internal(
-                $"Order expiration cannot exceed {ExpirationMaxMinutes} minutes from now."
+                $"Order expiration cannot exceed {ExpirationMaxMinutes} minutes from creation time."
             );
 
         return new Order(
@@ -149,6 +149,18 @@ public class Order : Entity<OrderId>
         }
 
         _orderPayments.Add(payment);
+
+        return Result.Success();
+    }
+
+    public Result ExtendExpiration(PositiveInt minutes)
+    {
+        if (minutes.Value > ExpirationMaxMinutes)
+        {
+            return Error.Failure($"Order expiration cannot exceed {ExpirationMaxMinutes} minutes.");
+        }
+
+        ExpiresAt = ExpiresAt.AddMinutes(minutes.Value);
 
         return Result.Success();
     }

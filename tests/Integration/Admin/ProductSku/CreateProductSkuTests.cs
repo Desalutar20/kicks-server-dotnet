@@ -1,7 +1,7 @@
 using Application.Admin.Products.ProductSkus.Constants;
+using Application.Admin.Products.Types;
 using Domain.Products.ProductSkus;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -21,7 +21,7 @@ public sealed class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
         getProductsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var products = await getProductsResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminProductDto>
+            ApiCursorResponse<AdminProductResponse>
         >(ct);
 
         var createProductSkuRequest = TestData.CreateProductSkuRequest();
@@ -57,7 +57,7 @@ public sealed class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
         getProductsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var products = await getProductsResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminProductDto>
+            ApiCursorResponse<AdminProductResponse>
         >(ct);
 
         var response = await CreateProductSku(
@@ -86,7 +86,7 @@ public sealed class CreateProductSkuTests(ApiFactory factory) : TestApp(factory)
         getProductsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var products = await getProductsResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminProductDto>
+            ApiCursorResponse<AdminProductResponse>
         >(ct);
 
         var createProductSkuRequest = TestData.CreateProductSkuRequest();

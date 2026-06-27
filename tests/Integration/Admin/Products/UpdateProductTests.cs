@@ -1,6 +1,6 @@
+using Application.Admin.Products.Types;
 using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -19,7 +19,9 @@ public sealed class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var newTitle = TestData.String(ProductTitle.MaxLength);
@@ -70,7 +72,9 @@ public sealed class UpdateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var updateProductRequest = new UpdateProductRequest(

@@ -4,6 +4,11 @@ using Api.ExceptionHandler;
 using Application.Config;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 namespace Api.Extensions;
 
@@ -26,6 +31,38 @@ public static class ServiceExtensions
                 ctx.ProblemDetails.Extensions.TryAdd("timestamp", DateTime.UtcNow);
             }
         );
+
+        services
+            .AddOpenTelemetry()
+            .ConfigureResource(resource =>
+                resource.AddService(serviceName: "Kicks.Api", serviceVersion: "1.0.0")
+            )
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .SetErrorStatusOnException()
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddNpgsql()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.ExportProcessorType = ExportProcessorType.Batch;
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                    });
+            })
+            .WithMetrics(metrics =>
+            {
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddNpgsqlInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddOtlpExporter(options =>
+                    {
+                        options.ExportProcessorType = ExportProcessorType.Batch;
+                        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+                    });
+            });
 
         services.AddCors(op =>
         {

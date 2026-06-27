@@ -1,5 +1,5 @@
+using Application.Admin.Products.Types;
 using Domain.Products;
-using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Products;
@@ -17,7 +17,9 @@ public sealed class ToggleProductIsDeletedTests(ApiFactory factory) : TestApp(fa
         var response = await GetProducts(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var toggleBanUserResponse = await ToggleProductIsDeleted(

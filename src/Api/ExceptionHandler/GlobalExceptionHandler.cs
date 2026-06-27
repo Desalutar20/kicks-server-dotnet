@@ -30,9 +30,7 @@ internal class GlobalExceptionHandler(
             ),
             _ => (
                 "An error occurred",
-                //TODO
-                //"Something went wrong",
-                exception.Message,
+                "Something went wrong",
                 HttpStatusCode.InternalServerError,
                 null
             ),

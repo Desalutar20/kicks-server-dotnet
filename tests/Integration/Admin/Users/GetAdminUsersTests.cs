@@ -1,6 +1,6 @@
 using Application.Admin.Users.Constants;
+using Application.Admin.Users.Types;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Users.Dto;
 using Presentation.Admin.Users.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -19,7 +19,9 @@ public sealed class GetAdminUsersTests(ApiFactory factory) : TestApp(factory)
         var response = await GetAdminUsers(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminUserDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminUserResponse>>(
+            ct
+        );
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(AdminUsersConstants.GetAdminUsersDefaultLimit);

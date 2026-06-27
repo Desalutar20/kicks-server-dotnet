@@ -1,6 +1,6 @@
+using Application.Admin.Brands.Types;
 using Domain.Brands;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Brands.Dto;
 using Presentation.Admin.Brands.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -19,7 +19,9 @@ public sealed class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var newName = TestData.String(BrandName.MaxLength);
@@ -69,7 +71,9 @@ public sealed class UpdateBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var updateBrandRequest = new UpdateBrandRequest(body.Data[1].Name);

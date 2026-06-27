@@ -141,7 +141,7 @@ public static class TestData
         new Faker<CreateOrderRequest>()
             .CustomInstantiator(f => new CreateOrderRequest(
                 Email(),
-                f.Phone.PhoneNumber(),
+                $"+1{f.Random.ReplaceNumbers("##########")}",
                 new OrderAddressDto(
                     f.Address.City(),
                     f.Address.StreetName(),

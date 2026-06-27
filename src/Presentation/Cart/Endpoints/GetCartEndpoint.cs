@@ -1,6 +1,6 @@
 using Application.Auth.Types;
+using Application.Carts.Types;
 using Application.Carts.UseCases.GetCart;
-using Presentation.Cart.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Cart.Endpoints;
@@ -13,7 +13,7 @@ internal static partial class CartEndpoints
             .MapGet(
                 "",
                 async (
-                    IQueryHandler<GetCartQuery, Domain.Carts.Cart> queryHandler,
+                    IQueryHandler<GetCartQuery, CartResponse> queryHandler,
                     HttpContext ctx,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -34,11 +34,11 @@ internal static partial class CartEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(new ApiResponse<CartDto>(result.Value.ToDto()));
+                        : Results.Ok(new ApiResponse<CartResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
-            .Produces<ApiResponse<CartDto>>()
+            .Produces<ApiResponse<CartResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

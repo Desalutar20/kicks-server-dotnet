@@ -1,0 +1,17 @@
+using System.Data;
+using Dapper;
+
+namespace Infrastructure.Data.TypeHandlers;
+
+internal sealed class IntListTypeHandler<T> : SqlMapper.TypeHandler<List<int>>
+{
+    public override List<int> Parse(object value)
+    {
+        return ((int[])value).ToList();
+    }
+
+    public override void SetValue(IDbDataParameter parameter, List<int>? value)
+    {
+        parameter.Value = value?.ToArray();
+    }
+}

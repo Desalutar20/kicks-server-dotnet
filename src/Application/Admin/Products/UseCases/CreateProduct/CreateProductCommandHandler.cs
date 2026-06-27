@@ -1,5 +1,7 @@
 using Application.Abstractions.Database;
 using Application.Admin.Products.Errors;
+using Application.Admin.Products.ProductSkus.Types;
+using Application.Admin.Products.Types;
 using Domain.Products.Exceptions;
 
 namespace Application.Admin.Products.UseCases.CreateProduct;
@@ -11,14 +13,14 @@ public sealed record CreateProductCommand(
     ProductTags Tags,
     BrandId BrandId,
     CategoryId CategoryId
-) : ICommand<Product>;
+) : ICommand<AdminProductResponse>;
 
 internal sealed class CreateProductCommandHandler(
     IProductRepository productRepository,
     IUnitOfWork unitOfWork
-) : ICommandHandler<CreateProductCommand, Product>
+) : ICommandHandler<CreateProductCommand, AdminProductResponse>
 {
-    public async Task<Result<Product>> Handle(
+    public async Task<Result<AdminProductResponse>> Handle(
         CreateProductCommand command,
         CancellationToken ct = default
     )
@@ -38,7 +40,7 @@ internal sealed class CreateProductCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return product;
+            return product.ToDto();
         }
         catch (BrandDoesNotExistsException)
         {

@@ -1,4 +1,4 @@
-using Presentation.Admin.Products.ProductSkus.Dto;
+using Application.Admin.Products.ProductSkus.Types;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
@@ -16,16 +16,16 @@ public sealed class GetAdminProductSkuTests(ApiFactory factory) : TestApp(factor
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var getProductSkuResponse = await GetAdminProductSku(body.Data[0].Id, sessionCookie, ct);
         getProductSkuResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var productSku = await getProductSkuResponse.Content.ReadFromJsonAsync<
-            ApiResponse<AdminProductSkuDto>
+            ApiResponse<AdminProductSkuResponse>
         >(ct);
         productSku.Should().NotBeNull();
     }

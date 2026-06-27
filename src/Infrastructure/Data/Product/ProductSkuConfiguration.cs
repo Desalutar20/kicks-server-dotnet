@@ -87,17 +87,19 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
 
                 x.WithOwner().HasForeignKey("ProductSkuId");
 
-                x.Property(x => x.Url)
-                    .HasConversion(q => q.Value, value => FileUrl.Create(value).Value)
-                    .IsRequired()
-                    .HasMaxLength(FileUrl.MaxLength);
+                x.Property(x => x.Id).IsRequired().HasJsonPropertyName("id");
 
-                x.Property(x => x.Id).IsRequired();
+                x.Property(x => x.Url)
+                    .HasConversion(q => q.Value.ToString(), value => FileUrl.Create(value).Value)
+                    .IsRequired()
+                    .HasMaxLength(FileUrl.MaxLength)
+                    .HasJsonPropertyName("url");
 
                 x.Property(x => x.Name)
                     .HasConversion(q => q.FullName, value => FileName.Create(value).Value)
                     .IsRequired()
-                    .HasMaxLength(FileName.MaxLength);
+                    .HasMaxLength(FileName.MaxLength)
+                    .HasJsonPropertyName("name");
             }
         );
 
@@ -113,5 +115,6 @@ public class ProductSkuConfiguration : IEntityTypeConfiguration<ProductSku>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Navigation(x => x.Product).AutoInclude();
+        builder.Navigation(x => x.Images).AutoInclude();
     }
 }

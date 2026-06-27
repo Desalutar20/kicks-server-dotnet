@@ -22,11 +22,7 @@ public sealed class UpdateCartItemQuantityTests(ApiFactory factory) : TestApp(fa
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var updateCartItemQuantityResponse = await UpdateCartItemQuantity(

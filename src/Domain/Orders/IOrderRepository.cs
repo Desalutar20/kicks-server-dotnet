@@ -7,6 +7,12 @@ namespace Domain.Orders;
 
 public interface IOrderRepository
 {
+    Task<Order?> GetAndLockOrderByUserIdAsync(
+        UserId userId,
+        OrderId orderId,
+        CancellationToken ct = default
+    );
+
     Task<Order?> GetOrderByUserIdAsync(
         UserId userId,
         OrderId orderId,

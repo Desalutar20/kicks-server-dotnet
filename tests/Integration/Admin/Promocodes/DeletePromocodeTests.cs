@@ -1,5 +1,5 @@
+using Application.Admin.Promocodes.Types;
 using Domain.Promocodes;
-using Presentation.Admin.Promocodes.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Promocodes;
@@ -17,9 +17,9 @@ public sealed class DeletePromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await GetPromocodes(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminPromocodeResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var deletePromocodeResponse = await DeletePromocode(body.Data[0].Id, sessionCookie, ct);

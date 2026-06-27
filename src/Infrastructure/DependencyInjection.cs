@@ -1,10 +1,22 @@
-﻿using Application.Abstractions.Cache;
+﻿using System.Data;
+using Application.Abstractions.Cache;
 using Application.Abstractions.Database;
 using Application.Abstractions.Events;
 using Application.Abstractions.FileUploader;
 using Application.Abstractions.Messaging;
 using Application.Abstractions.OAuth;
 using Application.Abstractions.Outbox;
+using Application.Abstractions.Payment;
+using Application.Admin.Brands;
+using Application.Admin.Categories;
+using Application.Admin.Products;
+using Application.Admin.Promocodes;
+using Application.Admin.Users;
+using Application.Carts;
+using Application.Carts.Types;
+using Application.ProductSkus;
+using Application.Shared.Types;
+using Dapper;
 using Domain.Brands;
 using Domain.Carts;
 using Domain.Categories;
@@ -20,12 +32,14 @@ using Infrastructure.Data.Order;
 using Infrastructure.Data.Outbox;
 using Infrastructure.Data.Product;
 using Infrastructure.Data.Promocode;
+using Infrastructure.Data.TypeHandlers;
 using Infrastructure.Data.User;
 using Infrastructure.Events;
 using Infrastructure.MessageQueue;
 using Infrastructure.Services;
 using Infrastructure.Services.OAuth;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 
 namespace Infrastructure;
 
@@ -93,6 +107,19 @@ public static class DependencyInjection
             );
 
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
+            services.AddScoped<IDbConnection>(sp =>
+            {
+                var cfg = sp.GetRequiredService<Config>();
+
+                return new NpgsqlConnection(cfg.Database.GetConnectionString());
+            });
+
+            SqlMapper.AddTypeHandler(new StringListTypeHandler<List<string>>());
+            SqlMapper.AddTypeHandler(new IntListTypeHandler<List<string>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<List<FileResponse>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<IReadOnlyList<CategoryFilterItem>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<IReadOnlyList<BrandFilterItem>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<List<CartItemResponse>>());
 
             return services;
         }
@@ -122,6 +149,8 @@ public static class DependencyInjection
             services.AddSingleton<IHashingService, HashingService>();
             services.AddSingleton<IEmailSender, EmailService>();
             services.AddSingleton<IFileUploader, FileUploaderService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+
             services.AddSingleton<ICachingService, Redis>();
             services.AddSingleton<IAuthCache, AuthCache>();
             services.AddKeyedSingleton<IOAuthClient, GoogleService>(OAuthProvider.Google);
@@ -146,12 +175,19 @@ public static class DependencyInjection
         private IServiceCollection AddRepositories()
         {
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserReadRepository, UserReadRepository>();
             services.AddScoped<IBrandRepository, BrandRepository>();
+            services.AddScoped<IBrandReadRepository, BrandReadRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICategoryReadRepository, CategoryReadRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductReadRepository, ProductReadRepository>();
             services.AddScoped<IProductSkusRepository, ProductSkusRepository>();
+            services.AddScoped<IProductSkusReadRepository, ProductSkusReadRepository>();
             services.AddScoped<IPromocodeRepository, PromocodeRepository>();
+            services.AddScoped<IPromocodeReadRepository, PromocodeReadRepository>();
             services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<ICartReadRepository, CartReadRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IDeliveryOptionRepository, DeliveryOptionRepository>();
 

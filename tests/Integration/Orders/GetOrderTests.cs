@@ -23,13 +23,7 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        const int quantity = 5;
-
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), quantity),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
 
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -72,7 +66,7 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
         order.Items.Count.Should().Be(1);
 
         order.Items[0].ProductSku.Id.Should().Be(body.Data[0].Id);
-        order.Items[0].Quantity.Should().Be(quantity);
+        order.Items[0].Quantity.Should().Be(1);
 
         order.Status.Should().Be(OrderStatus.Pending);
     }

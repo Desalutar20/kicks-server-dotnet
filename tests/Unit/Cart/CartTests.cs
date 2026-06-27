@@ -15,11 +15,11 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(2).Value);
+        cart.AddProduct(skuId);
 
         cart.CartItems.Should().HaveCount(1);
         cart.CartItems[0].ProductSkuId.Should().Be(skuId);
-        cart.CartItems[0].Quantity.Value.Should().Be(2);
+        cart.CartItems[0].Quantity.Value.Should().Be(1);
     }
 
     [Fact]
@@ -28,11 +28,11 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(2).Value);
-        cart.AddProduct(skuId, PositiveInt.Create(3).Value);
+        cart.AddProduct(skuId);
+        cart.AddProduct(skuId);
 
         cart.CartItems.Should().HaveCount(1);
-        cart.CartItems[0].Quantity.Value.Should().Be(5);
+        cart.CartItems[0].Quantity.Value.Should().Be(2);
     }
 
     [Fact]
@@ -42,18 +42,12 @@ public sealed class CartTests
 
         for (var i = 0; i < 100; i++)
         {
-            var result = cart.AddProduct(
-                new ProductSkuId(Guid.NewGuid()),
-                PositiveInt.Create(1).Value
-            );
+            var result = cart.AddProduct(new ProductSkuId(Guid.NewGuid()));
 
             result.IsSuccess.Should().BeTrue();
         }
 
-        var overflowResult = cart.AddProduct(
-            new ProductSkuId(Guid.NewGuid()),
-            PositiveInt.Create(1).Value
-        );
+        var overflowResult = cart.AddProduct(new ProductSkuId(Guid.NewGuid()));
 
         overflowResult.IsFailure.Should().BeTrue();
         cart.CartItems.Should().HaveCount(100);
@@ -65,7 +59,7 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(2).Value);
+        cart.AddProduct(skuId);
 
         cart.RemoveProduct(skuId);
 
@@ -89,7 +83,7 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(1).Value);
+        cart.AddProduct(skuId);
 
         var result = cart.UpdateProductQuantity(skuId, PositiveInt.Create(10).Value);
 
@@ -124,7 +118,7 @@ public sealed class CartTests
         var skuId = CreateSkuId();
         var promocodeId = CreatePromocodeId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(1).Value);
+        cart.AddProduct(skuId);
 
         var result = cart.ApplyPromocode(promocodeId);
 
@@ -138,7 +132,7 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(1).Value);
+        cart.AddProduct(skuId);
 
         cart.ApplyPromocode(CreatePromocodeId());
 
@@ -154,7 +148,7 @@ public sealed class CartTests
         var skuId = CreateSkuId();
         var promocodeId = CreatePromocodeId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(1).Value);
+        cart.AddProduct(skuId);
         cart.ApplyPromocode(promocodeId);
 
         cart.RemovePromocode();
@@ -168,8 +162,8 @@ public sealed class CartTests
     {
         var cart = CreateCart();
 
-        cart.AddProduct(CreateSkuId(), PositiveInt.Create(1).Value);
-        cart.AddProduct(CreateSkuId(), PositiveInt.Create(2).Value);
+        cart.AddProduct(CreateSkuId());
+        cart.AddProduct(CreateSkuId());
 
         cart.Clear();
 
@@ -184,7 +178,7 @@ public sealed class CartTests
         var cart = CreateCart();
         var skuId = CreateSkuId();
 
-        cart.AddProduct(skuId, PositiveInt.Create(1).Value);
+        cart.AddProduct(skuId);
         cart.ApplyPromocode(CreatePromocodeId());
 
         cart.RemoveProduct(skuId);

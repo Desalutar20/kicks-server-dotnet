@@ -23,11 +23,7 @@ public sealed class RemovePromocodeTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var promocode = await GetPromocodeFromDb(ct);
@@ -85,11 +81,7 @@ public sealed class RemovePromocodeTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var applyPromocodeResponse = await ApplyPromocode(
@@ -132,11 +124,7 @@ public sealed class RemovePromocodeTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var promocode = await GetPromocodeFromDb(ct);
@@ -160,9 +148,8 @@ public sealed class RemovePromocodeTests(ApiFactory factory) : TestApp(factory)
     public async ValueTask Should_ReturnUnauthorized_When_UserNotSignedIn()
     {
         var ct = TestContext.Current.CancellationToken;
-        var request = new AddCartItemRequest("", 5);
 
-        var response = await AddCartItem(request, null, ct);
+        var response = await AddCartItem(Guid.NewGuid(), null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 

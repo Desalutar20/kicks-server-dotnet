@@ -6,5 +6,5 @@ namespace Domain.Promocodes;
 public enum PromocodeType
 {
     Fixed,
-    Percent
+    Percent,
 }

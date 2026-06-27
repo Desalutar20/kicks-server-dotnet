@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Dapper;
 
 namespace Infrastructure.Data.Extensions;
 
@@ -54,4 +55,51 @@ public static class QueryExtensions
         TProp? value,
         Expression<Func<T, bool>> predicate
     ) => value is null ? query : query.Where(predicate);
+
+    public static SqlBuilder ApplyKeysetPagination<TId>(
+        this SqlBuilder builder,
+        KeysetPagination<TId> pagination,
+        string alias
+    )
+    {
+        var direction = pagination.KeysetDirection;
+        var cursor = pagination.Cursor;
+
+        if (cursor != null)
+        {
+            builder.Where(
+                direction == KeysetDirection.Forward
+                    ? $@"
+            {alias}.created_at < @CreatedAt
+            OR ({alias}.created_at = @CreatedAt AND {alias}.id < @Id)
+        "
+                    : $@"
+            {alias}.created_at > @CreatedAt
+            OR ({alias}.created_at = @CreatedAt AND {alias}.id > @Id)
+        ",
+                new { cursor.CreatedAt, cursor.Id }
+            );
+        }
+
+        return builder.OrderBy(
+            direction == KeysetDirection.Backward
+                ? $"{alias}.created_at ASC, {alias}.id ASC"
+                : $"{alias}.created_at DESC, {alias}.id DESC"
+        );
+    }
+
+    public static SqlBuilder WhereNotNull<TProp>(
+        this SqlBuilder builder,
+        TProp? value,
+        string sql,
+        dynamic? parameters = null
+    )
+    {
+        if (value is not null)
+        {
+            builder.Where(sql, parameters);
+        }
+
+        return builder;
+    }
 }

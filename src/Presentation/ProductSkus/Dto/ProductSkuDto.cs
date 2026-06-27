@@ -12,8 +12,7 @@ public sealed record ProductSkuDto(
     string Color,
     string Sku,
     ProductDto Product,
-    List<FileDto> Images,
-    List<ProductSkuReviewDto> Reviews
+    List<FileDto> Images
 );
 
 internal static class ProductSkuDtoMapper
@@ -29,7 +28,6 @@ internal static class ProductSkuDtoMapper
             model.Color.Value,
             model.Sku.Value,
             model.Product.ToDto(),
-            [.. model.Images.Select(image => image.ToDto())],
-            [.. model.Reviews.Select(review => review.ToDto())]
+            [.. model.Images.Select(image => image.ToDto())]
         );
 }

@@ -1,24 +1,22 @@
+using Application.Admin.Brands.Types;
 using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Brands.UseCases.GetBrands;
 
-public sealed record GetBrandsQuery(
-    NonEmptyString? Search,
-    KeysetPagination<BrandId> KeysetPagination
-) : IQuery<KeysetPaginated<Brand, BrandId>>;
+public sealed record GetBrandsQuery(NonEmptyString? Search, KeysetPagination<Guid> KeysetPagination)
+    : IQuery<KeysetPaginated<AdminBrandResponse, Guid>>;
 
-internal sealed class GetBrandsQueryHandler(IBrandRepository brandRepository)
-    : IQueryHandler<GetBrandsQuery, KeysetPaginated<Brand, BrandId>>
+internal sealed class GetBrandsQueryHandler(IBrandReadRepository brandReadRepository)
+    : IQueryHandler<GetBrandsQuery, KeysetPaginated<AdminBrandResponse, Guid>>
 {
-    public async Task<Result<KeysetPaginated<Brand, BrandId>>> Handle(
+    public async Task<Result<KeysetPaginated<AdminBrandResponse, Guid>>> Handle(
         GetBrandsQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await brandRepository.GetBrandsAsync(
+        var data = await brandReadRepository.GetBrandsAsync(
             query.Search,
             query.KeysetPagination,
-            false,
             ct
         );
 

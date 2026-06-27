@@ -6,11 +6,7 @@ using Domain.Shared.ValueObjects;
 
 namespace Application.Carts.UseCases.AddCartItem;
 
-public sealed record AddCartItemCommand(
-    UserId UserId,
-    ProductSkuId ProductSkuId,
-    PositiveInt Quantity
-) : ICommand;
+public sealed record AddCartItemCommand(UserId UserId, ProductSkuId ProductSkuId) : ICommand;
 
 internal sealed class AddCartItemCommandHandler(
     IUnitOfWork unitOfWork,
@@ -25,7 +21,7 @@ internal sealed class AddCartItemCommandHandler(
             return CartErrors.CartNotFound;
         }
 
-        var result = cart.AddProduct(command.ProductSkuId, command.Quantity);
+        var result = cart.AddProduct(command.ProductSkuId);
         if (result.IsFailure)
         {
             return result.Error;

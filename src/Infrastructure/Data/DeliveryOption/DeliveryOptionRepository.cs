@@ -18,8 +18,11 @@ internal sealed class DeliveryOptionRepository(AppDbContext dbContext)
     ) =>
         await (
             trackChanges
-                ? _dbContext.DeliveryOptions.ToListAsync(ct)
-                : _dbContext.DeliveryOptions.AsNoTracking().ToListAsync(ct)
+                ? _dbContext.DeliveryOptions.OrderByDescending(x => x.CreatedAt).ToListAsync(ct)
+                : _dbContext
+                    .DeliveryOptions.OrderByDescending(x => x.CreatedAt)
+                    .AsNoTracking()
+                    .ToListAsync(ct)
         );
 
     public async Task<DomainDeliveryOption?> GetDeliveryOptionByIdAsync(

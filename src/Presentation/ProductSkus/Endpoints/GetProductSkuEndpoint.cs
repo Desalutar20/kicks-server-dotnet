@@ -27,12 +27,10 @@ internal static partial class ProductSkusEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(
-                            new ApiResponse<ProductSkuWithVariantsDto>(result.Value.ToDto())
-                        );
+                        : Results.Ok(new ApiResponse<ProductSkuWithVariants>(result.Value));
                 }
             )
-            .Produces<ApiResponse<ProductSkuWithVariantsDto>>()
+            .Produces<ApiResponse<ProductSkuWithVariants>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .WithName("GetProductSku")

@@ -1,18 +1,21 @@
 using Application.Admin.Products.ProductSkus.Errors;
+using Application.Admin.Products.ProductSkus.Types;
+using Application.ProductSkus;
 
 namespace Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSku;
 
-public sealed record GetAdminProductSkuQuery(ProductSkuId Id) : IQuery<ProductSku>;
+public sealed record GetAdminProductSkuQuery(ProductSkuId Id) : IQuery<AdminProductSkuResponse>;
 
-internal sealed class GetAdminProductSkuQueryHandler(IProductSkusRepository productSkusRepository)
-    : IQueryHandler<GetAdminProductSkuQuery, ProductSku>
+internal sealed class GetAdminProductSkuQueryHandler(
+    IProductSkusReadRepository productSkusReadRepository
+) : IQueryHandler<GetAdminProductSkuQuery, AdminProductSkuResponse>
 {
-    public async Task<Result<ProductSku>> Handle(
+    public async Task<Result<AdminProductSkuResponse>> Handle(
         GetAdminProductSkuQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await productSkusRepository.GetProductSkuByIdAsync(query.Id, false, ct);
+        var data = await productSkusReadRepository.GetAdminProductSkuByIdAsync(query.Id, ct);
 
         return data is null ? AdminProductSkuErrors.ProductSkuNotFound(query.Id) : data;
     }

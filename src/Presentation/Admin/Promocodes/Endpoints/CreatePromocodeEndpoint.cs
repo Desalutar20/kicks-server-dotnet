@@ -1,3 +1,4 @@
+using Application.Admin.Promocodes.Types;
 using Application.Admin.Promocodes.UseCases.CreatePromocode;
 using Application.Auth.Types;
 using Domain.Promocodes;
@@ -58,7 +59,7 @@ internal static partial class AdminPromocodesEndpoints
                 async (
                     HttpContext ctx,
                     CreatePromocodeRequest request,
-                    ICommandHandler<CreatePromocodeCommand, Promocode> commandHandler,
+                    ICommandHandler<CreatePromocodeCommand, AdminPromocodeResponse> commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -80,14 +81,14 @@ internal static partial class AdminPromocodesEndpoints
                         ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
-                            new ApiResponse<AdminPromocodeDto>(result.Value.ToDto())
+                            new ApiResponse<AdminPromocodeResponse>(result.Value)
                         );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminPromocodeDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminPromocodeResponse>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

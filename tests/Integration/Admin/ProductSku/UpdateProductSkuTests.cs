@@ -1,7 +1,7 @@
 using Application.Admin.Products.ProductSkus.Constants;
+using Application.Admin.Products.ProductSkus.Types;
 using Domain.Products.ProductSkus;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -20,9 +20,9 @@ public sealed class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var newSku = TestData.String(ProductSkuSku.MaxLength);
@@ -72,9 +72,9 @@ public sealed class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
         var productGroup = body.Data.GroupBy(x => x.Product.Id).First(g => g.Count() >= 2).ToList();
 
@@ -112,9 +112,9 @@ public sealed class UpdateProductSkuTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var product = body.Data.First(d => d.SalePrice is not null);

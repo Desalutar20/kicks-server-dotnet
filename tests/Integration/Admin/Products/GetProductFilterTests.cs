@@ -1,4 +1,4 @@
-using Presentation.Admin.Products.Dto;
+using Application.Admin.Products.Types;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Products;
@@ -16,9 +16,7 @@ public sealed class GetProductFilterTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductFilters(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<ProductFilterOptionsDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<ProductFilterOptions>>(ct);
 
         body.Should().NotBeNull();
     }

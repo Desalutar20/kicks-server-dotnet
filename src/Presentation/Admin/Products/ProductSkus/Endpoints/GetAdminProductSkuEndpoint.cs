@@ -1,7 +1,7 @@
+using Application.Admin.Products.ProductSkus.Types;
 using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSku;
 using Application.Auth.Types;
 using Domain.Products.ProductSkus;
-using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -16,7 +16,7 @@ internal static partial class AdminProductSkusEndpoints
                 async (
                     HttpContext ctx,
                     Guid id,
-                    IQueryHandler<GetAdminProductSkuQuery, ProductSku> queryHandler,
+                    IQueryHandler<GetAdminProductSkuQuery, AdminProductSkuResponse> queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -35,13 +35,13 @@ internal static partial class AdminProductSkusEndpoints
                     var result = await queryHandler.Handle(query, ct);
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(new ApiResponse<AdminProductSkuDto>(result.Value.ToDto()));
+                        : Results.Ok(new ApiResponse<AdminProductSkuResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminProductSkuDto>>()
+            .Produces<ApiResponse<AdminProductSkuResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

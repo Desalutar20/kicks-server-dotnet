@@ -1,6 +1,6 @@
 namespace Application.ProductSkus.Types;
 
 public sealed record ProductSkuWithVariants(
-    ProductSku ProductSku,
+    ProductSkuResponse ProductSku,
     List<ProductSkuVariant> Variants
 );

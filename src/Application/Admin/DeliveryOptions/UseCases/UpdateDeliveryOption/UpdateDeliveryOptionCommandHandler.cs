@@ -1,4 +1,5 @@
 using Application.Abstractions.Database;
+using Application.Admin.DeliveryOptions.Constants;
 using Application.Admin.DeliveryOptions.Errors;
 using Domain.DeliveryOptions;
 using Domain.Shared.ValueObjects;
@@ -13,6 +14,7 @@ public sealed record UpdateDeliveryOptionCommand(
 ) : ICommand;
 
 internal sealed class UpdateDeliveryOptionCommandHandler(
+    ICachingService cachingService,
     IDeliveryOptionRepository deliveryOptionRepository,
     IUnitOfWork unitOfWork
 ) : ICommandHandler<UpdateDeliveryOptionCommand>
@@ -52,6 +54,8 @@ internal sealed class UpdateDeliveryOptionCommandHandler(
             command.Description ?? deliveryOption.Description,
             command.Price ?? deliveryOption.Price
         );
+
+        await cachingService.DeleteAsync(DeliveryOptionsConstants.CacheKey, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
         return Result.Success();

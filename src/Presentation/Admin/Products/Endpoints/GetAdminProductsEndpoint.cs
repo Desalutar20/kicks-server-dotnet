@@ -1,11 +1,12 @@
 using Application.Admin.Products.Constants;
+using Application.Admin.Products.ProductSkus.Types;
+using Application.Admin.Products.Types;
 using Application.Admin.Products.UseCases.GetProducts;
 using Application.Auth.Types;
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
@@ -52,24 +53,18 @@ public sealed class GetProductsRequestValidator : AbstractValidator<GetProductsR
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<ProductId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product id")
-                            : new ProductId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product id") : id
                 )
             )
             .MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<ProductId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product id")
-                            : new ProductId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product id") : id
                 )
             )
             .MaximumLength(ProductsConstants.GetProductsCursorMaxLength);
@@ -88,7 +83,7 @@ internal static partial class AdminProductsEndpoints
                     [AsParameters] GetProductsRequest request,
                     IQueryHandler<
                         GetProductsQuery,
-                        KeysetPaginated<Product, ProductId>
+                        KeysetPaginated<AdminProductResponse, Guid>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -110,8 +105,8 @@ internal static partial class AdminProductsEndpoints
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
                         : Results.Ok(
-                            new ApiCursorResponse<AdminProductDto>(
-                                [.. result.Value.Data.Select(u => u.ToDto())],
+                            new ApiCursorResponse<AdminProductResponse>(
+                                [.. result.Value.Data],
                                 result.Value.PrevCursor?.ToString(),
                                 result.Value.NextCursor?.ToString()
                             )
@@ -121,7 +116,7 @@ internal static partial class AdminProductsEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminProductDto>>()
+            .Produces<ApiCursorResponse<AdminProductResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
@@ -153,29 +148,23 @@ internal static partial class AdminProductsEndpoints
             ? new CategoryId(Guid.Parse(request.CategoryId))
             : null;
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<ProductId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product id")
-                            : new ProductId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product id") : id
                 )
                 .Value
             : null;
         var next = request.NextCursor is not null
-            ? KeysetCursor<ProductId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product id")
-                            : new ProductId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<ProductId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
         var filters = new ProductFilters(
             search,
             productGender,

@@ -68,7 +68,7 @@ public class CartConfiguration : IEntityTypeConfiguration<DomainOrder>
             .Property(x => x.PhoneNumber)
             .HasConversion(
                 phoneNumber => phoneNumber.Value,
-                value => NonEmptyString.Create(value).Value
+                value => PhoneNumber.Create(value).Value
             )
             .IsRequired();
 

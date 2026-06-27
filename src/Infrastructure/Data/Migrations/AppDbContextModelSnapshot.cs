@@ -834,8 +834,8 @@ namespace Infrastructure.Data.Migrations
 
                             b1.Property<string>("TransactionId")
                                 .IsRequired()
-                                .HasMaxLength(60)
-                                .HasColumnType("character varying(60)")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
                                 .HasColumnName("transaction_id");
 
                             b1.Property<DateTimeOffset>("UpdatedAt")

@@ -1,9 +1,10 @@
+using Application.Admin.Products.ProductSkus.Types;
+using Application.Admin.Products.Types;
 using Application.Admin.Products.UseCases.UpdateProduct;
 using Application.Auth.Types;
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
-using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
@@ -53,7 +54,7 @@ internal static partial class AdminProductsEndpoints
                     HttpContext ctx,
                     Guid id,
                     UpdateProductRequest request,
-                    ICommandHandler<UpdateProductCommand, Product> commandHandler,
+                    ICommandHandler<UpdateProductCommand, AdminProductResponse> commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -73,13 +74,13 @@ internal static partial class AdminProductsEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(new ApiResponse<AdminProductDto>(result.Value.ToDto()));
+                        : Results.Ok(new ApiResponse<AdminProductResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminProductDto>>()
+            .Produces<ApiResponse<AdminProductResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

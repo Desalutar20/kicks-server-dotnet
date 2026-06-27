@@ -2,6 +2,7 @@ using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
 using Application.Abstractions.Messaging;
 using Application.Admin.Products.ProductSkus.Errors;
+using Application.ProductSkus;
 using Domain.Products.ProductSkus.Exceptions;
 using Domain.Shared.ValueObjects;
 
@@ -21,6 +22,7 @@ internal sealed class CreateProductSkuCommandHandler(
     IFileUploader fileUploader,
     IUnitOfWork unitOfWork,
     IProductSkusRepository productSkusRepository,
+    IProductSkusReadRepository productSkusReadRepository,
     IMessageQueue<IEnumerable<FileUploadResult>> messageQueue
 ) : ICommandHandler<CreateProductSkuCommand, ProductSkuId>
 {
@@ -105,13 +107,13 @@ internal sealed class CreateProductSkuCommandHandler(
         CancellationToken ct
     )
     {
-        if (await productSkusRepository.ExistsBySkuAsync(command.Sku, ct))
+        if (await productSkusReadRepository.ExistsBySkuAsync(command.Sku, ct))
         {
             return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
         }
 
         if (
-            await productSkusRepository.ExistsByProductSizeColorAsync(
+            await productSkusReadRepository.ExistsByProductSizeColorAsync(
                 command.ProductId,
                 command.Size,
                 command.Color,

@@ -1,6 +1,6 @@
 using Application.Admin.Categories.Constants;
+using Application.Admin.Categories.Types;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Categories.Dto;
 using Presentation.Admin.Categories.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -19,9 +19,9 @@ public sealed class GetCategoriesTests(ApiFactory factory) : TestApp(factory)
         var response = await GetCategories(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminCategoryDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminCategoryResponse>
+        >(ct);
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(CategoriesConstants.GetCategoriesDefaultLimit);

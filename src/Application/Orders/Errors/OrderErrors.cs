@@ -6,6 +6,8 @@ public static class OrderErrors
     public static Error OrderCreationLimitExceeded =>
         Error.Failure("Order creation limit exceeded.");
 
+    public static Error OrderExpired => Error.Failure("Order has expired.");
+
     public static Error AlreadyHasPendingError =>
         Error.Failure(
             "You already have a pending order. Complete or cancel it before creating a new one."

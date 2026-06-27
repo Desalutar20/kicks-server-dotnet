@@ -21,8 +21,7 @@ public sealed class CreateOrderRequestValidator : AbstractValidator<CreateOrderR
     public CreateOrderRequestValidator()
     {
         RuleFor(x => x.Email).ValidateValueObject(Email.Create);
-        RuleFor(x => x.PhoneNumber)
-            .ValidateValueObject(v => NonEmptyString.Create(v, label: "Phone number"));
+        RuleFor(x => x.PhoneNumber).ValidateValueObject(PhoneNumber.Create);
 
         RuleFor(x => x.BillingAddress)
             .ValidateNullableValueObject(v =>
@@ -95,7 +94,7 @@ internal static partial class OrderEndpoints
     private static CreateOrderCommand ToCommand(this CreateOrderRequest request, UserId userId)
     {
         var email = Email.Create(request.Email).Value;
-        var phoneNumber = NonEmptyString.Create(request.PhoneNumber).Value;
+        var phoneNumber = PhoneNumber.Create(request.PhoneNumber).Value;
         var billingAddress = request.BillingAddress is not null
             ? OrderAddress
                 .Create(

@@ -24,13 +24,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        const int quantity = 5;
-
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), quantity),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getDeliveryOptionsResponse = await GetDeliveryOptions(sessionCookie, ct);
@@ -62,16 +56,13 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         orderFromDb.OrderItems.Count.Should().Be(1);
 
         orderFromDb.OrderItems[0].ProductSku.Id.Value.Should().Be(body.Data[0].Id);
-        orderFromDb.OrderItems[0].Quantity.Value.Should().Be(quantity);
+        orderFromDb.OrderItems[0].Quantity.Value.Should().Be(1);
 
         orderFromDb.DeliveryPrice.Dollars.Should().Be(notFreeDeliveryOption.Price);
 
         orderFromDb
             .Total.Dollars.Should()
-            .Be(
-                (body.Data[0].SalePrice ?? body.Data[0].Price) * quantity
-                    + notFreeDeliveryOption.Price
-            );
+            .Be((body.Data[0].SalePrice ?? body.Data[0].Price) * 1 + notFreeDeliveryOption.Price);
     }
 
     [Theory]
@@ -109,13 +100,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        const int quantity = 5;
-
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), quantity),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getDeliveryOptionsResponse = await GetDeliveryOptions(sessionCookie, ct);
@@ -139,7 +124,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
     }
 
     [Fact]
-    public async ValueTask Should_ReturnBadRequest_When_Max()
+    public async ValueTask Should_ReturnBadRequest_When_MaxCancelledOrdersPerDayReached()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -152,13 +137,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        const int quantity = 1;
-
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), quantity),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getDeliveryOptionsResponse = await GetDeliveryOptions(sessionCookie, ct);
@@ -207,13 +186,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        const int quantity = 5;
-
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), quantity),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var createOrderRequest = TestData.CreateOrderRequest(Guid.NewGuid().ToString());

@@ -17,8 +17,9 @@ public sealed class Cart(UserId userId) : Entity<CartId>(new CartId(Guid.NewGuid
     private readonly List<CartItem> _cartItems = [];
     public IReadOnlyList<CartItem> CartItems => _cartItems;
 
-    public Result AddProduct(ProductSkuId productSkuId, PositiveInt quantity)
+    public Result AddProduct(ProductSkuId productSkuId)
     {
+        var quantity = PositiveInt.Create(1).Value;
         var existingItem = _cartItems.FirstOrDefault(item => item.ProductSkuId == productSkuId);
         if (existingItem is not null)
         {

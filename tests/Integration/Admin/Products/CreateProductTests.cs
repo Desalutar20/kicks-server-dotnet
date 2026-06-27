@@ -1,8 +1,8 @@
+using Application.Admin.Brands.Types;
+using Application.Admin.Categories.Types;
+using Application.Admin.Products.Types;
 using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Brands.Dto;
-using Presentation.Admin.Categories.Dto;
-using Presentation.Admin.Products.Dto;
 using Presentation.Admin.Products.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -22,14 +22,14 @@ public sealed class CreateProductTests(ApiFactory factory) : TestApp(factory)
         getCategoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var categories = await getCategoriesResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminCategoryDto>
+            ApiCursorResponse<AdminCategoryResponse>
         >(ct);
 
         var getBrandsResponse = await GetBrands(null, sessionCookie, ct);
         getBrandsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var brands = await getBrandsResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminBrandDto>
+            ApiCursorResponse<AdminBrandResponse>
         >(ct);
 
         var createProductRequest = TestData.CreateProductRequest(
@@ -40,7 +40,9 @@ public sealed class CreateProductTests(ApiFactory factory) : TestApp(factory)
         var response = await CreateProduct(createProductRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var product = await response.Content.ReadFromJsonAsync<ApiResponse<AdminProductDto>>(ct);
+        var product = await response.Content.ReadFromJsonAsync<ApiResponse<AdminProductResponse>>(
+            ct
+        );
 
         var productFromDb = await GetProductFromDbById(new ProductId(product!.Data.Id), ct);
         productFromDb.Should().NotBeNull();
@@ -79,14 +81,14 @@ public sealed class CreateProductTests(ApiFactory factory) : TestApp(factory)
         getCategoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var categories = await getCategoriesResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminCategoryDto>
+            ApiCursorResponse<AdminCategoryResponse>
         >(ct);
 
         var getBrandsResponse = await GetBrands(null, sessionCookie, ct);
         getBrandsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var brands = await getBrandsResponse.Content.ReadFromJsonAsync<
-            ApiCursorResponse<AdminBrandDto>
+            ApiCursorResponse<AdminBrandResponse>
         >(ct);
 
         var createProductRequest = TestData.CreateProductRequest(

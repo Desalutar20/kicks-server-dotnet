@@ -1,9 +1,9 @@
 using Application.Admin.Promocodes.Constants;
+using Application.Admin.Promocodes.Types;
 using Application.Admin.Promocodes.UseCases.GetPromocodes;
 using Application.Auth.Types;
 using Domain.Promocodes;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Promocodes.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Promocodes.Endpoints;
@@ -30,24 +30,18 @@ public sealed class GetPromocodesRequestValidator : AbstractValidator<GetPromoco
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<PromocodeId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid promocode id")
-                            : new PromocodeId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid promocode id") : id
                 )
             )
             .MaximumLength(PromocodesConstants.GetPromocodesCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<PromocodeId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid promocode id")
-                            : new PromocodeId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid promocode id") : id
                 )
             )
             .MaximumLength(PromocodesConstants.GetPromocodesCursorMaxLength);
@@ -65,7 +59,7 @@ internal static partial class AdminPromocodesEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetPromocodesQuery,
-                        KeysetPaginated<Promocode, PromocodeId>
+                        KeysetPaginated<AdminPromocodeResponse, Guid>
                     > queryHandler,
                     [AsParameters] GetPromocodesRequest request,
                     ILoggerFactory loggerFactory,
@@ -91,8 +85,8 @@ internal static partial class AdminPromocodesEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<AdminPromocodeDto>(
-                            [.. result.Value.Data.Select(u => u.ToDto())],
+                        new ApiCursorResponse<AdminPromocodeResponse>(
+                            [.. result.Value.Data],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
                         )
@@ -102,7 +96,7 @@ internal static partial class AdminPromocodesEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminPromocodeDto>>()
+            .Produces<ApiCursorResponse<AdminPromocodeResponse>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -125,30 +119,24 @@ internal static partial class AdminPromocodesEndpoints
         var code = request.Code is not null ? PromocodeCode.Create(request.Code).Value : null;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<PromocodeId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid promocode id")
-                            : new PromocodeId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid promocode id") : id
                 )
                 .Value
             : null;
 
         var next = request.NextCursor is not null
-            ? KeysetCursor<PromocodeId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid promocode id")
-                            : new PromocodeId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid promocode id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<PromocodeId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
 
         return new GetPromocodesQuery(code, pagination);
     }

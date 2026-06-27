@@ -10,10 +10,17 @@ public partial class TestApp
     ) => await Request("/api/v1/cart", cookie, null, ct);
 
     protected async Task<HttpResponseMessage> AddCartItem(
-        AddCartItemRequest data,
+        Guid productSkuId,
         string? cookie,
         CancellationToken ct = default
-    ) => await Request(data, HttpMethod.Post, "/api/v1/cart/items", cookie, ct);
+    ) =>
+        await Request<object>(
+            null,
+            HttpMethod.Post,
+            $"/api/v1/cart/items{productSkuId}",
+            cookie,
+            ct
+        );
 
     protected async Task<HttpResponseMessage> UpdateCartItemQuantity(
         Guid productSkuId,

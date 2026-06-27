@@ -1,9 +1,9 @@
 using Application.Admin.Products.ProductSkus.Constants;
+using Application.Admin.Products.ProductSkus.Types;
 using Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSkus;
 using Application.Auth.Types;
 using Domain.Products.ProductSkus;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.ProductSkus.Endpoints;
@@ -70,24 +70,20 @@ public sealed class GetProductSkusRequestValidator : AbstractValidator<GetAdminP
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<ProductSkuId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
                     s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product sku id")
-                            : new ProductSkuId(id)
+                        !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product sku id") : id
                 )
             )
             .MaximumLength(ProductSkusConstants.GetProductSkusCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<ProductSkuId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
                     s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product sku id")
-                            : new ProductSkuId(id)
+                        !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product sku id") : id
                 )
             )
             .MaximumLength(ProductSkusConstants.GetProductSkusCursorMaxLength);
@@ -106,7 +102,7 @@ internal static partial class AdminProductSkusEndpoints
                     [AsParameters] GetAdminProductSkusRequest request,
                     IQueryHandler<
                         GetAdminProductSkusQuery,
-                        KeysetPaginated<ProductSku, ProductSkuId>
+                        KeysetPaginated<AdminProductSkuResponse, Guid>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -128,8 +124,8 @@ internal static partial class AdminProductSkusEndpoints
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
                         : Results.Ok(
-                            new ApiCursorResponse<AdminProductSkuDto>(
-                                [.. result.Value.Data.Select(u => u.ToDto())],
+                            new ApiCursorResponse<AdminProductSkuResponse>(
+                                [.. result.Value.Data],
                                 result.Value.PrevCursor?.ToString(),
                                 result.Value.NextCursor?.ToString()
                             )
@@ -139,7 +135,7 @@ internal static partial class AdminProductSkusEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminProductSkuDto>>()
+            .Produces<ApiCursorResponse<AdminProductSkuResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
@@ -177,29 +173,25 @@ internal static partial class AdminProductSkusEndpoints
         var sku = request.Sku is not null ? ProductSkuSku.Create(request.Sku).Value : null;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<ProductSkuId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
                     s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product sku id")
-                            : new ProductSkuId(id)
+                        !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product sku id") : id
                 )
                 .Value
             : null;
         var next = request.NextCursor is not null
-            ? KeysetCursor<ProductSkuId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
                     s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid product sku id")
-                            : new ProductSkuId(id)
+                        !Guid.TryParse(s, out var id) ? Error.Failure("Invalid product sku id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<ProductSkuId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
         var filters = new AdminProductSkusFilters(
             request.InStock,
             minPrice,

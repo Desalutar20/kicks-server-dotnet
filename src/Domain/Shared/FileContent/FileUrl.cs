@@ -6,12 +6,12 @@ public sealed record FileUrl
 {
     public const int MaxLength = 200;
 
-    private FileUrl(string value)
+    private FileUrl(Uri value)
     {
         Value = value;
     }
 
-    public string Value { get; }
+    public Uri Value { get; }
 
     public static Result<FileUrl> Create(string value)
     {
@@ -39,6 +39,6 @@ public sealed record FileUrl
             errors.Add("File URL must be a valid HTTP or HTTPS URL.");
         }
 
-        return errors.Count == 0 ? new FileUrl(value) : Error.Validation("fileUrl", errors);
+        return errors.Count == 0 ? new FileUrl(uri!) : Error.Validation("fileUrl", errors);
     }
 };

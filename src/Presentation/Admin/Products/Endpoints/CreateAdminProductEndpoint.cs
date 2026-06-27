@@ -1,9 +1,10 @@
+using Application.Admin.Products.ProductSkus.Types;
+using Application.Admin.Products.Types;
 using Application.Admin.Products.UseCases.CreateProduct;
 using Application.Auth.Types;
 using Domain.Brands;
 using Domain.Categories;
 using Domain.Products;
-using Presentation.Admin.Products.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Products.Endpoints;
@@ -47,7 +48,7 @@ internal static partial class AdminProductsEndpoints
                 async (
                     HttpContext ctx,
                     CreateProductRequest request,
-                    ICommandHandler<CreateProductCommand, Product> commandHandler,
+                    ICommandHandler<CreateProductCommand, AdminProductResponse> commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -67,16 +68,13 @@ internal static partial class AdminProductsEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Created(
-                            "/",
-                            new ApiResponse<AdminProductDto>(result.Value.ToDto())
-                        );
+                        : Results.Created("/", new ApiResponse<AdminProductResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminProductDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminProductResponse>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

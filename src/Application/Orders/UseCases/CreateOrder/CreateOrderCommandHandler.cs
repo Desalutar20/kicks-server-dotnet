@@ -12,7 +12,7 @@ namespace Application.Orders.UseCases.CreateOrder;
 public sealed record CreateOrderCommand(
     UserId UserId,
     Email Email,
-    NonEmptyString PhoneNumber,
+    PhoneNumber PhoneNumber,
     OrderAddress? BillingAddress,
     OrderAddress DeliveryAddress,
     DeliveryOptionId DeliveryOptionId
@@ -88,12 +88,17 @@ public class CreateOrderCommandHandler(
         foreach (var ci in cart.CartItems)
         {
             var quantity = ci.FinalQuantity;
-            var result = ci.ProductSku.DecreaseQuantity(quantity);
+            if (quantity == 0)
+                continue;
+
+            var positiveQuantity = PositiveInt.Create(quantity).Value;
+
+            var result = ci.ProductSku.DecreaseQuantity(positiveQuantity);
             if (result.IsFailure)
                 return result.Error;
 
             orderItems.Add(
-                new OrderItem(quantity, ci.ProductSku.Price.CurrentPrice, ci.ProductSkuId)
+                new OrderItem(positiveQuantity, ci.ProductSku.Price.CurrentPrice, ci.ProductSkuId)
             );
         }
 

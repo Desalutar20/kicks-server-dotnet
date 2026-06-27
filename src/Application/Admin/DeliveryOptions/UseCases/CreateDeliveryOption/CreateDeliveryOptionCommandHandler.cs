@@ -1,5 +1,7 @@
 using Application.Abstractions.Database;
+using Application.Admin.DeliveryOptions.Constants;
 using Application.Admin.DeliveryOptions.Errors;
+using Application.Admin.DeliveryOptions.Types;
 using Domain.DeliveryOptions;
 using Domain.Shared.ValueObjects;
 
@@ -9,14 +11,15 @@ public sealed record CreateDeliveryOptionCommand(
     DeliveryOptionTitle Title,
     DeliveryOptionDescription Description,
     Money Price
-) : ICommand<DeliveryOption>;
+) : ICommand<DeliveryOptionResponse>;
 
 internal sealed class CreateDeliveryOptionCommandHandler(
+    ICachingService cachingService,
     IDeliveryOptionRepository deliveryOptionRepository,
     IUnitOfWork unitOfWork
-) : ICommandHandler<CreateDeliveryOptionCommand, DeliveryOption>
+) : ICommandHandler<CreateDeliveryOptionCommand, DeliveryOptionResponse>
 {
-    public async Task<Result<DeliveryOption>> Handle(
+    public async Task<Result<DeliveryOptionResponse>> Handle(
         CreateDeliveryOptionCommand command,
         CancellationToken ct = default
     )
@@ -39,8 +42,9 @@ internal sealed class CreateDeliveryOptionCommandHandler(
         );
         deliveryOptionRepository.CreateDeliveryOption(newDeliveryOption);
 
+        await cachingService.DeleteAsync(DeliveryOptionsConstants.CacheKey, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
-        return newDeliveryOption;
+        return newDeliveryOption.ToDto();
     }
 }

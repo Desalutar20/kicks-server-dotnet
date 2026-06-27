@@ -3,7 +3,6 @@ using Application.Admin.Users.Types;
 using Application.Admin.Users.UseCases.GetAllAdminUsers;
 using Application.Auth.Types;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Users.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Users.Endpoints;
@@ -38,24 +37,18 @@ public sealed class GetAdminUsersRequestValidator : AbstractValidator<GetAdminUs
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<UserId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid user id")
-                            : new UserId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid user id") : id
                 )
             )
             .MaximumLength(AdminUsersConstants.GetAdminUsersCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<UserId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid user id")
-                            : new UserId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid user id") : id
                 )
             )
             .MaximumLength(AdminUsersConstants.GetAdminUsersCursorMaxLength);
@@ -75,7 +68,7 @@ internal static partial class AdminUsersEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetAllAdminUsersQuery,
-                        KeysetPaginated<AdminUser, UserId>
+                        KeysetPaginated<AdminUserResponse, Guid>
                     > queryHandler,
                     [AsParameters] GetAdminUsersRequest request,
                     ILoggerFactory loggerFactory,
@@ -105,8 +98,8 @@ internal static partial class AdminUsersEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<AdminUserDto>(
-                            [.. result.Value.Data.Select(u => u.ToDto())],
+                        new ApiCursorResponse<AdminUserResponse>(
+                            [.. result.Value.Data],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
                         )
@@ -116,7 +109,7 @@ internal static partial class AdminUsersEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminUserDto>>()
+            .Produces<ApiCursorResponse<AdminUserResponse>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -145,31 +138,25 @@ internal static partial class AdminUsersEndpoints
             : null;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<UserId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid user id")
-                            : new UserId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid user id") : id
                 )
                 .Value
             : null;
 
         var next = request.NextCursor is not null
-            ? KeysetCursor<UserId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid user id")
-                            : new UserId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid user id") : id
                 )
                 .Value
             : null;
 
         var filters = new UsersFilters(search, gender, request.IsBanned, request.IsVerified);
-        var pagination = new KeysetPagination<UserId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
 
         return new GetAllAdminUsersQuery(filters, pagination);
     }

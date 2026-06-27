@@ -6,6 +6,6 @@ internal static partial class OrderEndpoints
     {
         var group = router.MapGroup("/orders").WithTags("Orders");
 
-        group.GetOrdersV1().GetOrderV1().CreateOrderV1();
+        group.GetOrdersV1().GetOrderV1().CreateOrderV1().CreateOrderPaymentV1();
     }
 }

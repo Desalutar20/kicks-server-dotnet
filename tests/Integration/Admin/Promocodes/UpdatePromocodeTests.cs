@@ -1,3 +1,4 @@
+using Application.Admin.Promocodes.Types;
 using Domain.Promocodes;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Promocodes.Dto;
@@ -19,9 +20,9 @@ public sealed class UpdatePromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await GetPromocodes(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminPromocodeResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var newCode = TestData.String(PromocodeCode.MaxLength);
@@ -72,9 +73,9 @@ public sealed class UpdatePromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await GetPromocodes(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminPromocodeResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var updatePromocodeRequest = new UpdatePromocodeRequest(
@@ -105,13 +106,13 @@ public sealed class UpdatePromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await GetPromocodes(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminPromocodeResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var promocodeWithPercentageType = body.Data.FirstOrDefault(p =>
-            p.Type == PromocodeType.Percent
+            p.Type == nameof(PromocodeType.Percent)
         );
         if (promocodeWithPercentageType is null)
             return;

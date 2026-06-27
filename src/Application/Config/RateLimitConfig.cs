@@ -24,4 +24,5 @@ public sealed record RateLimitConfig
     public required int CreateOrder { get; init; }
     public required int GetOrders { get; init; }
     public required int GetOrder { get; init; }
+    public required int GetDeliveryOptions { get; init; }
 }

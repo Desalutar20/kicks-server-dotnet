@@ -16,7 +16,7 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.Application.ResetPasswordTtlMinutes).InclusiveBetween(5, 10);
         RuleFor(x => x.Application.OAuthStateTtlMinutes).InclusiveBetween(3, 5);
         RuleFor(x => x.Application.OrderExpirationTtlMinutes)
-            .LessThanOrEqualTo(DomainOrder.ExpirationMaxMinutes);
+            .InclusiveBetween(10, DomainOrder.ExpirationMaxMinutes);
         RuleFor(x => x.Application.OAuthStateTtlMinutes).InclusiveBetween(3, 5);
 
         RuleFor(x => x.Application.CookieSecure).NotNull();
@@ -59,6 +59,9 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.Cloudinary.CloudName).NotEmpty();
         RuleFor(x => x.Cloudinary.Folder).NotEmpty();
 
+        RuleFor(x => x.Stripe).NotEmpty();
+        RuleFor(x => x.Stripe.Secret).NotEmpty();
+
         RuleFor(x => x.RateLimit).NotEmpty();
         RuleFor(x => x.RateLimit.SignUp).NotEmpty();
         RuleFor(x => x.RateLimit.SignIn).NotEmpty();
@@ -80,5 +83,6 @@ internal sealed class ConfigValidator : AbstractValidator<Config>
         RuleFor(x => x.RateLimit.CreateOrder).NotEmpty();
         RuleFor(x => x.RateLimit.GetOrders).NotEmpty();
         RuleFor(x => x.RateLimit.GetOrder).NotEmpty();
+        RuleFor(x => x.RateLimit.GetDeliveryOptions).NotEmpty();
     }
 }

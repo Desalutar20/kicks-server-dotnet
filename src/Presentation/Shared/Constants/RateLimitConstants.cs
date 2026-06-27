@@ -25,4 +25,5 @@ public static class RateLimitConstants
     public const string CreateOrder = "CreateOrder";
     public const string GetOrders = "GetOrders";
     public const string GetOrder = "GetOrder";
+    public const string GetDeliveryOptions = "GetDeliveryOptions";
 }

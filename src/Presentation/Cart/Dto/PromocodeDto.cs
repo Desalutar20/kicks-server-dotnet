@@ -12,7 +12,7 @@ public sealed record PromocodeDto(
 internal static class PromocodeDtoMapper
 {
     public static PromocodeDto ToDto(this Promocode promocode) =>
-        new PromocodeDto(
+        new(
             promocode.DiscountValue.Value,
             promocode.Type,
             promocode.ValidityPeriod.ValidTo,

@@ -1,5 +1,5 @@
+using Application.Admin.Brands.Types;
 using Domain.Brands;
-using Presentation.Admin.Brands.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Brands;
@@ -17,7 +17,9 @@ public sealed class DeleteBrandTests(ApiFactory factory) : TestApp(factory)
         var response = await GetBrands(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminBrandResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var deleteBrandResponse = await DeleteBrand(body.Data[0].Id, sessionCookie, ct);

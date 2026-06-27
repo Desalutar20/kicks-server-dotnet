@@ -9,17 +9,23 @@
       - "4000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      OTEL_SERVICE_NAME: Kicks.Api
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
 
       Application__ClientUrl: ${CLIENT_URL}
       Application__SessionCookieName: ${SESSION_COOKIE_NAME}
       Application__OAuthStateCookieName: ${OAUTH_STATE_COOKIE_NAME}
       Application__CookieSecure: ${COOKIE_SECURE}
+      Application__MaxCancelledOrdersPerDay: ${MAX_CANCELLED_ORDERS_PER_DAY}
       Application__AccountVerificationPath: ${ACCOUNT_VERIFICATION_PATH}
       Application__ResetPasswordPath: ${RESET_PASSWORD_PATH}
       Application__AccountVerificationTtlMinutes: ${ACCOUNT_VERIFICATION_TTL_MINUTES}
       Application__SessionTtlMinutes: ${SESSION_TTL_MINUTES}
       Application__OAUthStateTtlMinutes: ${OAUTH_STATE_TTL_MINUTES}
       Application__ResetPasswordTtlMinutes: ${RESET_PASSWORD_TTL_MINUTES}
+      Application__OrderExpirationTtlMinutes: ${ORDER_EXPIRATION_TTL_MINUTES}
+
 
       OAuth__Google__ClientId: ${OAUTH_GOOGLE_CLIENT_ID}
       OAuth__Google__ClientSecret: ${OAUTH_GOOGLE_CLIENT_SECRET}
@@ -52,6 +58,8 @@
       Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME}
       Cloudinary__Folder: ${CLOUDINARY_FOLDER}
 
+      Stripe__Secret: ${STRIPE_SECRET}
+
       RateLimit__SignUp: ${RATELIMIT_SIGN_UP}
       RateLimit__SignIn: ${RATELIMIT_SIGN_IN}
       RateLimit__VerifyAccount: ${RATELIMIT_VERIFY_ACCOUNT}
@@ -62,6 +70,17 @@
       RateLimit__GetProductSku: ${RATELIMIT_GET_PRODUCT_SKU}
       RateLimit__GetProductSkus: ${RATELIMIT_GET_PRODUCT_SKUS}
       RateLimit__GetProductSkusFilters: ${RATELIMIT_GET_PRODUCT_SKUS_FILTERS}
+      RateLimit__GetCart: ${RATELIMIT_GET_CART}
+      RateLimit__AddCartItem: ${RATELIMIT_ADD_CART_ITEM}
+      RateLimit__UpdateCartItemQuantity: ${RATELIMIT_UPDATE_CART_ITEM_QUANTITY}
+      RateLimit__RemoveCartItem: ${RATELIMIT_REMOVE_CART_ITEM}
+      RateLimit__ClearCart: ${RATELIMIT_CLEAR_CART}
+      RateLimit__ApplyPromocode: ${RATELIMIT_APPLY_PROMOCODE}
+      RateLimit__RemovePromocode: ${RATELIMIT_REMOVE_PROMOCODE}
+      RateLimit__CreateOrder: ${RATELIMIT_CREATE_ORDER}
+      RateLimit__GetOrders: ${RATELIMIT_GET_ORDERS}
+      RateLimit__GetOrder: ${RATELIMIT_GET_ORDER}
+      RateLimit__GetDeliveryOptions: ${RATELIMIT_GET_DELIVERY_OPTIONS}
 
     depends_on:
       postgres:
@@ -116,6 +135,50 @@
     volumes:
       - kicks-seq-data:/data
 
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: kicks-otel-collector
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml
+    ports:
+      - "4317:4317"
+      - "9464:9464"
+    depends_on:
+      - jaeger
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:v3.5.4
+    container_name: kicks-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+    - kicks-prometheus-data:/prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: kicks-jaeger
+    ports:
+      - "16686:16686"
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:16686/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  node_exporter:
+      image: quay.io/prometheus/node-exporter:latest
+      container_name: kicks-node-exporter
+      command:
+        - '--path.rootfs=/host'
+      pid: host
+      restart: unless-stopped
+      volumes:
+        - '/:/host:ro,rslave'
   mailpit:
     image: axllent/mailpit:v1.27.4
     container_name: kicks-mailpit
@@ -135,3 +198,4 @@ volumes:
   kicks-postgres-data:
   kicks-redis-data:
   kicks-seq-data:
+  kicks-prometheus-data:

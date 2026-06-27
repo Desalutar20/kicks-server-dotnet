@@ -4,21 +4,25 @@ namespace Application.ProductSkus.UseCases.GetProductSku;
 
 public sealed record GetProductSkuQuery(ProductSkuId Id) : IQuery<ProductSkuWithVariants>;
 
-internal sealed class GetProductSkuQueryHandler(IProductSkusRepository productSkusRepository)
-    : IQueryHandler<GetProductSkuQuery, ProductSkuWithVariants>
+internal sealed class GetProductSkuQueryHandler(
+    IProductSkusReadRepository productSkusReadRepository
+) : IQueryHandler<GetProductSkuQuery, ProductSkuWithVariants>
 {
     public async Task<Result<ProductSkuWithVariants>> Handle(
         GetProductSkuQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await productSkusRepository.GetProductSkuByIdAsync(query.Id, false, ct);
+        var data = await productSkusReadRepository.GetProductSkuByIdAsync(query.Id, ct);
         if (data is null)
         {
             return Error.Failure($"Product sku with id '{query.Id}' doesn't exist");
         }
 
-        var skus = await productSkusRepository.GetVariants(data.ProductId, false, ct);
+        var skus = await productSkusReadRepository.GetVariants(
+            new ProductId(data.Product.ProductId),
+            ct
+        );
 
         var variants = skus.GroupBy(x => x.Size)
             .Select(g =>

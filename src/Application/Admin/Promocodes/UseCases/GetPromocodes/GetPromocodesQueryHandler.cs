@@ -1,24 +1,24 @@
+using Application.Admin.Promocodes.Types;
 using Domain.Promocodes;
 
 namespace Application.Admin.Promocodes.UseCases.GetPromocodes;
 
 public sealed record GetPromocodesQuery(
     PromocodeCode? Code,
-    KeysetPagination<PromocodeId> KeysetPagination
-) : IQuery<KeysetPaginated<Promocode, PromocodeId>>;
+    KeysetPagination<Guid> KeysetPagination
+) : IQuery<KeysetPaginated<AdminPromocodeResponse, Guid>>;
 
-internal sealed class GetPromocodesQueryHandler(IPromocodeRepository promocodeRepository)
-    : IQueryHandler<GetPromocodesQuery, KeysetPaginated<Promocode, PromocodeId>>
+internal sealed class GetPromocodesQueryHandler(IPromocodeReadRepository promocodeReadRepository)
+    : IQueryHandler<GetPromocodesQuery, KeysetPaginated<AdminPromocodeResponse, Guid>>
 {
-    public async Task<Result<KeysetPaginated<Promocode, PromocodeId>>> Handle(
+    public async Task<Result<KeysetPaginated<AdminPromocodeResponse, Guid>>> Handle(
         GetPromocodesQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await promocodeRepository.GetPromocodesAsync(
+        var data = await promocodeReadRepository.GetPromocodesAsync(
             query.Code,
             query.KeysetPagination,
-            false,
             ct
         );
 

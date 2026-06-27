@@ -1,3 +1,4 @@
+using Application.Admin.Promocodes.Types;
 using Domain.Promocodes;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Admin.Promocodes.Dto;
@@ -21,9 +22,9 @@ public sealed class CreatePromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await CreatePromocode(createPromocodeRequest, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var promocode = await response.Content.ReadFromJsonAsync<ApiResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var promocode = await response.Content.ReadFromJsonAsync<
+            ApiResponse<AdminPromocodeResponse>
+        >(ct);
 
         var promocodeFromDb = await GetPromocodeFromDbById(new PromocodeId(promocode!.Data.Id), ct);
         promocodeFromDb.Should().NotBeNull();

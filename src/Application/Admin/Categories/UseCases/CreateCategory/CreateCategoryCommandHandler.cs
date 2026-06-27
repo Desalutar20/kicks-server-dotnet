@@ -1,17 +1,18 @@
 using Application.Abstractions.Database;
 using Application.Admin.Categories.Errors;
+using Application.Admin.Categories.Types;
 using Domain.Categories.Exceptions;
 
 namespace Application.Admin.Categories.UseCases.CreateCategory;
 
-public sealed record CreateCategoryCommand(CategoryName Name) : ICommand<Category>;
+public sealed record CreateCategoryCommand(CategoryName Name) : ICommand<AdminCategoryResponse>;
 
 internal sealed class CreateCategoryCommandHandler(
     ICategoryRepository categoryRepository,
     IUnitOfWork unitOfWork
-) : ICommandHandler<CreateCategoryCommand, Category>
+) : ICommandHandler<CreateCategoryCommand, AdminCategoryResponse>
 {
-    public async Task<Result<Category>> Handle(
+    public async Task<Result<AdminCategoryResponse>> Handle(
         CreateCategoryCommand command,
         CancellationToken ct = default
     )
@@ -23,7 +24,7 @@ internal sealed class CreateCategoryCommandHandler(
 
             await unitOfWork.SaveChangesAsync(ct);
 
-            return newCategory;
+            return newCategory.ToDto();
         }
         catch (CategoryAlreadyExistsException)
         {

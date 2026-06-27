@@ -2,6 +2,8 @@ using Application.Abstractions.Database;
 using Application.Abstractions.FileUploader;
 using Application.Abstractions.Messaging;
 using Application.Admin.Products.ProductSkus.Errors;
+using Application.Admin.Products.ProductSkus.Types;
+using Application.ProductSkus;
 using Domain.Products.ProductSkus.Exceptions;
 using Domain.Shared.ValueObjects;
 
@@ -16,16 +18,17 @@ public sealed record UpdateProductSkuCommand(
     ProductSkuColor? Color,
     ProductSkuSku? Sku,
     List<FileData>? Images
-) : ICommand<ProductSku>;
+) : ICommand<AdminProductSkuResponse>;
 
 internal sealed class UpdateProductSkuCommandHandler(
     IFileUploader fileUploader,
     IUnitOfWork unitOfWork,
     IProductSkusRepository productSkusRepository,
+    IProductSkusReadRepository productSkusReadRepository,
     IMessageQueue<IEnumerable<FileUploadResult>> messageQueue
-) : ICommandHandler<UpdateProductSkuCommand, ProductSku>
+) : ICommandHandler<UpdateProductSkuCommand, AdminProductSkuResponse>
 {
-    public async Task<Result<ProductSku>> Handle(
+    public async Task<Result<AdminProductSkuResponse>> Handle(
         UpdateProductSkuCommand command,
         CancellationToken ct = default
     )
@@ -88,7 +91,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             await unitOfWork.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
 
-            return productSku;
+            return productSku.ToDto();
         }
         catch (ProductSkuDuplicateCombinationException)
         {
@@ -119,7 +122,7 @@ internal sealed class UpdateProductSkuCommandHandler(
     {
         if (command.Sku is not null && command.Sku != productSku.Sku)
         {
-            var existsBySku = await productSkusRepository.ExistsBySkuAsync(command.Sku, ct);
+            var existsBySku = await productSkusReadRepository.ExistsBySkuAsync(command.Sku, ct);
             if (existsBySku)
             {
                 return AdminProductSkuErrors.ProductSkuAlreadyExists(command.Sku);
@@ -132,7 +135,7 @@ internal sealed class UpdateProductSkuCommandHandler(
         if (!colorChanged && !sizeChanged)
             return Result.Success();
 
-        var existsBySizeOrColor = await productSkusRepository.ExistsByProductSizeColorAsync(
+        var existsBySizeOrColor = await productSkusReadRepository.ExistsByProductSizeColorAsync(
             productSku.ProductId,
             command.Size ?? productSku.Size,
             command.Color ?? productSku.Color,

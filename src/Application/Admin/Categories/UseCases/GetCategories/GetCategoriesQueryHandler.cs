@@ -1,24 +1,24 @@
+using Application.Admin.Categories.Types;
 using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.Categories.UseCases.GetCategories;
 
 public sealed record GetCategoriesQuery(
     NonEmptyString? Search,
-    KeysetPagination<CategoryId> KeysetPagination
-) : IQuery<KeysetPaginated<Category, CategoryId>>;
+    KeysetPagination<Guid> KeysetPagination
+) : IQuery<KeysetPaginated<AdminCategoryResponse, Guid>>;
 
-internal sealed class GetCategoriesQueryHandler(ICategoryRepository categoryRepository)
-    : IQueryHandler<GetCategoriesQuery, KeysetPaginated<Category, CategoryId>>
+internal sealed class GetCategoriesQueryHandler(ICategoryReadRepository categoryReadRepository)
+    : IQueryHandler<GetCategoriesQuery, KeysetPaginated<AdminCategoryResponse, Guid>>
 {
-    public async Task<Result<KeysetPaginated<Category, CategoryId>>> Handle(
+    public async Task<Result<KeysetPaginated<AdminCategoryResponse, Guid>>> Handle(
         GetCategoriesQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await categoryRepository.GetCategoriesAsync(
+        var data = await categoryReadRepository.GetCategoriesAsync(
             query.Search,
             query.KeysetPagination,
-            false,
             ct
         );
 

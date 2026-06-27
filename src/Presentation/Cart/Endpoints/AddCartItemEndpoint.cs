@@ -1,24 +1,11 @@
 using Application.Auth.Types;
 using Application.Carts.UseCases.AddCartItem;
 using Domain.Products.ProductSkus;
-using Domain.Shared.ValueObjects;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Cart.Endpoints;
 
-public sealed record AddCartItemRequest(string ProductSkuId, int Quantity);
-
-public sealed class AddCartItemRequestValidator : AbstractValidator<AddCartItemRequest>
-{
-    public AddCartItemRequestValidator()
-    {
-        RuleFor(x => x.ProductSkuId)
-            .Must(x => Guid.TryParse(x, out _))
-            .WithMessage("Invalid product sku id");
-
-        RuleFor(x => x.Quantity).ValidateValueObject(x => PositiveInt.Create(x, label: "Quantity"));
-    }
-}
+public sealed record AddCartItemRequest(string ProductSkuId);
 
 internal static partial class CartEndpoints
 {
@@ -26,9 +13,9 @@ internal static partial class CartEndpoints
     {
         endpoint
             .MapPost(
-                "/items",
+                "/items/{id:guid}",
                 async (
-                    AddCartItemRequest request,
+                    Guid id,
                     ICommandHandler<AddCartItemCommand> commandHandler,
                     HttpContext ctx,
                     ILoggerFactory loggerFactory,
@@ -45,7 +32,7 @@ internal static partial class CartEndpoints
 
                     var logger = loggerFactory.CreateLogger("AddCartItem");
 
-                    var command = request.ToCommand(sessionUser.Id);
+                    var command = new AddCartItemCommand(sessionUser.Id, new ProductSkuId(id));
                     var result = await commandHandler.Handle(command, ct);
 
                     return result.IsFailure
@@ -68,13 +55,5 @@ internal static partial class CartEndpoints
             .RequireRateLimiting(RateLimitConstants.AddCartItem);
 
         return endpoint;
-    }
-
-    private static AddCartItemCommand ToCommand(this AddCartItemRequest request, UserId userId)
-    {
-        var productSkuId = new ProductSkuId(Guid.Parse(request.ProductSkuId));
-        var quantity = PositiveInt.Create(request.Quantity).Value;
-
-        return new AddCartItemCommand(userId, productSkuId, quantity);
     }
 }

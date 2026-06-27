@@ -1,6 +1,6 @@
+using Application.Admin.DeliveryOptions.Types;
 using Application.Admin.DeliveryOptions.UseCases.GetAdminDeliveryOptions;
 using Application.Auth.Types;
-using Domain.DeliveryOptions;
 using Presentation.DeliveryOptions.Dto;
 using Presentation.Shared.Extensions;
 
@@ -17,7 +17,7 @@ internal static partial class DeliveryOptionsEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetAdminDeliveryOptionsQuery,
-                        IReadOnlyList<DeliveryOption>
+                        IReadOnlyList<DeliveryOptionResponse>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -54,7 +54,8 @@ internal static partial class DeliveryOptionsEndpoints
             .ProducesValidationProblem()
             .WithName("GetDeliveryOptions")
             .WithSummary("Retrieves list of delivery options.")
-            .WithDescription("Returns a list of delivery options. ");
+            .WithDescription("Returns a list of delivery options.")
+            .RequireRateLimiting(RateLimitConstants.GetDeliveryOptions);
 
         return endpoint;
     }

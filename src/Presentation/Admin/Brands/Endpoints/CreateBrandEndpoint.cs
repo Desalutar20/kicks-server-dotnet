@@ -1,7 +1,7 @@
+using Application.Admin.Brands.Types;
 using Application.Admin.Brands.UseCases.CreateBrand;
 using Application.Auth.Types;
 using Domain.Brands;
-using Presentation.Admin.Brands.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
@@ -26,7 +26,7 @@ internal static partial class AdminBrandsEndpoints
                 async (
                     HttpContext ctx,
                     CreateBrandRequest request,
-                    ICommandHandler<CreateBrandCommand, Brand> commandHandler,
+                    ICommandHandler<CreateBrandCommand, AdminBrandResponse> commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
                 ) =>
@@ -45,16 +45,13 @@ internal static partial class AdminBrandsEndpoints
                     var result = await commandHandler.Handle(command, ct);
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Created(
-                            "/",
-                            new ApiResponse<AdminBrandDto>(result.Value.ToDto())
-                        );
+                        : Results.Created("/", new ApiResponse<AdminBrandResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminBrandDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminBrandResponse>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

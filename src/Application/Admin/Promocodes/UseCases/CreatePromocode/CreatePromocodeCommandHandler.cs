@@ -1,5 +1,6 @@
 using Application.Abstractions.Database;
 using Application.Admin.Promocodes.Errors;
+using Application.Admin.Promocodes.Types;
 using Domain.Promocodes;
 using Domain.Promocodes.Exceptions;
 using Domain.Shared.ValueObjects;
@@ -12,14 +13,14 @@ public sealed record CreatePromocodeCommand(
     PromocodeValidityPeriod ValidityPeriod,
     PositiveInt UsageLimit,
     PromocodeCode Code
-) : ICommand<Promocode>;
+) : ICommand<AdminPromocodeResponse>;
 
 internal sealed class CreatePromocodeCommandHandler(
     IPromocodeRepository promocodeRepository,
     IUnitOfWork unitOfWork
-) : ICommandHandler<CreatePromocodeCommand, Promocode>
+) : ICommandHandler<CreatePromocodeCommand, AdminPromocodeResponse>
 {
-    public async Task<Result<Promocode>> Handle(
+    public async Task<Result<AdminPromocodeResponse>> Handle(
         CreatePromocodeCommand command,
         CancellationToken ct = default
     )
@@ -42,7 +43,7 @@ internal sealed class CreatePromocodeCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return promocode;
+            return promocode.Value.ToDto();
         }
         catch (PromocodeAlreadyExistsException)
         {

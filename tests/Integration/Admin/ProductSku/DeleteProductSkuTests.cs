@@ -1,5 +1,5 @@
+using Application.Admin.Products.ProductSkus.Types;
 using Domain.Products.ProductSkus;
-using Presentation.Admin.Products.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.ProductSku;
@@ -17,9 +17,9 @@ public sealed class DeleteProductSkuTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminProductSkuDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminProductSkuResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var deleteProductSkuResponse = await DeleteProductSku(body.Data[0].Id, sessionCookie, ct);

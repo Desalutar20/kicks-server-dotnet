@@ -1,6 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
 using Presentation.Cart.Dto;
-using Presentation.Cart.Endpoints;
 using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 
@@ -22,11 +20,7 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getCartResponse = await GetCart(sessionCookie, ct);
@@ -54,18 +48,10 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
         body.Should().NotBeNull();
 
-        var addCartItemResponse = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var addCartItemResponse2 = await AddCartItem(
-            new AddCartItemRequest(body.Data[0].Id.ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var addCartItemResponse2 = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
         addCartItemResponse2.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var getCartResponse = await GetCart(sessionCookie, ct);
@@ -77,27 +63,6 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         cart.Data.Items.Count.Should().Be(1);
         cart.Data.Items[0].ProductSku.Id.Should().Be(body.Data[0].Id);
         cart.Data.Items[0].Quantity.Should().Be(10);
-    }
-
-    [Theory]
-    [MemberData(nameof(InvalidRequests))]
-    public async ValueTask Should_ReturnBadRequest_When_RequestIsInvalid(
-        string field,
-        AddCartItemRequest invalidRequest
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        var request = TestData.SignUpRequest();
-        var sessionCookie = await CreateAndSignIn(request, ct);
-
-        var response = await AddCartItem(invalidRequest, sessionCookie, ct);
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var error = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(ct);
-
-        error!.Status.Should().Be(400);
-        error.Errors[field].Should().NotBeNull();
     }
 
     [Fact]
@@ -117,22 +82,14 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
 
         foreach (var id in productSkuIds.Take(Domain.Carts.Cart.MaxCartItemsLength))
         {
-            var response = await AddCartItem(
-                new AddCartItemRequest(id.ToString(), 5),
-                sessionCookie,
-                ct
-            );
+            var response = await AddCartItem(id, sessionCookie, ct);
 
             responses.Add(response);
         }
 
         responses.Should().AllSatisfy(r => r.StatusCode.Should().Be(HttpStatusCode.OK));
 
-        var lastResponse = await AddCartItem(
-            new AddCartItemRequest(productSkuIds.Last().ToString(), 5),
-            sessionCookie,
-            ct
-        );
+        var lastResponse = await AddCartItem(productSkuIds.Last(), sessionCookie, ct);
 
         lastResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -145,8 +102,7 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
         var request = TestData.SignUpRequest();
         var sessionCookie = await CreateAndSignIn(request, ct);
 
-        var addCartItemRequest = new AddCartItemRequest(Guid.NewGuid().ToString(), 5);
-        var updateProductSkuResponse = await AddCartItem(addCartItemRequest, sessionCookie, ct);
+        var updateProductSkuResponse = await AddCartItem(Guid.NewGuid(), sessionCookie, ct);
 
         updateProductSkuResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -155,18 +111,8 @@ public sealed class AddCartItemTests(ApiFactory factory) : TestApp(factory)
     public async ValueTask Should_ReturnUnauthorized_When_UserNotSignedIn()
     {
         var ct = TestContext.Current.CancellationToken;
-        var request = new AddCartItemRequest("", 5);
 
-        var response = await AddCartItem(request, null, ct);
+        var response = await AddCartItem(Guid.NewGuid(), null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
-
-    public static TheoryData<string, AddCartItemRequest> InvalidRequests() =>
-        [
-            ("productSkuId", new AddCartItemRequest("", 5)),
-            ("productSkuId", new AddCartItemRequest("   ", 5)),
-            ("productSkuId", new AddCartItemRequest("not guid", 5)),
-            ("quantity", new AddCartItemRequest("3fc20a06-f07d-4427-9731-ee8899636a8c", 0)),
-            ("quantity", new AddCartItemRequest("3fc20a06-f07d-4427-9731-ee8899636a8c", -1)),
-        ];
 }

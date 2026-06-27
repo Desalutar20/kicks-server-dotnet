@@ -1,4 +1,4 @@
-using Presentation.Admin.Users.Dto;
+using Application.Admin.Users.Types;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Users;
@@ -16,7 +16,9 @@ public sealed class DeleteUserTests(ApiFactory factory) : TestApp(factory)
         var response = await GetAdminUsers(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminUserDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminUserResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var toggleBanUserResponse = await DeleteUser(body.Data[0].Id, sessionCookie, ct);

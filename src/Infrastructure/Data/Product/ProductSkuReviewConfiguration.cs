@@ -63,17 +63,19 @@ public class ProductSkuReviewConfiguration : IEntityTypeConfiguration<ProductSku
 
                 x.WithOwner().HasForeignKey("ProductSkuReviewId");
 
-                x.Property(x => x.Url)
-                    .HasConversion(x => x.Value, value => FileUrl.Create(value).Value)
-                    .IsRequired()
-                    .HasMaxLength(FileUrl.MaxLength);
+                x.Property(x => x.Id).IsRequired().HasJsonPropertyName("id");
 
-                x.Property(x => x.Id).IsRequired();
+                x.Property(x => x.Url)
+                    .HasConversion(x => x.Value.ToString(), value => FileUrl.Create(value).Value)
+                    .IsRequired()
+                    .HasMaxLength(FileUrl.MaxLength)
+                    .HasJsonPropertyName("url");
 
                 x.Property(x => x.Name)
                     .HasConversion(x => x.FullName, value => FileName.Create(value).Value)
                     .IsRequired()
-                    .HasMaxLength(FileName.MaxLength);
+                    .HasMaxLength(FileName.MaxLength)
+                    .HasJsonPropertyName("name");
             }
         );
 
@@ -89,7 +91,7 @@ public class ProductSkuReviewConfiguration : IEntityTypeConfiguration<ProductSku
 
         builder
             .HasOne<ProductSku>()
-            .WithMany(x => x.Reviews)
+            .WithMany()
             .HasForeignKey(x => x.ProductSkuId)
             .OnDelete(DeleteBehavior.Cascade);
 

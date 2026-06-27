@@ -1,9 +1,8 @@
 using Application.Admin.Brands.Constants;
+using Application.Admin.Brands.Types;
 using Application.Admin.Brands.UseCases.GetBrands;
 using Application.Auth.Types;
-using Domain.Brands;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.Brands.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.Brands.Endpoints;
@@ -32,24 +31,18 @@ public sealed class GetBrandsRequestValidator : AbstractValidator<GetBrandsReque
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<BrandId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid brand id")
-                            : new BrandId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid brand id") : id
                 )
             )
             .MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<BrandId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid brand id")
-                            : new BrandId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid brand id") : id
                 )
             )
             .MaximumLength(BrandsConstants.GetBrandsCursorMaxLength);
@@ -65,7 +58,10 @@ internal static partial class AdminBrandsEndpoints
                 "/",
                 async (
                     HttpContext ctx,
-                    IQueryHandler<GetBrandsQuery, KeysetPaginated<Brand, BrandId>> queryHandler,
+                    IQueryHandler<
+                        GetBrandsQuery,
+                        KeysetPaginated<AdminBrandResponse, Guid>
+                    > queryHandler,
                     [AsParameters] GetBrandsRequest request,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -90,8 +86,8 @@ internal static partial class AdminBrandsEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiCursorResponse<AdminBrandDto>(
-                            [.. result.Value.Data.Select(u => u.ToDto())],
+                        new ApiCursorResponse<AdminBrandResponse>(
+                            [.. result.Value.Data],
                             result.Value.PrevCursor?.ToString(),
                             result.Value.NextCursor?.ToString()
                         )
@@ -101,7 +97,7 @@ internal static partial class AdminBrandsEndpoints
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<AdminBrandDto>>()
+            .Produces<ApiCursorResponse<AdminBrandResponse>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -126,30 +122,24 @@ internal static partial class AdminBrandsEndpoints
             : null;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<BrandId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid brand id")
-                            : new BrandId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid brand id") : id
                 )
                 .Value
             : null;
 
         var next = request.NextCursor is not null
-            ? KeysetCursor<BrandId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid brand id")
-                            : new BrandId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid brand id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<BrandId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
 
         return new GetBrandsQuery(search, pagination);
     }

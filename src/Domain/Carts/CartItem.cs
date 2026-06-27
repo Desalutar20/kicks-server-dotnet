@@ -17,8 +17,8 @@ public sealed class CartItem
     public ProductSkuId ProductSkuId { get; private set; } = null!;
     public ProductSku ProductSku { get; private set; } = null!;
 
-    public PositiveInt FinalQuantity =>
-        Quantity > ProductSku.Quantity ? PositiveInt.Create(ProductSku.Quantity).Value : Quantity;
+    public int FinalQuantity =>
+        Quantity > ProductSku.Quantity ? ProductSku.Quantity : Quantity.Value;
 
     public void UpdateQuantity(PositiveInt quantity) => Quantity = quantity;
 }

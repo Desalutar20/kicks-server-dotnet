@@ -1,6 +1,6 @@
 using Application.Admin.Promocodes.Constants;
+using Application.Admin.Promocodes.Types;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.Promocodes.Dto;
 using Presentation.Admin.Promocodes.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -19,9 +19,9 @@ public sealed class GetPromocodesTests(ApiFactory factory) : TestApp(factory)
         var response = await GetPromocodes(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminPromocodeDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminPromocodeResponse>
+        >(ct);
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(PromocodesConstants.GetPromocodesDefaultLimit);

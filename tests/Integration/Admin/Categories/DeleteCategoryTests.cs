@@ -1,5 +1,5 @@
+using Application.Admin.Categories.Types;
 using Domain.Categories;
-using Presentation.Admin.Categories.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.Categories;
@@ -17,9 +17,9 @@ public sealed class DeleteCategoryTests(ApiFactory factory) : TestApp(factory)
         var response = await GetCategories(null, sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<AdminCategoryDto>>(
-            ct
-        );
+        var body = await response.Content.ReadFromJsonAsync<
+            ApiCursorResponse<AdminCategoryResponse>
+        >(ct);
         body.Should().NotBeNull();
 
         var deleteCategoryResponse = await DeleteCategory(body.Data[0].Id, sessionCookie, ct);

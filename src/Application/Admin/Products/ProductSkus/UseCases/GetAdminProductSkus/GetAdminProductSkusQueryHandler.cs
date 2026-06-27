@@ -1,22 +1,25 @@
+using Application.Admin.Products.ProductSkus.Types;
+using Application.ProductSkus;
+
 namespace Application.Admin.Products.ProductSkus.UseCases.GetAdminProductSkus;
 
 public sealed record GetAdminProductSkusQuery(
     AdminProductSkusFilters Filters,
-    KeysetPagination<ProductSkuId> KeysetPagination
-) : IQuery<KeysetPaginated<ProductSku, ProductSkuId>>;
+    KeysetPagination<Guid> KeysetPagination
+) : IQuery<KeysetPaginated<AdminProductSkuResponse, Guid>>;
 
-internal sealed class GetAdminProductSkusQueryHandler(IProductSkusRepository productSkusRepository)
-    : IQueryHandler<GetAdminProductSkusQuery, KeysetPaginated<ProductSku, ProductSkuId>>
+internal sealed class GetAdminProductSkusQueryHandler(
+    IProductSkusReadRepository productSkusReadRepository
+) : IQueryHandler<GetAdminProductSkusQuery, KeysetPaginated<AdminProductSkuResponse, Guid>>
 {
-    public async Task<Result<KeysetPaginated<ProductSku, ProductSkuId>>> Handle(
+    public async Task<Result<KeysetPaginated<AdminProductSkuResponse, Guid>>> Handle(
         GetAdminProductSkusQuery query,
         CancellationToken ct = default
     )
     {
-        var data = await productSkusRepository.GetAdminProductSkusAsync(
+        var data = await productSkusReadRepository.GetAdminProductSkusAsync(
             query.Filters,
             query.KeysetPagination,
-            false,
             ct
         );
 

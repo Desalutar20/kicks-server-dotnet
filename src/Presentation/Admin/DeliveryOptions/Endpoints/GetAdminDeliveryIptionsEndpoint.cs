@@ -1,3 +1,4 @@
+using Application.Admin.DeliveryOptions.Types;
 using Application.Admin.DeliveryOptions.UseCases.GetAdminDeliveryOptions;
 using Application.Auth.Types;
 using Domain.DeliveryOptions;
@@ -19,7 +20,7 @@ internal static partial class DeliveryOptionsEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetAdminDeliveryOptionsQuery,
-                        IReadOnlyList<DeliveryOption>
+                        IReadOnlyList<DeliveryOptionResponse>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
