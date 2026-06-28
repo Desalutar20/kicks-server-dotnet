@@ -1,6 +1,6 @@
-using Presentation.Cart.Dto;
+using Application.Carts.Types;
+using Application.ProductSkus.Types;
 using Presentation.Cart.Endpoints;
-using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Dto;
 
 namespace Integration.Cart;
@@ -18,7 +18,9 @@ public sealed class ApplyPromocodeTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
@@ -39,7 +41,7 @@ public sealed class ApplyPromocodeTests(ApiFactory factory) : TestApp(factory)
         var getCartResponse = await GetCart(sessionCookie, ct);
         getCartResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var cart = await getCartResponse.Content.ReadFromJsonAsync<ApiResponse<CartDto>>(ct);
+        var cart = await getCartResponse.Content.ReadFromJsonAsync<ApiResponse<CartResponse>>(ct);
 
         cart.Should().NotBeNull();
         cart.Data.Items.Count.Should().Be(1);

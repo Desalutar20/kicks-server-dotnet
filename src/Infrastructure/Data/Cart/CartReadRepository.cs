@@ -12,15 +12,14 @@ internal sealed class CartReadRepository(IDbConnection connection) : ICartReadRe
         CancellationToken ct = default
     )
     {
-        //TODO Change images->0.Url to ->url
         const string sql = """
             SELECT
                    COALESCE(
                      JSON_AGG(
                         JSON_BUILD_OBJECT(
                             'Id', ps.id,
-                            'Price', ps.price / 100,
-                            'SalePrice', ps.sale_price / 100,
+                            'Price', ps.price / 100.0,
+                            'SalePrice', ps.sale_price / 100.0,
                             'Title', p.title,
                             'Description', p.description,
                             'Size', ps.size,
@@ -36,7 +35,7 @@ internal sealed class CartReadRepository(IDbConnection connection) : ICartReadRe
                   SUM(
                           LEAST(ps.quantity, ci.quantity)
                           * COALESCE(ps.sale_price, ps.price)
-                      ) / 100
+                      ) / 100.0
                   )::numeric(10,2) AS TotalPrice,
                    promocode.discount_value as DiscountValue,
                    promocode.type as Type,
@@ -70,43 +69,3 @@ internal sealed class CartReadRepository(IDbConnection connection) : ICartReadRe
         return cart.FirstOrDefault();
     }
 }
-
-// SELECT
-//                    COALESCE(
-//                      JSON_AGG(
-//                         JSON_BUILD_OBJECT(
-//                             'Id', ps.id,
-//                             'Price', ps.price / 100,
-//                             'SalePrice', ps.sale_price / 100,
-//                             'Title', p.title,
-//                             'Description', p.description,
-//                             'Size', ps.size,
-//                             'Quantity',
-//                                    CASE
-//                                         WHEN ps.quantity < ci.quantity THEN ps.quantity
-//                                         ELSE ci.quantity
-//                                     END,
-//                             'Image', ps.images->0->>'Url'
-//                         )
-//                     )  FILTER (WHERE ps.id IS NOT NULL), '[]') as Items,
-//                 (
-//                   SUM(
-//                           LEAST(ps.quantity, ci.quantity)
-//                           * COALESCE(ps.sale_price, ps.price)
-//                       ) / 100
-//                   )::numeric(10,2) AS TotalPrice,
-//                    promocode.discount_value as DiscountValue,
-//                    promocode.type as Type,
-//                    promocode.valid_to as ValidTo,
-//                    promocode.code as Code
-//             FROM cart c
-//             LEFT JOIN cart_item ci ON c.id = ci.cart_id
-//             LEFT JOIN product_sku ps ON ci.product_sku_id = ps.id
-//             LEFT JOIN product p ON ps.product_id = p.id
-//             LEFT JOIN promocode ON c.promocode_id = promocode.id
-//             WHERE user_id = '8cb870d3-05bb-4503-9cdc-79753f4a1824'
-//             GROUP BY
-//                 promocode.discount_value,
-//                 promocode.type,
-//                 promocode.valid_to,
-//                 promocode.code;

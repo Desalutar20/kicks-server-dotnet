@@ -1,7 +1,7 @@
 using Application.Auth.Types;
+using Application.Orders.Types;
 using Application.Orders.UseCases.GetOrder;
 using Domain.Orders;
-using Presentation.Orders.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Orders.Endpoints;
@@ -15,7 +15,7 @@ internal static partial class OrderEndpoints
                 "/{id:guid}",
                 async (
                     Guid id,
-                    IQueryHandler<GetOrderQuery, Order> queryHandler,
+                    IQueryHandler<GetOrderQuery, OrderResponse> queryHandler,
                     HttpContext ctx,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -36,12 +36,12 @@ internal static partial class OrderEndpoints
 
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
-                        : Results.Ok(new ApiResponse<OrderDto>(result.Value.ToDto()));
+                        : Results.Ok(new ApiResponse<OrderResponse>(result.Value));
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<OrderDto>>()
+            .Produces<ApiResponse<OrderResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError)

@@ -16,7 +16,7 @@ public sealed record AdminProductResponse
 
 internal static class AdminProductResponseMapper
 {
-    public static AdminProductResponse ToDto(this Product product)
+    public static AdminProductResponse ToAdminResponse(this Product product)
     {
         return new AdminProductResponse()
         {

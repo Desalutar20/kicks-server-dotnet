@@ -24,7 +24,7 @@ internal sealed class CreateCategoryCommandHandler(
 
             await unitOfWork.SaveChangesAsync(ct);
 
-            return newCategory.ToDto();
+            return newCategory.ToResponse();
         }
         catch (CategoryAlreadyExistsException)
         {

@@ -43,7 +43,7 @@ internal sealed class CreatePromocodeCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return promocode.Value.ToDto();
+            return promocode.Value.ToAdminResponse();
         }
         catch (PromocodeAlreadyExistsException)
         {

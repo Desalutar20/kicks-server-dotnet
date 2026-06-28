@@ -10,7 +10,7 @@ public sealed record AdminCategoryResponse
 
 internal static class AdminCategoryResponseMapper
 {
-    public static AdminCategoryResponse ToDto(this Category category)
+    public static AdminCategoryResponse ToResponse(this Category category)
     {
         return new AdminCategoryResponse()
         {

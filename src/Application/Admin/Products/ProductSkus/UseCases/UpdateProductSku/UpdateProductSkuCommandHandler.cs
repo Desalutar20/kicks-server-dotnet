@@ -91,7 +91,7 @@ internal sealed class UpdateProductSkuCommandHandler(
             await unitOfWork.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
 
-            return productSku.ToDto();
+            return productSku.ToAdminResponse();
         }
         catch (ProductSkuDuplicateCombinationException)
         {

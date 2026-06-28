@@ -9,12 +9,14 @@ using Application.Abstractions.Outbox;
 using Application.Abstractions.Payment;
 using Application.Admin.Brands;
 using Application.Admin.Categories;
+using Application.Admin.Orders;
 using Application.Admin.Products;
+using Application.Admin.Products.ProductSkus;
 using Application.Admin.Promocodes;
 using Application.Admin.Users;
 using Application.Carts;
 using Application.Carts.Types;
-using Application.ProductSkus;
+using Application.Orders.Types;
 using Application.Shared.Types;
 using Dapper;
 using Domain.Brands;
@@ -120,6 +122,8 @@ public static class DependencyInjection
             SqlMapper.AddTypeHandler(new JsonBTypeHandler<IReadOnlyList<CategoryFilterItem>>());
             SqlMapper.AddTypeHandler(new JsonBTypeHandler<IReadOnlyList<BrandFilterItem>>());
             SqlMapper.AddTypeHandler(new JsonBTypeHandler<List<CartItemResponse>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<List<OrderItemResponse>>());
+            SqlMapper.AddTypeHandler(new JsonBTypeHandler<OrderAddressResponse>());
 
             return services;
         }
@@ -189,6 +193,7 @@ public static class DependencyInjection
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<ICartReadRepository, CartReadRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IOrderReadRepository, OrderReadRepository>();
             services.AddScoped<IDeliveryOptionRepository, DeliveryOptionRepository>();
 
             services.AddScoped<IOutboxRepository, OutboxRepository>();

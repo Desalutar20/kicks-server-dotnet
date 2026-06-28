@@ -3,16 +3,17 @@ using Application.Orders.UseCases.CreateOrder;
 using Domain.DeliveryOptions;
 using Domain.Orders;
 using Domain.Shared.ValueObjects;
-using Presentation.Orders.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Orders.Endpoints;
 
+public sealed record OrderAddressRequest(string City, string Street, string Home, string Apartment);
+
 public sealed record CreateOrderRequest(
     string Email,
     string PhoneNumber,
-    OrderAddressDto? BillingAddress,
-    OrderAddressDto DeliveryAddress,
+    OrderAddressRequest? BillingAddress,
+    OrderAddressRequest DeliveryAddress,
     string DeliveryOptionId
 );
 

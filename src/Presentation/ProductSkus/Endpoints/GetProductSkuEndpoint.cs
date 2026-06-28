@@ -1,7 +1,6 @@
 using Application.ProductSkus.Types;
 using Application.ProductSkus.UseCases.GetProductSku;
 using Domain.Products.ProductSkus;
-using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.ProductSkus.Endpoints;

@@ -1,6 +1,6 @@
 using Application.Admin.Products.ProductSkus.Constants;
+using Application.ProductSkus.Types;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.ProductSkus.Dto;
 using Presentation.ProductSkus.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -16,7 +16,9 @@ public sealed class GetProductSkusTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
 
         body.Should().NotBeNull();
         body.Data.Should().HaveCount(ProductSkusConstants.GetProductSkusDefaultLimit);

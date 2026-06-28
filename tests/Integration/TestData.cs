@@ -13,7 +13,6 @@ using Presentation.Admin.Products.Endpoints;
 using Presentation.Admin.Products.ProductSkus.Endpoints;
 using Presentation.Admin.Promocodes.Dto;
 using Presentation.Admin.Promocodes.Endpoints;
-using Presentation.Orders.Dto;
 using Presentation.Orders.Endpoints;
 
 namespace Integration;
@@ -142,13 +141,13 @@ public static class TestData
             .CustomInstantiator(f => new CreateOrderRequest(
                 Email(),
                 $"+1{f.Random.ReplaceNumbers("##########")}",
-                new OrderAddressDto(
+                new OrderAddressRequest(
                     f.Address.City(),
                     f.Address.StreetName(),
                     String(OrderAddress.MaxHomeLength),
                     String(OrderAddress.MaxApartmentLength)
                 ),
-                new OrderAddressDto(
+                new OrderAddressRequest(
                     f.Address.City(),
                     f.Address.StreetName(),
                     String(OrderAddress.MaxHomeLength),

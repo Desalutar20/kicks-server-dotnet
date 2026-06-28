@@ -24,7 +24,7 @@ internal sealed class CreateBrandCommandHandler(
 
             await unitOfWork.SaveChangesAsync(ct);
 
-            return newBrand.ToDto();
+            return newBrand.ToResponse();
         }
         catch (BrandAlreadyExistsException)
         {

@@ -1,25 +1,29 @@
+using Application.Orders.Types;
 using Domain.Orders;
 
 namespace Application.Orders.UseCases.GetOrders;
 
-public sealed record GetOrdersQuery(UserId UserId, KeysetPagination<OrderId> KeysetPagination)
-    : IQuery<KeysetPaginated<Order, OrderId>>;
+public sealed record GetOrdersQuery(UserId UserId, KeysetPagination<Guid> KeysetPagination)
+    : IQuery<KeysetPaginated<OrderResponse, Guid>>;
 
-internal sealed class GetOrdersQueryHandler(IOrderRepository orderRepository)
-    : IQueryHandler<GetOrdersQuery, KeysetPaginated<Order, OrderId>>
+internal sealed class GetOrdersQueryHandler()
+    : IQueryHandler<GetOrdersQuery, KeysetPaginated<OrderResponse, Guid>>
 {
-    public async Task<Result<KeysetPaginated<Order, OrderId>>> Handle(
+    public async Task<Result<KeysetPaginated<OrderResponse, Guid>>> Handle(
         GetOrdersQuery query,
         CancellationToken ct = default
     )
     {
-        var orders = await orderRepository.GetOrdersByUserIdAsync(
-            query.UserId,
-            query.KeysetPagination,
-            false,
-            ct
-        );
+        //TODO
+        // var orders = await orderRepository.GetOrdersByUserIdAsync(
+        //     query.UserId,
+        //     query.KeysetPagination,
+        //     false,
+        //     ct
+        // );
 
-        return orders;
+        // return orders;
+
+        throw new NotImplementedException();
     }
 }

@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit", "tests\Unit\Unit.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integration", "tests\Integration\Integration.csproj", "{EE609DBA-5553-4509-BAC9-E2435A7499A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "Benchmarks\Benchmarks.csproj", "{D2CB29C0-CBB1-4917-83EE-B24110CA282C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,5 +76,9 @@ Global
 		{EE609DBA-5553-4509-BAC9-E2435A7499A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE609DBA-5553-4509-BAC9-E2435A7499A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE609DBA-5553-4509-BAC9-E2435A7499A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2CB29C0-CBB1-4917-83EE-B24110CA282C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2CB29C0-CBB1-4917-83EE-B24110CA282C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2CB29C0-CBB1-4917-83EE-B24110CA282C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2CB29C0-CBB1-4917-83EE-B24110CA282C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

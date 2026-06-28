@@ -1,17 +1,13 @@
 using Application.Admin.DeliveryOptions.Types;
 using Application.Admin.DeliveryOptions.UseCases.GetAdminDeliveryOptions;
 using Application.Auth.Types;
-using Domain.DeliveryOptions;
-using Presentation.Admin.DeliveryOptions.Dto;
 using Presentation.Shared.Extensions;
 
-namespace Presentation.Admin.DeliveryOptions.Endpoints;
+namespace Presentation.DeliveryOptions.Endpoints;
 
 internal static partial class DeliveryOptionsEndpoints
 {
-    private static IEndpointRouteBuilder GetAdminDeliveryOptionsV1(
-        this IEndpointRouteBuilder endpoint
-    )
+    private static IEndpointRouteBuilder GetDeliveryOptionsV1(this IEndpointRouteBuilder endpoint)
     {
         endpoint
             .MapGet(
@@ -20,7 +16,7 @@ internal static partial class DeliveryOptionsEndpoints
                     HttpContext ctx,
                     IQueryHandler<
                         GetAdminDeliveryOptionsQuery,
-                        IReadOnlyList<DeliveryOptionResponse>
+                        IReadOnlyList<AdminDeliveryOptionResponse>
                     > queryHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -34,7 +30,7 @@ internal static partial class DeliveryOptionsEndpoints
                         return Results.Unauthorized();
                     }
 
-                    var logger = loggerFactory.CreateLogger("Admin.GetDeliveryOptions");
+                    var logger = loggerFactory.CreateLogger("GetDeliveryOptions");
 
                     var result = await queryHandler.Handle(new GetAdminDeliveryOptionsQuery(), ct);
                     if (result.IsFailure)
@@ -43,22 +39,22 @@ internal static partial class DeliveryOptionsEndpoints
                     }
 
                     return Results.Ok(
-                        new ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>(
-                            result.Value.Select(x => x.ToAdminDto()).ToList()
+                        new ApiResponse<IReadOnlyList<DeliveryOptionResponse>>(
+                            result.Value.Select(x => x.ToDeliveryOptionResponse()).ToList()
                         )
                     );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
-            .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
-            .Produces<ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>>()
+            .Produces<ApiResponse<IReadOnlyList<DeliveryOptionResponse>>>()
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .ProducesValidationProblem()
-            .WithName("GetAdminDeliveryOptions")
-            .WithSummary("Retrieves list of delivery options for admin panel.")
-            .WithDescription("Returns a list of delivery options. ");
+            .WithName("GetDeliveryOptions")
+            .WithSummary("Retrieves list of delivery options.")
+            .WithDescription("Returns a list of delivery options.")
+            .RequireRateLimiting(RateLimitConstants.GetDeliveryOptions);
 
         return endpoint;
     }

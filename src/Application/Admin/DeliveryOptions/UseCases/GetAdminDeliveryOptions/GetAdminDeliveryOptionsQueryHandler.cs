@@ -7,12 +7,13 @@ using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.DeliveryOptions.UseCases.GetAdminDeliveryOptions;
 
-public sealed record GetAdminDeliveryOptionsQuery : IQuery<IReadOnlyList<DeliveryOptionResponse>>;
+public sealed record GetAdminDeliveryOptionsQuery
+    : IQuery<IReadOnlyList<AdminDeliveryOptionResponse>>;
 
 internal sealed class GetAdminDeliveryOptionsQueryHandler(
     ICachingService cachingService,
     IDeliveryOptionRepository deliveryOptionRepository
-) : IQueryHandler<GetAdminDeliveryOptionsQuery, IReadOnlyList<DeliveryOptionResponse>>
+) : IQueryHandler<GetAdminDeliveryOptionsQuery, IReadOnlyList<AdminDeliveryOptionResponse>>
 {
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -20,7 +21,7 @@ internal sealed class GetAdminDeliveryOptionsQueryHandler(
         Converters = { new DeliveryOptionResponseConverter() },
     };
 
-    public async Task<Result<IReadOnlyList<DeliveryOptionResponse>>> Handle(
+    public async Task<Result<IReadOnlyList<AdminDeliveryOptionResponse>>> Handle(
         GetAdminDeliveryOptionsQuery query,
         CancellationToken ct = default
     )
@@ -30,18 +31,18 @@ internal sealed class GetAdminDeliveryOptionsQueryHandler(
             TimeSpan.FromHours(1),
             ct
         );
+
         if (fromCache is not null)
         {
-            var deserialized = JsonSerializer.Deserialize<IReadOnlyList<DeliveryOptionResponse>>(
-                fromCache,
-                Options
-            );
+            var deserialized = JsonSerializer.Deserialize<
+                IReadOnlyList<AdminDeliveryOptionResponse>
+            >(fromCache, Options);
 
             return deserialized!.ToList();
         }
 
         var data = await deliveryOptionRepository.GetDeliveryOptionsAsync(false, ct);
-        var mapped = data.Select(x => x.ToDto()).ToList();
+        var mapped = data.Select(x => x.ToAdminResponse()).ToList();
         var serialized = JsonSerializer.Serialize(mapped, Options);
 
         await cachingService.SetAsync(

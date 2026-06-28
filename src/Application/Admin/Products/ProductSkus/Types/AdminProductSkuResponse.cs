@@ -20,7 +20,7 @@ public sealed record AdminProductSkuResponse
 
 internal static class AdminProductSkuResponseMapper
 {
-    public static AdminProductSkuResponse ToDto(this ProductSku productSku)
+    public static AdminProductSkuResponse ToAdminResponse(this ProductSku productSku)
     {
         return new AdminProductSkuResponse()
         {
@@ -33,7 +33,7 @@ internal static class AdminProductSkuResponseMapper
             Size = productSku.Size.Value,
             Color = productSku.Color.Value,
             Sku = productSku.Sku.Value,
-            Product = productSku.Product.ToDto(),
+            Product = productSku.Product.ToAdminResponse(),
             Images = productSku
                 .Images.Select(image => new FileResponse()
                 {

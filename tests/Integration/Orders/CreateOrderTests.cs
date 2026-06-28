@@ -1,10 +1,9 @@
+using Application.Admin.DeliveryOptions.Types;
+using Application.ProductSkus.Types;
 using Domain.Orders;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Cart.Endpoints;
 using Presentation.Orders.Endpoints;
-using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Dto;
-using DeliveryOptionDto = Presentation.DeliveryOptions.Dto.DeliveryOptionDto;
 
 namespace Integration.Orders;
 
@@ -21,7 +20,9 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
@@ -32,7 +33,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
 
         var getDeliveryOptionsResponseBody =
             await getDeliveryOptionsResponse.Content.ReadFromJsonAsync<
-                ApiResponse<IReadOnlyList<DeliveryOptionDto>>
+                ApiResponse<IReadOnlyList<DeliveryOptionResponse>>
             >(ct);
 
         getDeliveryOptionsResponseBody.Should().NotBeNull();
@@ -97,7 +98,9 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
@@ -108,7 +111,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
 
         var getDeliveryOptionsResponseBody =
             await getDeliveryOptionsResponse.Content.ReadFromJsonAsync<
-                ApiResponse<IReadOnlyList<DeliveryOptionDto>>
+                ApiResponse<IReadOnlyList<DeliveryOptionResponse>>
             >(ct);
 
         getDeliveryOptionsResponseBody.Should().NotBeNull();
@@ -134,7 +137,9 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
@@ -145,7 +150,7 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
 
         var getDeliveryOptionsResponseBody =
             await getDeliveryOptionsResponse.Content.ReadFromJsonAsync<
-                ApiResponse<IReadOnlyList<DeliveryOptionDto>>
+                ApiResponse<IReadOnlyList<DeliveryOptionResponse>>
             >(ct);
 
         getDeliveryOptionsResponseBody.Should().NotBeNull();
@@ -183,7 +188,9 @@ public sealed class CreateOrderTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);

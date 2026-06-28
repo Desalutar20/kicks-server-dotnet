@@ -11,15 +11,15 @@ public sealed record CreateDeliveryOptionCommand(
     DeliveryOptionTitle Title,
     DeliveryOptionDescription Description,
     Money Price
-) : ICommand<DeliveryOptionResponse>;
+) : ICommand<AdminDeliveryOptionResponse>;
 
 internal sealed class CreateDeliveryOptionCommandHandler(
     ICachingService cachingService,
     IDeliveryOptionRepository deliveryOptionRepository,
     IUnitOfWork unitOfWork
-) : ICommandHandler<CreateDeliveryOptionCommand, DeliveryOptionResponse>
+) : ICommandHandler<CreateDeliveryOptionCommand, AdminDeliveryOptionResponse>
 {
-    public async Task<Result<DeliveryOptionResponse>> Handle(
+    public async Task<Result<AdminDeliveryOptionResponse>> Handle(
         CreateDeliveryOptionCommand command,
         CancellationToken ct = default
     )
@@ -45,6 +45,6 @@ internal sealed class CreateDeliveryOptionCommandHandler(
         await cachingService.DeleteAsync(DeliveryOptionsConstants.CacheKey, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
-        return newDeliveryOption.ToDto();
+        return newDeliveryOption.ToAdminResponse();
     }
 }

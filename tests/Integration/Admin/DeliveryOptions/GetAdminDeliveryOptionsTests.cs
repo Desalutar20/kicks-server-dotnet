@@ -1,4 +1,4 @@
-using Presentation.Admin.DeliveryOptions.Dto;
+using Application.Admin.DeliveryOptions.Types;
 using Presentation.Shared.Dto;
 
 namespace Integration.Admin.DeliveryOptions;
@@ -17,7 +17,7 @@ public sealed class GetAdminDeliveryOptionsTests(ApiFactory factory) : TestApp(f
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<
-            ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>
+            ApiResponse<IReadOnlyList<AdminDeliveryOptionResponse>>
         >(ct);
 
         body.Should().NotBeNull();

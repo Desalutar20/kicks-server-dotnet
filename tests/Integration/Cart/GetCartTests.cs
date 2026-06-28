@@ -1,4 +1,4 @@
-using Presentation.Cart.Dto;
+using Application.Carts.Types;
 using Presentation.Shared.Dto;
 
 namespace Integration.Cart;
@@ -16,7 +16,7 @@ public sealed class GetCartTests(ApiFactory factory) : TestApp(factory)
         var response = await GetCart(sessionCookie, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiResponse<CartDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiResponse<CartResponse>>(ct);
 
         body.Should().NotBeNull();
     }

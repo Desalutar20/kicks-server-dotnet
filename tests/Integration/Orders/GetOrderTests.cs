@@ -1,9 +1,8 @@
+using Application.Admin.DeliveryOptions.Types;
+using Application.Orders.Types;
+using Application.ProductSkus.Types;
 using Domain.Orders;
-using Presentation.Cart.Endpoints;
-using Presentation.Orders.Dto;
-using Presentation.ProductSkus.Dto;
 using Presentation.Shared.Dto;
-using DeliveryOptionDto = Presentation.DeliveryOptions.Dto.DeliveryOptionDto;
 
 namespace Integration.Orders;
 
@@ -20,7 +19,9 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
         var response = await GetProductSkus(null, ct);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuDto>>(ct);
+        var body = await response.Content.ReadFromJsonAsync<ApiCursorResponse<ProductSkuResponse>>(
+            ct
+        );
         body.Should().NotBeNull();
 
         var addCartItemResponse = await AddCartItem(body.Data[0].Id, sessionCookie, ct);
@@ -32,7 +33,7 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
 
         var getDeliveryOptionsResponseBody =
             await getDeliveryOptionsResponse.Content.ReadFromJsonAsync<
-                ApiResponse<IReadOnlyList<DeliveryOptionDto>>
+                ApiResponse<IReadOnlyList<DeliveryOptionResponse>>
             >(ct);
 
         getDeliveryOptionsResponseBody.Should().NotBeNull();
@@ -53,7 +54,7 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
         getOrdersResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var orderResponseBody = await getOrdersResponse.Content.ReadFromJsonAsync<
-            ApiResponse<OrderDto>
+            ApiResponse<OrderResponse>
         >(ct);
 
         orderResponseBody.Should().NotBeNull();
@@ -65,7 +66,7 @@ public sealed class GetOrderTests(ApiFactory factory) : TestApp(factory)
 
         order.Items.Count.Should().Be(1);
 
-        order.Items[0].ProductSku.Id.Should().Be(body.Data[0].Id);
+        order.Items[0].Id.Should().Be(body.Data[0].Id);
         order.Items[0].Quantity.Should().Be(1);
 
         order.Status.Should().Be(OrderStatus.Pending);

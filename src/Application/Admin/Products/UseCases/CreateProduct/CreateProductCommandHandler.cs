@@ -40,7 +40,7 @@ internal sealed class CreateProductCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return product.ToDto();
+            return product.ToAdminResponse();
         }
         catch (BrandDoesNotExistsException)
         {

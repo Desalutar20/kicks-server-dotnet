@@ -1,29 +1,25 @@
 using Domain.DeliveryOptions;
-using Domain.Shared.ValueObjects;
 
 namespace Application.Admin.DeliveryOptions.Types;
 
-public sealed record DeliveryOptionResponse(
-    DeliveryOptionId Id,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt,
-    DeliveryOptionTitle Title,
-    DeliveryOptionDescription Description,
-    Money Price
-);
+public sealed record DeliveryOptionResponse
+{
+    public Guid Id { get; init; }
+    public required string Title { get; init; }
+    public required string Description { get; init; }
+    public decimal Price { get; init; }
+}
 
 internal static class DeliveryOptionResponseMapper
 {
-    public static DeliveryOptionResponse ToDto(this DeliveryOption option)
+    public static DeliveryOptionResponse ToResponse(this DeliveryOption option)
     {
-        DeliveryOptionDescription deliveryOptionDescription = option.Description;
-        return new(
-            option.Id,
-            option.CreatedAt,
-            option.UpdatedAt,
-            option.Title,
-            option.Description,
-            option.Price
-        );
+        return new DeliveryOptionResponse
+        {
+            Id = option.Id.Value,
+            Title = option.Title.Value,
+            Description = option.Description.Value,
+            Price = option.Price.Dollars,
+        };
     }
 }

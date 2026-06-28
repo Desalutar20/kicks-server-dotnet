@@ -3,7 +3,6 @@ using Application.Admin.DeliveryOptions.UseCases.CreateDeliveryOption;
 using Application.Auth.Types;
 using Domain.DeliveryOptions;
 using Domain.Shared.ValueObjects;
-using Presentation.Admin.DeliveryOptions.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Admin.DeliveryOptions.Endpoints;
@@ -33,7 +32,7 @@ internal static partial class DeliveryOptionsEndpoints
                     CreateDeliveryOptionRequest request,
                     ICommandHandler<
                         CreateDeliveryOptionCommand,
-                        DeliveryOptionResponse
+                        AdminDeliveryOptionResponse
                     > commandHandler,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -55,14 +54,14 @@ internal static partial class DeliveryOptionsEndpoints
                         ? result.Error.ToApiError(logger)
                         : Results.Created(
                             "/",
-                            new ApiResponse<AdminDeliveryOptionDto>(result.Value.ToAdminDto())
+                            new ApiResponse<AdminDeliveryOptionResponse>(result.Value)
                         );
                 }
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter(new AuthorizeFilter(Role.Admin))
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiResponse<AdminDeliveryOptionDto>>(StatusCodes.Status201Created)
+            .Produces<ApiResponse<AdminDeliveryOptionResponse>>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)

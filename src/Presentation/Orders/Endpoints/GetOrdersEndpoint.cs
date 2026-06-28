@@ -1,9 +1,8 @@
 using Application.Auth.Types;
 using Application.Orders.Constants;
+using Application.Orders.Types;
 using Application.Orders.UseCases.GetOrders;
-using Domain.Orders;
 using Domain.Shared.ValueObjects;
-using Presentation.Orders.Dto;
 using Presentation.Shared.Extensions;
 
 namespace Presentation.Orders.Endpoints;
@@ -23,24 +22,18 @@ public sealed class GetOrdersRequestValidator : AbstractValidator<GetOrdersReque
 
         RuleFor(x => x.PrevCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<OrderId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid order id")
-                            : new OrderId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid order id") : id
                 )
             )
             .MaximumLength(OrderConstants.GetOrdersCursorMaxLength);
 
         RuleFor(x => x.NextCursor)
             .ValidateNullableValueObject(x =>
-                KeysetCursor<OrderId>.Create(
+                KeysetCursor<Guid>.Create(
                     x,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid order id")
-                            : new OrderId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid order id") : id
                 )
             )
             .MaximumLength(OrderConstants.GetOrdersCursorMaxLength);
@@ -56,7 +49,10 @@ internal static partial class OrderEndpoints
                 "",
                 async (
                     [AsParameters] GetOrdersRequest request,
-                    IQueryHandler<GetOrdersQuery, KeysetPaginated<Order, OrderId>> queryHandler,
+                    IQueryHandler<
+                        GetOrdersQuery,
+                        KeysetPaginated<OrderResponse, Guid>
+                    > queryHandler,
                     HttpContext ctx,
                     ILoggerFactory loggerFactory,
                     CancellationToken ct
@@ -78,8 +74,8 @@ internal static partial class OrderEndpoints
                     return result.IsFailure
                         ? result.Error.ToApiError(logger)
                         : Results.Ok(
-                            new ApiCursorResponse<OrderDto>(
-                                [.. result.Value.Data.Select(u => u.ToDto())],
+                            new ApiCursorResponse<OrderResponse>(
+                                [.. result.Value.Data],
                                 result.Value.PrevCursor?.ToString(),
                                 result.Value.NextCursor?.ToString()
                             )
@@ -88,7 +84,7 @@ internal static partial class OrderEndpoints
             )
             .AddEndpointFilter<AuthenticateFilter>()
             .AddEndpointFilter<ValidationFilter>()
-            .Produces<ApiCursorResponse<OrderDto>>()
+            .Produces<ApiCursorResponse<OrderResponse>>()
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -107,30 +103,24 @@ internal static partial class OrderEndpoints
         var limit = PositiveInt.Create(request.Limit ?? OrderConstants.GetOrdersDefaultLimit).Value;
 
         var prev = request.PrevCursor is not null
-            ? KeysetCursor<OrderId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.PrevCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid order id")
-                            : new OrderId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid order id") : id
                 )
                 .Value
             : null;
 
         var next = request.NextCursor is not null
-            ? KeysetCursor<OrderId>
+            ? KeysetCursor<Guid>
                 .Create(
                     request.NextCursor,
-                    s =>
-                        !Guid.TryParse(s, out var id)
-                            ? Error.Failure("Invalid order id")
-                            : new OrderId(id)
+                    s => !Guid.TryParse(s, out var id) ? Error.Failure("Invalid order id") : id
                 )
                 .Value
             : null;
 
-        var pagination = new KeysetPagination<OrderId>(limit, prev, next);
+        var pagination = new KeysetPagination<Guid>(limit, prev, next);
 
         return new GetOrdersQuery(new UserId(userId), pagination);
     }

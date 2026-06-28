@@ -1,6 +1,6 @@
+using Application.Admin.DeliveryOptions.Types;
 using Domain.DeliveryOptions;
 using Microsoft.AspNetCore.Mvc;
-using Presentation.Admin.DeliveryOptions.Dto;
 using Presentation.Admin.DeliveryOptions.Endpoints;
 using Presentation.Shared.Dto;
 
@@ -20,7 +20,7 @@ public sealed class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(fact
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<
-            ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>
+            ApiResponse<IReadOnlyList<AdminDeliveryOptionResponse>>
         >(ct);
         body.Should().NotBeNull();
 
@@ -75,7 +75,7 @@ public sealed class UpdateDeliveryOptionTests(ApiFactory factory) : TestApp(fact
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var body = await response.Content.ReadFromJsonAsync<
-            ApiResponse<IReadOnlyList<AdminDeliveryOptionDto>>
+            ApiResponse<IReadOnlyList<AdminDeliveryOptionResponse>>
         >(ct);
         body.Should().NotBeNull();
 

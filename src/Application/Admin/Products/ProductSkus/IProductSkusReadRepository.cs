@@ -2,7 +2,7 @@ using Application.Admin.Products.ProductSkus.Types;
 using Application.ProductSkus.Types;
 using Domain.Shared.ValueObjects;
 
-namespace Application.ProductSkus;
+namespace Application.Admin.Products.ProductSkus;
 
 public interface IProductSkusReadRepository
 {

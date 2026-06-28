@@ -47,7 +47,7 @@ internal sealed class UpdateProductCommandHandler(
         {
             await unitOfWork.SaveChangesAsync(ct);
 
-            return product.ToDto();
+            return product.ToAdminResponse();
         }
         catch (BrandDoesNotExistsException)
         {

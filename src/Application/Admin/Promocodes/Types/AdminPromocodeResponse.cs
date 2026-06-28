@@ -18,7 +18,7 @@ public sealed record AdminPromocodeResponse
 
 internal static class AdminPromocodeResponseMapper
 {
-    public static AdminPromocodeResponse ToDto(this Promocode promocode)
+    public static AdminPromocodeResponse ToAdminResponse(this Promocode promocode)
     {
         return new AdminPromocodeResponse()
         {

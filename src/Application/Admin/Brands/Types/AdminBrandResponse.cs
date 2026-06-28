@@ -10,7 +10,7 @@ public sealed record AdminBrandResponse
 
 internal static class AdminBrandResponseMapper
 {
-    public static AdminBrandResponse ToDto(this Brand brand)
+    public static AdminBrandResponse ToResponse(this Brand brand)
     {
         return new AdminBrandResponse()
         {
